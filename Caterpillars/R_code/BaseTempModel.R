@@ -388,6 +388,12 @@ ggplot(VisserTempBaseModel.PeakInfo, aes(temp, peakheight, colour=year))+
   theme_bw()
 ##?? so temperature is having different effects on height of the peak in different years.. could that be because there are different temperatures in the different years
 
+#peak height by year colour=temp
+ggplot(VisserTempBaseModel.PeakInfo, aes(year, peakheight, colour=temp))+
+  geom_point()+
+  #geom_smooth(aes(ymin=peakheightlowerCI, ymax=peakheightupperCI, fill=year), stat="identity", width=0.1)+
+  theme_bw()
+
 #### figure of peak date by temp in 2018 ####
 VisserTempBaseModel.PeakInfo18 <- VisserTempBaseModel.PeakInfo
 VisserTempBaseModel.PeakInfo18 <- filter(VisserTempBaseModel.PeakInfo18, year=="2018")
