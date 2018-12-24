@@ -77,22 +77,28 @@ prior3<-list(R=list(V=1,nu=0.002),
 
 ## Added yearsite as a random effect with pr=TRUE also up to 300k iterations and 30k burnin
 
-#AprBaseModel.RE<- MCMCglmm(caterpillars~date*year+Apr*date+I(date^2), random=~site+sitetree+siteday+yearsite, family="poisson", data=all_data, prior=prior3, nitt=300000, burnin=30000, pr=TRUE)
-#save(AprBaseModel.RE, file = "~/Dropbox/KirstyMacPhie/caterpillar analysis/results/AprBaseModel_RE.RData")
-AprBaseModel.RE <- load("~/Dropbox/KirstyMacPhie/caterpillar analysis/results/AprBaseModel_RE.RData")
-summary(AprBaseModel.RE)
+AprBaseModel_RE<- MCMCglmm(caterpillars~date*year+Apr*date+I(date^2), random=~site+sitetree+siteday+yearsite, family="poisson", data=all_data, prior=prior3, nitt=300000, burnin=30000, pr=TRUE)
+#save(AprBaseModel_RE, file = "~/Documents/PhD/R/Caterpillar analysis/Models/AprBaseModel_RE.RData")
+#AprBaseModel_RE <- load("~/Documents/PhD/R/Caterpillar analysis/Models/AprBaseModel_RE.RData")
 
-plot(AprBaseModel.RE$VCV) #random effects
-plot(AprBaseModel.RE$Sol) #fixedeffects
-autocorr(AprBaseModel.RE$Sol) #looking to level of auto correlation in fixed variables
+summary(AprBaseModel_RE)
+
+# DIC: 11394.1 
+
+plot(AprBaseModel_RE$VCV) #random effects
+#plot(AprBaseModel_RE$Sol) #fixedeffects   too many.. R shut down..
+autocorr(AprBaseModel_RE$Sol) #looking to level of auto correlation in fixed variables
 
 #check if model generates sensible results
-AprBaseModel.RE.Sim<-simulate(AprBaseModel.RE,nsim=100)
+AprBaseModel_RE.Sim<-simulate(AprBaseModel_RE,nsim=100)
 sum(all_data$caterpillars)
 par(mfcol=c(1,1))
-hist(apply(AprBaseModel.RE.Sim,2,sum))
+hist(apply(AprBaseModel_RE.Sim,2,sum))
 abline(v=sum(all_data$caterpillars),col=2)
 
 propzero <- function(x){return(length(which(x==0))/length(x))}
-hist(apply(AprBaseModel.RE.Sim,2,propzero))
+hist(apply(AprBaseModel_RE.Sim,2,propzero))
 abline(v=propzero(all_data$caterpillars), col="red")
+
+
+
