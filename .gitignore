@@ -2,7 +2,6 @@
 .Rproj.user
 .Rproj
 # Prevent users to commit their own .RData and .Rhistory in mutual area
-.RData
 .Rhistory
 .Rapp.history
 # Temporary files
