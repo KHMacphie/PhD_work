@@ -80,7 +80,7 @@ prior3<-list(R=list(V=1,nu=0.002),
                     G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
                     G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k)))
 
-
+#######################
 ## Added yearsite as a random effect with pr=TRUE also up to 300k iterations and 30k burnin
 #AprBaseModel_RE has all previous REs, AprBaseModel_RE_2 has site day removed to reduce size
 
@@ -88,8 +88,8 @@ prior3<-list(R=list(V=1,nu=0.002),
 #AprBaseModel_RE_2<- MCMCglmm(caterpillars~date*year+Apr*date+I(date^2), random=~site+sitetree+yearsite, family="poisson", data=all_data, prior=prior2, nitt=300000, burnin=30000, pr=TRUE)
 #save(AprBaseModel_RE, file = "~/Documents/PhD/R/Caterpillar analysis/Models/AprBaseModel_RE.RData")
 #save(AprBaseModel_RE_2, file = "~/Documents/PhD/R/Caterpillar analysis/Models/AprBaseModel_RE_2.RData")
-AprBaseModel_RE <- load("~/Documents/PhD/R/Caterpillar analysis/Models/AprBaseModel_RE.RData")
-AprBaseModel_RE_2 <- load("~/Documents/PhD/R/Caterpillar analysis/Models/AprBaseModel_RE_2.RData")
+load("~/Documents/PhD/GitHub/R/Caterpillar analysis/Models/AprBaseModel_RE.RData")
+load("~/Documents/PhD/GitHub/R/Caterpillar analysis/Models/AprBaseModel_RE_2.RData")
 
 summary(AprBaseModel_RE) # DIC: 11394.1 
 summary(AprBaseModel_RE_2) # DIC: 11541.33
