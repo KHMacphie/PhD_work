@@ -68,9 +68,16 @@ basic <- glm(caterpillars~date+I(date^2)+year+Apr, family=poisson, data=all_data
 summary(basic)
 
 pred_day <- seq(120,175,1)
+pred_day2 <- seq(0,200,1)
 basic14 <- basic$coef["(Intercept)"] + basic$coef["date"]*pred_day + basic$coef["I(date^2)"]*pred_day^2+basic$coef["Apr"]*7.5
 plot(pred_day, exp(basic14), type="l")
 plot(pred_day, basic14, type="l")
+basicnumbers <- exp(-93.51879) * exp(1.213843*pred_day) * exp(-0.00394120*pred_day^2)  * exp(-0.1308632*7.5) 
+#for negative coefficients can remove - from brackets and change * to /
+plot(pred_day, basicnumbers, type="l")
+
+
+
 
 noquad <- glm(caterpillars~date+year+Apr, family=poisson, data=all_data)
 summary(noquad)
@@ -198,3 +205,8 @@ points(pred_day2, exp(interactioncont9wrong), type="l", col=5) #lightblue
 ## but its all actually y=exp(ax^2 + bx + c) so the effects look different because the basic changes are in the logarithm form 
 # and once reverted what was a straight line is now curved/ normal parabola becomes the cater curve etc
 ## becasue natural logs use base e and e is positive e^coefficient will always be >1 so y can not go beneath 0 once reverted back from log? 
+
+## For interpreting the coefficients:
+# where negative include - in the exp() and the result will be <1 so when multiplied by the intercept it is a reduction
+# e.g. when adjusting for year: times the 2014 predicted abundance by the exp(coef for other year) to see abundance given by adding the coefficient to the equation because adding in exp is multiplying if not within same brackets
+
