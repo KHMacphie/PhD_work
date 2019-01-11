@@ -504,3 +504,68 @@ ggplot(Coeff, aes(Site, MeanCoeff))+
   geom_errorbar(aes(ymax=UCI, ymin=LCI, width=0.5))+
   theme_bw()
 
+# try and fail to order by lat and elev to plot
+site$Site <- site$site
+pmatch(Coeff$Site, site$Site)
+CoeffLat<- merge(Coeff, site, by="Site", duplicates.ok=TRUE)
+CoeffElev<- merge(Coeff, site, by="Site", duplicates.ok=TRUE)
+CoeffLat<- rename(CoeffLat, latitude="latitide")
+CoeffElev<- rename(CoeffElev, elevation="Mean Elev")
+CoeffElev$elevation <- as.factor(CoeffElev$elevation)
+CoeffLat$latitude <- as.factor(CoeffLat$latitude)
+CoeffElev <- CoeffElev %>% arrange(CoeffElev$elevation)
+CoeffLat <- CoeffLat %>% arrange(CoeffLat$latitude)
+
+
+plot(CoeffLat$Site, CoeffLat$MeanCoeff)
+plot(CoeffElev$Site, CoeffElev$MeanCoeff)
+
+
+ggplot(CoeffLat, aes(Site, MeanCoeff))+
+  geom_point(size=3, alpha=0.5)+
+  geom_errorbar(aes(ymax=UCI, ymin=LCI, width=0.5))+
+  theme_bw()
+
+ggplot(CoeffElev, aes(Site, MeanCoeff))+
+  geom_point(size=3, alpha=0.5)+
+  geom_errorbar(aes(ymax=UCI, ymin=LCI, width=0.5))+
+  theme_bw()
+
+#################
+#### Loops?! ####
+
+
+# Trying to look at yearsite random effect in AprBaseModel_RE
+summary(AprBaseModel_RE)
+head(AprBaseModel_RE$Sol)
+which( colnames(AprBaseModel_RE$Sol)=="yearsite.ALN 2014")
+(14*13)+7
+4982+188
+which( colnames(AprBaseModel_RE$Sol)=="yearsite.TOM 2018")
+## yearsite in columns 4982:5170
+
+symcmcre <- data.frame(AprBaseModel_RE$Sol[,4982:5170])
+syrerows <- as.data.frame(t(symcmcre))
+
+dfys <- data.frame(ys=c(colnames(symcmcre)))
+for(i in 1:length(dfys$ys)) {
+  dfys$coeff[i] <- apply(syrerows[i,],1, mean)
+}
+
+###### come back to!!!! #####
+for(i in 1:length(dfys$ys)) {
+  ci[i] <- HPDinterval(AprBaseModel_RE$Sol[,i]) %>%
+  dfys$lowci[i] <- apply(syrerows[i,],1, mean)
+}
+HPDinterval(AprBaseModel_RE$Sol[,4982])
+ALNCIs["var1","lower"]
+
+## old loop that works 
+peakheightposteriorloop<- data.frame(iteration=c(1:18000))
+for(x in 1:18000) {
+  peakheightposteriorloop$height2014[x] <- TempPoisson$Sol[x,"(Intercept)"] +  
+    TempPoisson$Sol[x,"date"]*162.9719 +  
+    TempPoisson$Sol[x,"I(date^2)"]*162.9719^2 +  
+    6.935*TempPoisson$Sol[x,"date:Apr"]*162.9719 +  
+    6.935*TempPoisson$Sol[x,"Apr"]
+}
