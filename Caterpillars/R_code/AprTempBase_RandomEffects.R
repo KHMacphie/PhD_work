@@ -243,6 +243,49 @@ points(pred_day, exp(TAI), type="l")
 points(pred_day, exp(TOM), type="l")
 
 ## ggplot
+
+##### fjewiuvewlkfjngiur`nvevrfugsiwhlgal`
+BySiteShort <- data.frame(Date=seq(120,175,0.5))
+sitecodes <- c("ALN", "ART", "AVI", "AVN", "BAD", "BIR", "BLA", "BLG", "CAL", "CAR", "CRU", "DAV", "DEL", "DLW", "DNC", "DNM", "DNS", "DOR", "DOW", "DUN", "EDI", "FOF",
+                "FOU", "FSH", "GLF", "HWP", "INS", "KCK", "KCZ", "LVN", "MCH", "MUN", "NEW", "OSP", "PIT", "PTH", "RSY", "RTH", "SER", "SLS", "SPD", "STY", "TAI", "TOM")
+siteREcropped <- AprBaseModel_RE_3$Sol[,14:57] # crop to just the columns wanted
+
+BySiteShort <- cbind(BySiteShort, setNames(lapply(sitecodes, function(x) x=NA), sitecodes))
+
+for(i in [,1:44]){
+BySiteShort$[i] <-  exp(mean(siteREcropped[,1]) + 
+                         mean(AprBaseModel_RE_3$Sol[,"(Intercept)"]) + 
+                           mean(AprBaseModel_RE_3$Sol[,"date"])*BySiteShort$Date + 
+                           mean(AprBaseModel_RE_3$Sol[,"I(date^2)"])*BySiteShort$Date^2 + 
+                           mean(7.545*AprBaseModel_RE_3$Sol[,"date:Apr"])*BySiteShort$Date + 
+                           mean(7.545*AprBaseModel_RE_3$Sol[,"Apr"]))
+  }
+
+modelequation <- function(site){
+       (mean(site) + 
+        mean(AprBaseModel_RE_3$Sol[,"(Intercept)"]) + 
+        mean(AprBaseModel_RE_3$Sol[,"date"])*BySiteShort$Date + 
+        mean(AprBaseModel_RE_3$Sol[,"I(date^2)"])*BySiteShort$Date^2 + 
+        mean(7.545*AprBaseModel_RE_3$Sol[,"date:Apr"])*BySiteShort$Date + 
+        mean( 7.545*AprBaseModel_RE_3$Sol[,"Apr"]))
+}
+
+ALN2 <- modelequation(siteREcropped[,1])
+
+## AprBaseModel_RE_3 Site coefficients 
+#which(colnames(AprBaseModel_RE_3$Sol)=="site.ALN") #= 14
+#which(colnames(AprBaseModel_RE_3$Sol)=="site.TOM") #= 57
+#siteREcropped <- AprBaseModel_RE_3$Sol[,14:57] # crop to just the columns wanted
+#site.df <- data.frame(site=c(colnames(siteREcropped))) #column for yearsite 
+#site.df$coeff <- apply(siteREcropped,2, mean) # mean 
+#for(i in 1:length(site.df$site)) {   # loop for CIs
+#  A <- HPDinterval(siteREcropped[,i])
+#  site.df$lowci[i] <- A["var1","lower"] 
+#  site.df$upci[i] <- A["var1","upper"] 
+#} 
+#site.df$site <- gsub("site.","", site.df$site)
+
+## works from here down
 BySite <- data.frame(Date=seq(120,175,0.5))
 BySite$ALN <- exp(mean(AprBaseModel_RE_3$Sol[,"site.ALN"]) + mean(AprBaseModel_RE_3$Sol[,"(Intercept)"]) + mean(AprBaseModel_RE_3$Sol[,"date"])*BySite$Date + mean(AprBaseModel_RE_3$Sol[,"I(date^2)"])*BySite$Date^2 + mean(7.545*AprBaseModel_RE_3$Sol[,"date:Apr"])*BySite$Date + mean(7.545*AprBaseModel_RE_3$Sol[,"Apr"]))
 BySite$ART <- exp(mean(AprBaseModel_RE_3$Sol[,"site.ART"]) + mean(AprBaseModel_RE_3$Sol[,"(Intercept)"]) + mean(AprBaseModel_RE_3$Sol[,"date"])*BySite$Date + mean(AprBaseModel_RE_3$Sol[,"I(date^2)"])*BySite$Date^2 + mean(7.545*AprBaseModel_RE_3$Sol[,"date:Apr"])*BySite$Date + mean(7.545*AprBaseModel_RE_3$Sol[,"Apr"]))
