@@ -296,243 +296,58 @@ ggplot(BySiteLong, aes(Date, Caterpillars, colour=Site))+
   theme_bw()
 
 ###########################################################
-#### Calculating the icient for each site with CI #### 
+#### Calculating the coefficient for each site with CI #### 
 
-#ALN ART AVI AVN BAD BIR BLA BLG CAL CAR CRU DAV DEL DLW DNC DNM DNS DOR DOW DUN EDI FOF FOU FSH GLF HWP INS KCK KCZ LVN MCH MUN NEW OSP PIT PTH RSY RTH SER SLS SPD STY TAI TOM )
+# AprBaseModel_RE_3 Site coefficients 
+which(colnames(AprBaseModel_RE_3$Sol)=="site.ALN") #= 14
+which(colnames(AprBaseModel_RE_3$Sol)=="site.TOM") #= 57
 
-### Further down with out exp() shows positive and negative this shows difference from mean intercept if multipled
-ALN <- exp(mean(AprBaseModel_RE_3$Sol[,"site.ALN"]))  
-ART <- exp(mean(AprBaseModel_RE_3$Sol[,"site.ART"]))  
-AVI <- exp(mean(AprBaseModel_RE_3$Sol[,"site.AVI"]))  
-AVN <- exp(mean(AprBaseModel_RE_3$Sol[,"site.AVN"]))  
-BAD <- exp(mean(AprBaseModel_RE_3$Sol[,"site.BAD"]))  
-BIR <- exp(mean(AprBaseModel_RE_3$Sol[,"site.BIR"]))  
-BLA <- exp(mean(AprBaseModel_RE_3$Sol[,"site.BLA"]))  
-BLG <- exp(mean(AprBaseModel_RE_3$Sol[,"site.BLG"]))  
-CAL <- exp(mean(AprBaseModel_RE_3$Sol[,"site.CAL"]))  
-CAR <- exp(mean(AprBaseModel_RE_3$Sol[,"site.CAR"]))  
-CRU <- exp(mean(AprBaseModel_RE_3$Sol[,"site.CRU"]))  
-DAV <- exp(mean(AprBaseModel_RE_3$Sol[,"site.DAV"]))  
-DEL <- exp(mean(AprBaseModel_RE_3$Sol[,"site.DEL"]))  
-DLW <- exp(mean(AprBaseModel_RE_3$Sol[,"site.DLW"]))  
-DNC <- exp(mean(AprBaseModel_RE_3$Sol[,"site.DNC"]))  
-DNM <- exp(mean(AprBaseModel_RE_3$Sol[,"site.DNM"]))  
-DNS <- exp(mean(AprBaseModel_RE_3$Sol[,"site.DNS"]))  
-DOR <- exp(mean(AprBaseModel_RE_3$Sol[,"site.DOR"]))  
-DOW <- exp(mean(AprBaseModel_RE_3$Sol[,"site.DOW"]))  
-DUN <- exp(mean(AprBaseModel_RE_3$Sol[,"site.DUN"]))  
-EDI <- exp(mean(AprBaseModel_RE_3$Sol[,"site.EDI"]))  
-FOF <- exp(mean(AprBaseModel_RE_3$Sol[,"site.FOF"]))  
-FOU <- exp(mean(AprBaseModel_RE_3$Sol[,"site.FOU"]))  
-FSH <- exp(mean(AprBaseModel_RE_3$Sol[,"site.FSH"]))  
-GLF <- exp(mean(AprBaseModel_RE_3$Sol[,"site.GLF"]))  
-HWP <- exp(mean(AprBaseModel_RE_3$Sol[,"site.HWP"]))  
-INS <- exp(mean(AprBaseModel_RE_3$Sol[,"site.INS"]))  
-KCK <- exp(mean(AprBaseModel_RE_3$Sol[,"site.KCK"]))  
-KCZ <- exp(mean(AprBaseModel_RE_3$Sol[,"site.KCZ"]))  
-LVN <- exp(mean(AprBaseModel_RE_3$Sol[,"site.LVN"]))  
-MCH <- exp(mean(AprBaseModel_RE_3$Sol[,"site.MCH"]))  
-MUN <- exp(mean(AprBaseModel_RE_3$Sol[,"site.MUN"]))  
-NEW <- exp(mean(AprBaseModel_RE_3$Sol[,"site.NEW"])) 
-OSP <- exp(mean(AprBaseModel_RE_3$Sol[,"site.OSP"])) 
-PIT <- exp(mean(AprBaseModel_RE_3$Sol[,"site.PIT"])) 
-PTH <- exp(mean(AprBaseModel_RE_3$Sol[,"site.PTH"])) 
-RSY <- exp(mean(AprBaseModel_RE_3$Sol[,"site.RSY"])) 
-RTH <- exp(mean(AprBaseModel_RE_3$Sol[,"site.RTH"]))
-SER <- exp(mean(AprBaseModel_RE_3$Sol[,"site.SER"])) 
-SLS <- exp(mean(AprBaseModel_RE_3$Sol[,"site.SLS"])) 
-SPD <- exp(mean(AprBaseModel_RE_3$Sol[,"site.SPD"]))  
-STY <- exp(mean(AprBaseModel_RE_3$Sol[,"site.STY"]))  
-TAI <- exp(mean(AprBaseModel_RE_3$Sol[,"site.TAI"]))
-TOM <- exp(mean(AprBaseModel_RE_3$Sol[,"site.TOM"])) 
+siteREcropped <- AprBaseModel_RE_3$Sol[,14:57] # crop to just the columns wanted
+site.df <- data.frame(site=c(colnames(siteREcropped))) #column for yearsite 
+site.df$coeff <- apply(siteREcropped,2, mean) # mean 
+for(i in 1:length(site.df$site)) {   # loop for CIs
+  A <- HPDinterval(siteREcropped[,i])
+  site.df$lowci[i] <- A["var1","lower"] 
+  site.df$upci[i] <- A["var1","upper"] 
+} 
+site.df$site <- gsub("site.","", site.df$site)
 
-ALNCIs <- exp( HPDinterval(AprBaseModel_RE_3$Sol[,"site.ALN"]))  
-ARTCIs <- exp( HPDinterval(AprBaseModel_RE_3$Sol[,"site.ART"]))  
-AVICIs <- exp( HPDinterval(AprBaseModel_RE_3$Sol[,"site.AVI"]))  
-AVNCIs <- exp( HPDinterval(AprBaseModel_RE_3$Sol[,"site.AVN"]))  
-BADCIs <- exp( HPDinterval(AprBaseModel_RE_3$Sol[,"site.BAD"]))  
-BIRCIs <- exp( HPDinterval(AprBaseModel_RE_3$Sol[,"site.BIR"]))  
-BLACIs <- exp( HPDinterval(AprBaseModel_RE_3$Sol[,"site.BLA"]))  
-BLGCIs <- exp( HPDinterval(AprBaseModel_RE_3$Sol[,"site.BLG"]))  
-CALCIs <- exp( HPDinterval(AprBaseModel_RE_3$Sol[,"site.CAL"]))  
-CARCIs <- exp( HPDinterval(AprBaseModel_RE_3$Sol[,"site.CAR"]))  
-CRUCIs <- exp( HPDinterval(AprBaseModel_RE_3$Sol[,"site.CRU"]))  
-DAVCIs <- exp( HPDinterval(AprBaseModel_RE_3$Sol[,"site.DAV"]))  
-DELCIs <- exp( HPDinterval(AprBaseModel_RE_3$Sol[,"site.DEL"]))  
-DLWCIs <- exp( HPDinterval(AprBaseModel_RE_3$Sol[,"site.DLW"]))  
-DNCCIs <- exp( HPDinterval(AprBaseModel_RE_3$Sol[,"site.DNC"]))  
-DNMCIs <- exp( HPDinterval(AprBaseModel_RE_3$Sol[,"site.DNM"]))  
-DNSCIs <- exp( HPDinterval(AprBaseModel_RE_3$Sol[,"site.DNS"]))  
-DORCIs <- exp( HPDinterval(AprBaseModel_RE_3$Sol[,"site.DOR"]))  
-DOWCIs <- exp( HPDinterval(AprBaseModel_RE_3$Sol[,"site.DOW"]))  
-DUNCIs <- exp( HPDinterval(AprBaseModel_RE_3$Sol[,"site.DUN"]))  
-EDICIs <- exp( HPDinterval(AprBaseModel_RE_3$Sol[,"site.EDI"]))  
-FOFCIs <- exp( HPDinterval(AprBaseModel_RE_3$Sol[,"site.FOF"]))  
-FOUCIs <- exp( HPDinterval(AprBaseModel_RE_3$Sol[,"site.FOU"]))  
-FSHCIs <- exp( HPDinterval(AprBaseModel_RE_3$Sol[,"site.FSH"]))  
-GLFCIs <- exp( HPDinterval(AprBaseModel_RE_3$Sol[,"site.GLF"]))  
-HWPCIs <- exp( HPDinterval(AprBaseModel_RE_3$Sol[,"site.HWP"]))  
-INSCIs <- exp( HPDinterval(AprBaseModel_RE_3$Sol[,"site.INS"]))  
-KCKCIs <- exp( HPDinterval(AprBaseModel_RE_3$Sol[,"site.KCK"]))  
-KCZCIs <- exp( HPDinterval(AprBaseModel_RE_3$Sol[,"site.KCZ"]))  
-LVNCIs <- exp( HPDinterval(AprBaseModel_RE_3$Sol[,"site.LVN"]))  
-MCHCIs <- exp( HPDinterval(AprBaseModel_RE_3$Sol[,"site.MCH"]))  
-MUNCIs <- exp( HPDinterval(AprBaseModel_RE_3$Sol[,"site.MUN"]))  
-NEWCIs <- exp( HPDinterval(AprBaseModel_RE_3$Sol[,"site.NEW"])) 
-OSPCIs <- exp( HPDinterval(AprBaseModel_RE_3$Sol[,"site.OSP"])) 
-PITCIs <- exp( HPDinterval(AprBaseModel_RE_3$Sol[,"site.PIT"])) 
-PTHCIs <- exp( HPDinterval(AprBaseModel_RE_3$Sol[,"site.PTH"])) 
-RSYCIs <- exp( HPDinterval(AprBaseModel_RE_3$Sol[,"site.RSY"])) 
-RTHCIs <- exp( HPDinterval(AprBaseModel_RE_3$Sol[,"site.RTH"]))
-SERCIs <- exp( HPDinterval(AprBaseModel_RE_3$Sol[,"site.SER"])) 
-SLSCIs <- exp( HPDinterval(AprBaseModel_RE_3$Sol[,"site.SLS"])) 
-SPDCIs <- exp( HPDinterval(AprBaseModel_RE_3$Sol[,"site.SPD"]))  
-STYCIs <- exp( HPDinterval(AprBaseModel_RE_3$Sol[,"site.STY"]))  
-TAICIs <- exp( HPDinterval(AprBaseModel_RE_3$Sol[,"site.TAI"]))
-TOMCIs <- exp( HPDinterval(AprBaseModel_RE_3$Sol[,"site.TOM"])) 
-
-Coeff <- data.frame(Site= c("ALN", "ART", "AVI", "AVN", "BAD", "BIR", "BLA", "BLG", "CAL", "CAR", "CRU", "DAV", "DEL", "DLW", "DNC", "DNM", "DNS", "DOR", "DOW", "DUN", "EDI", "FOF", "FOU", "FSH", "GLF", "HWP", "INS", "KCK", "KCZ", "LVN", "MCH", "MUN", "NEW", "OSP", "PIT", "PTH", "RSY", "RTH", "SER", "SLS", "SPD", "STY", "TAI", "TOM"),
-                    MeanCoeff=c(ALN, ART, AVI, AVN, BAD, BIR, BLA, BLG, CAL, CAR, CRU, DAV, DEL, DLW, DNC, DNM, DNS, DOR, DOW, DUN, EDI, FOF, FOU, FSH, GLF, HWP, INS, KCK, KCZ, LVN, MCH, MUN, NEW, OSP, PIT, PTH, RSY, RTH, SER, SLS, SPD, STY, TAI, TOM),
-                    LCI=c(ALNCIs["var1","lower"], ARTCIs["var1","lower"], AVICIs["var1","lower"], AVNCIs["var1","lower"], BADCIs["var1","lower"], BIRCIs["var1","lower"], BLACIs["var1","lower"], BLGCIs["var1","lower"], CALCIs["var1","lower"], CARCIs["var1","lower"], CRUCIs["var1","lower"], DAVCIs["var1","lower"], DELCIs["var1","lower"], DLWCIs["var1","lower"], DNCCIs["var1","lower"], DNMCIs["var1","lower"], DNSCIs["var1","lower"], DORCIs["var1","lower"], DOWCIs["var1","lower"], DUNCIs["var1","lower"], EDICIs["var1","lower"], FOFCIs["var1","lower"], FOUCIs["var1","lower"], FSHCIs["var1","lower"], GLFCIs["var1","lower"], HWPCIs["var1","lower"], INSCIs["var1","lower"], KCKCIs["var1","lower"], KCZCIs["var1","lower"], LVNCIs["var1","lower"], MCHCIs["var1","lower"], MUNCIs["var1","lower"], NEWCIs["var1","lower"], OSPCIs["var1","lower"], PITCIs["var1","lower"], PTHCIs["var1","lower"], RSYCIs["var1","lower"], RTHCIs["var1","lower"], SERCIs["var1","lower"], SLSCIs["var1","lower"], SPDCIs["var1","lower"], STYCIs["var1","lower"], TAICIs["var1","lower"], TOMCIs["var1","lower"]),
-                    UCI=c(ALNCIs["var1","upper"], ARTCIs["var1","upper"], AVICIs["var1","upper"], AVNCIs["var1","upper"], BADCIs["var1","upper"], BIRCIs["var1","upper"], BLACIs["var1","upper"], BLGCIs["var1","upper"], CALCIs["var1","upper"], CARCIs["var1","upper"], CRUCIs["var1","upper"], DAVCIs["var1","upper"], DELCIs["var1","upper"], DLWCIs["var1","upper"], DNCCIs["var1","upper"], DNMCIs["var1","upper"], DNSCIs["var1","upper"], DORCIs["var1","upper"], DOWCIs["var1","upper"], DUNCIs["var1","upper"], EDICIs["var1","upper"], FOFCIs["var1","upper"], FOUCIs["var1","upper"], FSHCIs["var1","upper"], GLFCIs["var1","upper"], HWPCIs["var1","upper"], INSCIs["var1","upper"], KCKCIs["var1","upper"], KCZCIs["var1","upper"], LVNCIs["var1","upper"], MCHCIs["var1","upper"], MUNCIs["var1","upper"], NEWCIs["var1","upper"], OSPCIs["var1","upper"], PITCIs["var1","upper"], PTHCIs["var1","upper"], RSYCIs["var1","upper"], RTHCIs["var1","upper"], SERCIs["var1","upper"], SLSCIs["var1","upper"], SPDCIs["var1","upper"], STYCIs["var1","upper"], TAICIs["var1","upper"], TOMCIs["var1","upper"]))
-
-ggplot(Coeff, aes(Site, MeanCoeff))+
+## sites in alphabetical order
+ggplot(site.df, aes(site, coeff))+
   geom_point(size=3, alpha=0.5)+
-  geom_errorbar(aes(ymin=LCI, ymax=UCI, width=0.5))+
-  theme_bw()
+  geom_errorbar(aes(ymax=upci, ymin=lowci, width=0.5))+
+  theme_bw()+
+  theme(axis.text.x= element_text(angle=90))
 
+pmatch(site.df$site, site$site)
+site.df<- merge(site.df, site, by="site", duplicates.ok=TRUE)
+site.df<- rename(site.df, latitude="Mean Lat")
+site.df<- rename(site.df, elevation="Mean Elev")
 
-## removing exp so positive and negative?!
-
-ALN <- mean(AprBaseModel_RE_3$Sol[,"site.ALN"])  
-ART <- mean(AprBaseModel_RE_3$Sol[,"site.ART"])  
-AVI <- mean(AprBaseModel_RE_3$Sol[,"site.AVI"])  
-AVN <- mean(AprBaseModel_RE_3$Sol[,"site.AVN"])  
-BAD <- mean(AprBaseModel_RE_3$Sol[,"site.BAD"])  
-BIR <- mean(AprBaseModel_RE_3$Sol[,"site.BIR"])  
-BLA <- mean(AprBaseModel_RE_3$Sol[,"site.BLA"])  
-BLG <- mean(AprBaseModel_RE_3$Sol[,"site.BLG"])  
-CAL <- mean(AprBaseModel_RE_3$Sol[,"site.CAL"])  
-CAR <- mean(AprBaseModel_RE_3$Sol[,"site.CAR"])  
-CRU <- mean(AprBaseModel_RE_3$Sol[,"site.CRU"])  
-DAV <- mean(AprBaseModel_RE_3$Sol[,"site.DAV"])  
-DEL <- mean(AprBaseModel_RE_3$Sol[,"site.DEL"])  
-DLW <- mean(AprBaseModel_RE_3$Sol[,"site.DLW"])  
-DNC <- mean(AprBaseModel_RE_3$Sol[,"site.DNC"])  
-DNM <- mean(AprBaseModel_RE_3$Sol[,"site.DNM"])  
-DNS <- mean(AprBaseModel_RE_3$Sol[,"site.DNS"])  
-DOR <- mean(AprBaseModel_RE_3$Sol[,"site.DOR"])  
-DOW <- mean(AprBaseModel_RE_3$Sol[,"site.DOW"])  
-DUN <- mean(AprBaseModel_RE_3$Sol[,"site.DUN"])  
-EDI <- mean(AprBaseModel_RE_3$Sol[,"site.EDI"])  
-FOF <- mean(AprBaseModel_RE_3$Sol[,"site.FOF"])  
-FOU <- mean(AprBaseModel_RE_3$Sol[,"site.FOU"])  
-FSH <- mean(AprBaseModel_RE_3$Sol[,"site.FSH"])  
-GLF <- mean(AprBaseModel_RE_3$Sol[,"site.GLF"])  
-HWP <- mean(AprBaseModel_RE_3$Sol[,"site.HWP"])  
-INS <- mean(AprBaseModel_RE_3$Sol[,"site.INS"])  
-KCK <- mean(AprBaseModel_RE_3$Sol[,"site.KCK"])  
-KCZ <- mean(AprBaseModel_RE_3$Sol[,"site.KCZ"])  
-LVN <- mean(AprBaseModel_RE_3$Sol[,"site.LVN"])  
-MCH <- mean(AprBaseModel_RE_3$Sol[,"site.MCH"])  
-MUN <- mean(AprBaseModel_RE_3$Sol[,"site.MUN"])  
-NEW <- mean(AprBaseModel_RE_3$Sol[,"site.NEW"]) 
-OSP <- mean(AprBaseModel_RE_3$Sol[,"site.OSP"]) 
-PIT <- mean(AprBaseModel_RE_3$Sol[,"site.PIT"]) 
-PTH <- mean(AprBaseModel_RE_3$Sol[,"site.PTH"]) 
-RSY <- mean(AprBaseModel_RE_3$Sol[,"site.RSY"]) 
-RTH <- mean(AprBaseModel_RE_3$Sol[,"site.RTH"])
-SER <- mean(AprBaseModel_RE_3$Sol[,"site.SER"]) 
-SLS <- mean(AprBaseModel_RE_3$Sol[,"site.SLS"]) 
-SPD <- mean(AprBaseModel_RE_3$Sol[,"site.SPD"])  
-STY <- mean(AprBaseModel_RE_3$Sol[,"site.STY"])  
-TAI <- mean(AprBaseModel_RE_3$Sol[,"site.TAI"])
-TOM <- mean(AprBaseModel_RE_3$Sol[,"site.TOM"]) 
-
-ALNCIs <-  HPDinterval(AprBaseModel_RE_3$Sol[,"site.ALN"])  
-ARTCIs <-  HPDinterval(AprBaseModel_RE_3$Sol[,"site.ART"])  
-AVICIs <-  HPDinterval(AprBaseModel_RE_3$Sol[,"site.AVI"])  
-AVNCIs <-  HPDinterval(AprBaseModel_RE_3$Sol[,"site.AVN"])  
-BADCIs <-  HPDinterval(AprBaseModel_RE_3$Sol[,"site.BAD"])  
-BIRCIs <-  HPDinterval(AprBaseModel_RE_3$Sol[,"site.BIR"])  
-BLACIs <-  HPDinterval(AprBaseModel_RE_3$Sol[,"site.BLA"])  
-BLGCIs <-  HPDinterval(AprBaseModel_RE_3$Sol[,"site.BLG"])  
-CALCIs <-  HPDinterval(AprBaseModel_RE_3$Sol[,"site.CAL"])  
-CARCIs <-  HPDinterval(AprBaseModel_RE_3$Sol[,"site.CAR"])  
-CRUCIs <-  HPDinterval(AprBaseModel_RE_3$Sol[,"site.CRU"])  
-DAVCIs <-  HPDinterval(AprBaseModel_RE_3$Sol[,"site.DAV"])  
-DELCIs <-  HPDinterval(AprBaseModel_RE_3$Sol[,"site.DEL"])  
-DLWCIs <-  HPDinterval(AprBaseModel_RE_3$Sol[,"site.DLW"])  
-DNCCIs <-  HPDinterval(AprBaseModel_RE_3$Sol[,"site.DNC"])  
-DNMCIs <-  HPDinterval(AprBaseModel_RE_3$Sol[,"site.DNM"])  
-DNSCIs <-  HPDinterval(AprBaseModel_RE_3$Sol[,"site.DNS"])  
-DORCIs <-  HPDinterval(AprBaseModel_RE_3$Sol[,"site.DOR"])  
-DOWCIs <-  HPDinterval(AprBaseModel_RE_3$Sol[,"site.DOW"])  
-DUNCIs <-  HPDinterval(AprBaseModel_RE_3$Sol[,"site.DUN"])  
-EDICIs <-  HPDinterval(AprBaseModel_RE_3$Sol[,"site.EDI"])  
-FOFCIs <-  HPDinterval(AprBaseModel_RE_3$Sol[,"site.FOF"])  
-FOUCIs <-  HPDinterval(AprBaseModel_RE_3$Sol[,"site.FOU"])  
-FSHCIs <-  HPDinterval(AprBaseModel_RE_3$Sol[,"site.FSH"])  
-GLFCIs <-  HPDinterval(AprBaseModel_RE_3$Sol[,"site.GLF"])  
-HWPCIs <-  HPDinterval(AprBaseModel_RE_3$Sol[,"site.HWP"])  
-INSCIs <-  HPDinterval(AprBaseModel_RE_3$Sol[,"site.INS"])  
-KCKCIs <-  HPDinterval(AprBaseModel_RE_3$Sol[,"site.KCK"])  
-KCZCIs <-  HPDinterval(AprBaseModel_RE_3$Sol[,"site.KCZ"])  
-LVNCIs <-  HPDinterval(AprBaseModel_RE_3$Sol[,"site.LVN"])  
-MCHCIs <-  HPDinterval(AprBaseModel_RE_3$Sol[,"site.MCH"])  
-MUNCIs <-  HPDinterval(AprBaseModel_RE_3$Sol[,"site.MUN"])  
-NEWCIs <-  HPDinterval(AprBaseModel_RE_3$Sol[,"site.NEW"]) 
-OSPCIs <-  HPDinterval(AprBaseModel_RE_3$Sol[,"site.OSP"]) 
-PITCIs <-  HPDinterval(AprBaseModel_RE_3$Sol[,"site.PIT"]) 
-PTHCIs <-  HPDinterval(AprBaseModel_RE_3$Sol[,"site.PTH"]) 
-RSYCIs <-  HPDinterval(AprBaseModel_RE_3$Sol[,"site.RSY"]) 
-RTHCIs <-  HPDinterval(AprBaseModel_RE_3$Sol[,"site.RTH"])
-SERCIs <-  HPDinterval(AprBaseModel_RE_3$Sol[,"site.SER"]) 
-SLSCIs <-  HPDinterval(AprBaseModel_RE_3$Sol[,"site.SLS"]) 
-SPDCIs <-  HPDinterval(AprBaseModel_RE_3$Sol[,"site.SPD"])  
-STYCIs <-  HPDinterval(AprBaseModel_RE_3$Sol[,"site.STY"])
-TAICIs <-  HPDinterval(AprBaseModel_RE_3$Sol[,"site.TAI"])
-TOMCIs <-  HPDinterval(AprBaseModel_RE_3$Sol[,"site.TOM"]) 
-
-Coeff <- data.frame(Site= c("ALN", "ART", "AVI", "AVN", "BAD", "BIR", "BLA", "BLG", "CAL", "CAR", "CRU", "DAV", "DEL", "DLW", "DNC", "DNM", "DNS", "DOR", "DOW", "DUN", "EDI", "FOF", "FOU", "FSH", "GLF", "HWP", "INS", "KCK", "KCZ", "LVN", "MCH", "MUN", "NEW", "OSP", "PIT", "PTH", "RSY", "RTH", "SER", "SLS", "SPD", "STY", "TAI", "TOM"),
-                    MeanCoeff=c(ALN, ART, AVI, AVN, BAD, BIR, BLA, BLG, CAL, CAR, CRU, DAV, DEL, DLW, DNC, DNM, DNS, DOR, DOW, DUN, EDI, FOF, FOU, FSH, GLF, HWP, INS, KCK, KCZ, LVN, MCH, MUN, NEW, OSP, PIT, PTH, RSY, RTH, SER, SLS, SPD, STY, TAI, TOM),
-                    LCI=c(ALNCIs["var1","lower"], ARTCIs["var1","lower"], AVICIs["var1","lower"], AVNCIs["var1","lower"], BADCIs["var1","lower"], BIRCIs["var1","lower"], BLACIs["var1","lower"], BLGCIs["var1","lower"], CALCIs["var1","lower"], CARCIs["var1","lower"], CRUCIs["var1","lower"], DAVCIs["var1","lower"], DELCIs["var1","lower"], DLWCIs["var1","lower"], DNCCIs["var1","lower"], DNMCIs["var1","lower"], DNSCIs["var1","lower"], DORCIs["var1","lower"], DOWCIs["var1","lower"], DUNCIs["var1","lower"], EDICIs["var1","lower"], FOFCIs["var1","lower"], FOUCIs["var1","lower"], FSHCIs["var1","lower"], GLFCIs["var1","lower"], HWPCIs["var1","lower"], INSCIs["var1","lower"], KCKCIs["var1","lower"], KCZCIs["var1","lower"], LVNCIs["var1","lower"], MCHCIs["var1","lower"], MUNCIs["var1","lower"], NEWCIs["var1","lower"], OSPCIs["var1","lower"], PITCIs["var1","lower"], PTHCIs["var1","lower"], RSYCIs["var1","lower"], RTHCIs["var1","lower"], SERCIs["var1","lower"], SLSCIs["var1","lower"], SPDCIs["var1","lower"], STYCIs["var1","lower"], TAICIs["var1","lower"], TOMCIs["var1","lower"]),
-                    UCI=c(ALNCIs["var1","upper"], ARTCIs["var1","upper"], AVICIs["var1","upper"], AVNCIs["var1","upper"], BADCIs["var1","upper"], BIRCIs["var1","upper"], BLACIs["var1","upper"], BLGCIs["var1","upper"], CALCIs["var1","upper"], CARCIs["var1","upper"], CRUCIs["var1","upper"], DAVCIs["var1","upper"], DELCIs["var1","upper"], DLWCIs["var1","upper"], DNCCIs["var1","upper"], DNMCIs["var1","upper"], DNSCIs["var1","upper"], DORCIs["var1","upper"], DOWCIs["var1","upper"], DUNCIs["var1","upper"], EDICIs["var1","upper"], FOFCIs["var1","upper"], FOUCIs["var1","upper"], FSHCIs["var1","upper"], GLFCIs["var1","upper"], HWPCIs["var1","upper"], INSCIs["var1","upper"], KCKCIs["var1","upper"], KCZCIs["var1","upper"], LVNCIs["var1","upper"], MCHCIs["var1","upper"], MUNCIs["var1","upper"], NEWCIs["var1","upper"], OSPCIs["var1","upper"], PITCIs["var1","upper"], PTHCIs["var1","upper"], RSYCIs["var1","upper"], RTHCIs["var1","upper"], SERCIs["var1","upper"], SLSCIs["var1","upper"], SPDCIs["var1","upper"], STYCIs["var1","upper"], TAICIs["var1","upper"], TOMCIs["var1","upper"]))
-
-ggplot(Coeff, aes(Site, MeanCoeff))+
+## sites ordered by latitude
+site.df.lat <- site.df
+site.df.lat$Site <- site.df.lat$site
+site.df.lat$Site <- order(site.df$latitude) 
+ggplot(site.df.lat, aes(Site, coeff))+
   geom_point(size=3, alpha=0.5)+
-  geom_errorbar(aes(ymax=UCI, ymin=LCI, width=0.5))+
-  theme_bw()
-
-# try and fail to order by lat and elev to plot
-site$Site <- site$site
-pmatch(Coeff$Site, site$Site)
-CoeffLat<- merge(Coeff, site, by="Site", duplicates.ok=TRUE)
-CoeffElev<- merge(Coeff, site, by="Site", duplicates.ok=TRUE)
-CoeffLat<- rename(CoeffLat, latitude="latitide")
-CoeffElev<- rename(CoeffElev, elevation="Mean Elev")
-CoeffElev$elevation <- as.factor(CoeffElev$elevation)
-CoeffLat$latitude <- as.factor(CoeffLat$latitude)
-CoeffElev <- CoeffElev %>% arrange(CoeffElev$elevation)
-CoeffLat <- CoeffLat %>% arrange(CoeffLat$latitude)
+  geom_errorbar(aes(ymax=upci, ymin=lowci, width=0.5))+
+  theme_bw()+
+  theme(axis.text.x= element_text(angle=90))
 
 
-plot(CoeffLat$Site, CoeffLat$MeanCoeff)
-plot(CoeffElev$Site, CoeffElev$MeanCoeff)
-
-
-ggplot(CoeffLat, aes(Site, MeanCoeff))+
+## sites ordered by elevation
+site.df.el <- site.df
+site.df.el$Site <- site.df.el$site
+site.df.el$Site <- order(site.df$elevation) 
+ggplot(site.df.el, aes(Site, coeff))+
   geom_point(size=3, alpha=0.5)+
-  geom_errorbar(aes(ymax=UCI, ymin=LCI, width=0.5))+
-  theme_bw()
+  geom_errorbar(aes(ymax=upci, ymin=lowci, width=0.5))+
+  theme_bw()+
+  theme(axis.text.x= element_text(angle=90))
 
-ggplot(CoeffElev, aes(Site, MeanCoeff))+
-  geom_point(size=3, alpha=0.5)+
-  geom_errorbar(aes(ymax=UCI, ymin=LCI, width=0.5))+
-  theme_bw()
 
-#################
-#### Loops?! ####
+#####################################
+#### YearSite in AprBaseModel_RE ####
 
 
 # Trying to look at yearsite random effect in AprBaseModel_RE
@@ -541,31 +356,49 @@ head(AprBaseModel_RE$Sol)
 which( colnames(AprBaseModel_RE$Sol)=="yearsite.ALN 2014")
 (14*13)+7
 4982+188
-which( colnames(AprBaseModel_RE$Sol)=="yearsite.TOM 2018")
+which(colnames(AprBaseModel_RE$Sol)=="yearsite.TOM 2018")
 ## yearsite in columns 4982:5170
 
-symcmcre <- data.frame(AprBaseModel_RE$Sol[,4982:5170])
-syrerows <- as.data.frame(t(symcmcre))
 
-dfys <- data.frame(ys=c(colnames(symcmcre)))
-for(i in 1:length(dfys$ys)) {
-  dfys$coeff[i] <- apply(syrerows[i,],1, mean)
+## Data frame with mean and Cis for yearsite RE
+cropped <- AprBaseModel_RE$Sol[,4982:5170] # crop to just the columns wanted
+yearsite.df <- data.frame(ys=c(colnames(cropped))) #column for yearsite 
+yearsite.df$coeff <- apply(cropped,2, mean) # mean 
+for(i in 1:length(yearsite.df$ys)) {   # loop for CIs
+A <- HPDinterval(cropped[,i])
+yearsite.df$lowci[i] <- A["var1","lower"]
+yearsite.df$upci[i] <- A["var1","upper"]
+} 
+
+## putting in year and site seperately
+yearsite.df$yearsite <- (unique(all_data$yearsite))
+yearsite.df$site <- yearsite.df$yearsite
+yearsite.df$year <- yearsite.df$yearsite
+
+numbers <- c(0,1,2,3,4,5,6,7,8,9)
+for(i in c(numbers)){
+  yearsite.df$site <- gsub(i, "",yearsite.df$site)
 }
 
-###### come back to!!!! #####
-for(i in 1:length(dfys$ys)) {
-  ci[i] <- HPDinterval(AprBaseModel_RE$Sol[,i]) %>%
-  dfys$lowci[i] <- apply(syrerows[i,],1, mean)
+letters <- c("A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z")
+for(i in c(letters)){
+  yearsite.df$year <- gsub(i, "",yearsite.df$year)
 }
-HPDinterval(AprBaseModel_RE$Sol[,4982])
-ALNCIs["var1","lower"]
 
-## old loop that works 
-peakheightposteriorloop<- data.frame(iteration=c(1:18000))
-for(x in 1:18000) {
-  peakheightposteriorloop$height2014[x] <- TempPoisson$Sol[x,"(Intercept)"] +  
-    TempPoisson$Sol[x,"date"]*162.9719 +  
-    TempPoisson$Sol[x,"I(date^2)"]*162.9719^2 +  
-    6.935*TempPoisson$Sol[x,"date:Apr"]*162.9719 +  
-    6.935*TempPoisson$Sol[x,"Apr"]
-}
+
+#### Plotting yearsite REs by site    !!!!!!! should this also have year (and site) coef added?
+ggplot(yearsite.df, aes(year, coeff))+
+  geom_point(size=3, alpha=0.5)+
+  geom_errorbar(aes(ymax=upci, ymin=lowci, width=0.5))+
+  facet_wrap(.~site)+
+  theme_bw()+
+  theme(axis.text.x= element_text(angle=90))
+  
+#### Plotting yearsite REs by year    !!!!!! should this also have site (and year) added?
+ggplot(yearsite.df, aes(site, coeff))+
+  geom_point(size=3, alpha=0.5)+
+  geom_errorbar(aes(ymax=upci, ymin=lowci, width=0.5))+
+  facet_grid(year~.)+
+  theme_bw()+
+  theme(axis.text.x= element_text(angle=90))
+  
