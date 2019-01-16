@@ -143,6 +143,10 @@ abline(v=propzero(all_data$caterpillars), col="red")
 ## looking at no.3 because original random effects
 # plot 2014 as example with different sites
 
+#sitecodes <- c("site.ALN", "site.ART", "site.AVI", "site.AVN", "BAD", "BIR", "BLA", "BLG", "CAL", "CAR", "CRU", "DAV", "DEL", "DLW", "DNC", "DNM", "DNS", "DOR", "DOW", "DUN", "EDI", "FOF",
+#                "FOU", "FSH", "GLF", "HWP", "INS", "KCK", "KCZ", "LVN", "MCH", "MUN", "NEW", "OSP", "PIT", "PTH", "RSY", "RTH", "SER", "SLS", "SPD", "STY", "TAI", "TOM")
+
+
 ## base r graph all lines black
 pred_day <- seq(120,175,0.5)
 average2014 <- mean(AprBaseModel_RE_3$Sol[,"(Intercept)"]) +  #Intercept+yearchange
@@ -198,6 +202,7 @@ TOM <- mean(AprBaseModel_RE_3$Sol[,"site.TOM"]) + mean(AprBaseModel_RE_3$Sol[,"(
 
 
 plot(pred_day, exp(ALN), type="l", ylim=c(0,1.2), ylab="Caterpillars", xlab = "Date")
+points(pred_day, exp(average2014), type="l", lwd=5)
 points(pred_day, exp(ART), type="l")
 points(pred_day, exp(AVI), type="l")
 points(pred_day, exp(AVN), type="l")
@@ -242,101 +247,36 @@ points(pred_day, exp(STY), type="l")
 points(pred_day, exp(TAI), type="l")
 points(pred_day, exp(TOM), type="l")
 
+
+plot(BySiteShort$Date, BySiteShort$ALN, type="l", ylim=c(0,1.2), ylab="Caterpillars", xlab = "Date")
+for(i in ln=ength)
+
 ## ggplot
 
-##### fjewiuvewlkfjngiur`nvevrfugsiwhlgal`
 BySiteShort <- data.frame(Date=seq(120,175,0.5))
-sitecodes <- c("ALN", "ART", "AVI", "AVN", "BAD", "BIR", "BLA", "BLG", "CAL", "CAR", "CRU", "DAV", "DEL", "DLW", "DNC", "DNM", "DNS", "DOR", "DOW", "DUN", "EDI", "FOF",
-                "FOU", "FSH", "GLF", "HWP", "INS", "KCK", "KCZ", "LVN", "MCH", "MUN", "NEW", "OSP", "PIT", "PTH", "RSY", "RTH", "SER", "SLS", "SPD", "STY", "TAI", "TOM")
 siteREcropped <- AprBaseModel_RE_3$Sol[,14:57] # crop to just the columns wanted
 
-BySiteShort <- cbind(BySiteShort, setNames(lapply(sitecodes, function(x) x=NA), sitecodes))
-
-for(i in [,1:44]){
-BySiteShort$[i] <-  exp(mean(siteREcropped[,1]) + 
-                         mean(AprBaseModel_RE_3$Sol[,"(Intercept)"]) + 
-                           mean(AprBaseModel_RE_3$Sol[,"date"])*BySiteShort$Date + 
-                           mean(AprBaseModel_RE_3$Sol[,"I(date^2)"])*BySiteShort$Date^2 + 
-                           mean(7.545*AprBaseModel_RE_3$Sol[,"date:Apr"])*BySiteShort$Date + 
-                           mean(7.545*AprBaseModel_RE_3$Sol[,"Apr"]))
-  }
+BySiteShort <- cbind(BySiteShort, setNames(lapply(c(colnames(siteREcropped)), function(x) x=NA), c(colnames(siteREcropped))))
 
 modelequation <- function(site){
-       (mean(site) + 
-        mean(AprBaseModel_RE_3$Sol[,"(Intercept)"]) + 
-        mean(AprBaseModel_RE_3$Sol[,"date"])*BySiteShort$Date + 
-        mean(AprBaseModel_RE_3$Sol[,"I(date^2)"])*BySiteShort$Date^2 + 
-        mean(7.545*AprBaseModel_RE_3$Sol[,"date:Apr"])*BySiteShort$Date + 
-        mean( 7.545*AprBaseModel_RE_3$Sol[,"Apr"]))
+  (mean(site) + 
+     mean(AprBaseModel_RE_3$Sol[,"(Intercept)"]) + 
+     mean(AprBaseModel_RE_3$Sol[,"date"])*BySiteShort$Date + 
+     mean(AprBaseModel_RE_3$Sol[,"I(date^2)"])*BySiteShort$Date^2 + 
+     mean(7.545*AprBaseModel_RE_3$Sol[,"date:Apr"])*BySiteShort$Date + 
+     mean( 7.545*AprBaseModel_RE_3$Sol[,"Apr"]))
 }
 
-ALN2 <- modelequation(siteREcropped[,1])
+for(i in 1:44){
+  BySiteShort[,i+1] <- exp(modelequation(siteREcropped[,i]))
+}
 
-## AprBaseModel_RE_3 Site coefficients 
-#which(colnames(AprBaseModel_RE_3$Sol)=="site.ALN") #= 14
-#which(colnames(AprBaseModel_RE_3$Sol)=="site.TOM") #= 57
-#siteREcropped <- AprBaseModel_RE_3$Sol[,14:57] # crop to just the columns wanted
-#site.df <- data.frame(site=c(colnames(siteREcropped))) #column for yearsite 
-#site.df$coeff <- apply(siteREcropped,2, mean) # mean 
-#for(i in 1:length(site.df$site)) {   # loop for CIs
-#  A <- HPDinterval(siteREcropped[,i])
-#  site.df$lowci[i] <- A["var1","lower"] 
-#  site.df$upci[i] <- A["var1","upper"] 
-#} 
-#site.df$site <- gsub("site.","", site.df$site)
+BySiteShortLong <- gather(BySiteShort, key= "Site", value="Caterpillars", select=2:45)
 
-## works from here down
-BySite <- data.frame(Date=seq(120,175,0.5))
-BySite$ALN <- exp(mean(AprBaseModel_RE_3$Sol[,"site.ALN"]) + mean(AprBaseModel_RE_3$Sol[,"(Intercept)"]) + mean(AprBaseModel_RE_3$Sol[,"date"])*BySite$Date + mean(AprBaseModel_RE_3$Sol[,"I(date^2)"])*BySite$Date^2 + mean(7.545*AprBaseModel_RE_3$Sol[,"date:Apr"])*BySite$Date + mean(7.545*AprBaseModel_RE_3$Sol[,"Apr"]))
-BySite$ART <- exp(mean(AprBaseModel_RE_3$Sol[,"site.ART"]) + mean(AprBaseModel_RE_3$Sol[,"(Intercept)"]) + mean(AprBaseModel_RE_3$Sol[,"date"])*BySite$Date + mean(AprBaseModel_RE_3$Sol[,"I(date^2)"])*BySite$Date^2 + mean(7.545*AprBaseModel_RE_3$Sol[,"date:Apr"])*BySite$Date + mean(7.545*AprBaseModel_RE_3$Sol[,"Apr"]))
-BySite$AVI <- exp(mean(AprBaseModel_RE_3$Sol[,"site.AVI"]) + mean(AprBaseModel_RE_3$Sol[,"(Intercept)"]) + mean(AprBaseModel_RE_3$Sol[,"date"])*BySite$Date + mean(AprBaseModel_RE_3$Sol[,"I(date^2)"])*BySite$Date^2 + mean(7.545*AprBaseModel_RE_3$Sol[,"date:Apr"])*BySite$Date + mean(7.545*AprBaseModel_RE_3$Sol[,"Apr"]))
-BySite$AVN <- exp(mean(AprBaseModel_RE_3$Sol[,"site.AVN"]) + mean(AprBaseModel_RE_3$Sol[,"(Intercept)"]) + mean(AprBaseModel_RE_3$Sol[,"date"])*BySite$Date + mean(AprBaseModel_RE_3$Sol[,"I(date^2)"])*BySite$Date^2 + mean(7.545*AprBaseModel_RE_3$Sol[,"date:Apr"])*BySite$Date + mean(7.545*AprBaseModel_RE_3$Sol[,"Apr"]))
-BySite$BAD <- exp(mean(AprBaseModel_RE_3$Sol[,"site.BAD"]) + mean(AprBaseModel_RE_3$Sol[,"(Intercept)"]) + mean(AprBaseModel_RE_3$Sol[,"date"])*BySite$Date + mean(AprBaseModel_RE_3$Sol[,"I(date^2)"])*BySite$Date^2 + mean(7.545*AprBaseModel_RE_3$Sol[,"date:Apr"])*BySite$Date + mean(7.545*AprBaseModel_RE_3$Sol[,"Apr"]))
-BySite$BIR <- exp(mean(AprBaseModel_RE_3$Sol[,"site.BIR"]) + mean(AprBaseModel_RE_3$Sol[,"(Intercept)"]) + mean(AprBaseModel_RE_3$Sol[,"date"])*BySite$Date + mean(AprBaseModel_RE_3$Sol[,"I(date^2)"])*BySite$Date^2 + mean(7.545*AprBaseModel_RE_3$Sol[,"date:Apr"])*BySite$Date + mean(7.545*AprBaseModel_RE_3$Sol[,"Apr"]))
-BySite$BLA <- exp(mean(AprBaseModel_RE_3$Sol[,"site.BLA"]) + mean(AprBaseModel_RE_3$Sol[,"(Intercept)"]) + mean(AprBaseModel_RE_3$Sol[,"date"])*BySite$Date + mean(AprBaseModel_RE_3$Sol[,"I(date^2)"])*BySite$Date^2 + mean(7.545*AprBaseModel_RE_3$Sol[,"date:Apr"])*BySite$Date + mean(7.545*AprBaseModel_RE_3$Sol[,"Apr"]))
-BySite$BLG <- exp(mean(AprBaseModel_RE_3$Sol[,"site.BLG"]) + mean(AprBaseModel_RE_3$Sol[,"(Intercept)"]) + mean(AprBaseModel_RE_3$Sol[,"date"])*BySite$Date + mean(AprBaseModel_RE_3$Sol[,"I(date^2)"])*BySite$Date^2 + mean(7.545*AprBaseModel_RE_3$Sol[,"date:Apr"])*BySite$Date + mean(7.545*AprBaseModel_RE_3$Sol[,"Apr"]))
-BySite$CAL <- exp(mean(AprBaseModel_RE_3$Sol[,"site.CAL"]) + mean(AprBaseModel_RE_3$Sol[,"(Intercept)"]) + mean(AprBaseModel_RE_3$Sol[,"date"])*BySite$Date + mean(AprBaseModel_RE_3$Sol[,"I(date^2)"])*BySite$Date^2 + mean(7.545*AprBaseModel_RE_3$Sol[,"date:Apr"])*BySite$Date + mean(7.545*AprBaseModel_RE_3$Sol[,"Apr"]))
-BySite$CAR <- exp(mean(AprBaseModel_RE_3$Sol[,"site.CAR"]) + mean(AprBaseModel_RE_3$Sol[,"(Intercept)"]) + mean(AprBaseModel_RE_3$Sol[,"date"])*BySite$Date + mean(AprBaseModel_RE_3$Sol[,"I(date^2)"])*BySite$Date^2 + mean(7.545*AprBaseModel_RE_3$Sol[,"date:Apr"])*BySite$Date + mean(7.545*AprBaseModel_RE_3$Sol[,"Apr"]))
-BySite$CRU <- exp(mean(AprBaseModel_RE_3$Sol[,"site.CRU"]) + mean(AprBaseModel_RE_3$Sol[,"(Intercept)"]) + mean(AprBaseModel_RE_3$Sol[,"date"])*BySite$Date + mean(AprBaseModel_RE_3$Sol[,"I(date^2)"])*BySite$Date^2 + mean(7.545*AprBaseModel_RE_3$Sol[,"date:Apr"])*BySite$Date + mean(7.545*AprBaseModel_RE_3$Sol[,"Apr"]))
-BySite$DAV <- exp(mean(AprBaseModel_RE_3$Sol[,"site.DAV"]) + mean(AprBaseModel_RE_3$Sol[,"(Intercept)"]) + mean(AprBaseModel_RE_3$Sol[,"date"])*BySite$Date + mean(AprBaseModel_RE_3$Sol[,"I(date^2)"])*BySite$Date^2 + mean(7.545*AprBaseModel_RE_3$Sol[,"date:Apr"])*BySite$Date + mean(7.545*AprBaseModel_RE_3$Sol[,"Apr"]))
-BySite$DEL <- exp(mean(AprBaseModel_RE_3$Sol[,"site.DEL"]) + mean(AprBaseModel_RE_3$Sol[,"(Intercept)"]) + mean(AprBaseModel_RE_3$Sol[,"date"])*BySite$Date + mean(AprBaseModel_RE_3$Sol[,"I(date^2)"])*BySite$Date^2 + mean(7.545*AprBaseModel_RE_3$Sol[,"date:Apr"])*BySite$Date + mean(7.545*AprBaseModel_RE_3$Sol[,"Apr"]))
-BySite$DLW <- exp(mean(AprBaseModel_RE_3$Sol[,"site.DLW"]) + mean(AprBaseModel_RE_3$Sol[,"(Intercept)"]) + mean(AprBaseModel_RE_3$Sol[,"date"])*BySite$Date + mean(AprBaseModel_RE_3$Sol[,"I(date^2)"])*BySite$Date^2 + mean(7.545*AprBaseModel_RE_3$Sol[,"date:Apr"])*BySite$Date + mean(7.545*AprBaseModel_RE_3$Sol[,"Apr"]))
-BySite$DNC <- exp(mean(AprBaseModel_RE_3$Sol[,"site.DNC"]) + mean(AprBaseModel_RE_3$Sol[,"(Intercept)"]) + mean(AprBaseModel_RE_3$Sol[,"date"])*BySite$Date + mean(AprBaseModel_RE_3$Sol[,"I(date^2)"])*BySite$Date^2 + mean(7.545*AprBaseModel_RE_3$Sol[,"date:Apr"])*BySite$Date + mean(7.545*AprBaseModel_RE_3$Sol[,"Apr"]))
-BySite$DNM <- exp(mean(AprBaseModel_RE_3$Sol[,"site.DNM"]) + mean(AprBaseModel_RE_3$Sol[,"(Intercept)"]) + mean(AprBaseModel_RE_3$Sol[,"date"])*BySite$Date + mean(AprBaseModel_RE_3$Sol[,"I(date^2)"])*BySite$Date^2 + mean(7.545*AprBaseModel_RE_3$Sol[,"date:Apr"])*BySite$Date + mean(7.545*AprBaseModel_RE_3$Sol[,"Apr"]))
-BySite$DNS <- exp(mean(AprBaseModel_RE_3$Sol[,"site.DNS"]) + mean(AprBaseModel_RE_3$Sol[,"(Intercept)"]) + mean(AprBaseModel_RE_3$Sol[,"date"])*BySite$Date + mean(AprBaseModel_RE_3$Sol[,"I(date^2)"])*BySite$Date^2 + mean(7.545*AprBaseModel_RE_3$Sol[,"date:Apr"])*BySite$Date + mean(7.545*AprBaseModel_RE_3$Sol[,"Apr"]))
-BySite$DOR <- exp(mean(AprBaseModel_RE_3$Sol[,"site.DOR"]) + mean(AprBaseModel_RE_3$Sol[,"(Intercept)"]) + mean(AprBaseModel_RE_3$Sol[,"date"])*BySite$Date + mean(AprBaseModel_RE_3$Sol[,"I(date^2)"])*BySite$Date^2 + mean(7.545*AprBaseModel_RE_3$Sol[,"date:Apr"])*BySite$Date + mean(7.545*AprBaseModel_RE_3$Sol[,"Apr"]))
-BySite$DOW <- exp(mean(AprBaseModel_RE_3$Sol[,"site.DOW"]) + mean(AprBaseModel_RE_3$Sol[,"(Intercept)"]) + mean(AprBaseModel_RE_3$Sol[,"date"])*BySite$Date + mean(AprBaseModel_RE_3$Sol[,"I(date^2)"])*BySite$Date^2 + mean(7.545*AprBaseModel_RE_3$Sol[,"date:Apr"])*BySite$Date + mean(7.545*AprBaseModel_RE_3$Sol[,"Apr"]))
-BySite$DUN <- exp(mean(AprBaseModel_RE_3$Sol[,"site.DUN"]) + mean(AprBaseModel_RE_3$Sol[,"(Intercept)"]) + mean(AprBaseModel_RE_3$Sol[,"date"])*BySite$Date + mean(AprBaseModel_RE_3$Sol[,"I(date^2)"])*BySite$Date^2 + mean(7.545*AprBaseModel_RE_3$Sol[,"date:Apr"])*BySite$Date + mean(7.545*AprBaseModel_RE_3$Sol[,"Apr"]))
-BySite$EDI <- exp(mean(AprBaseModel_RE_3$Sol[,"site.EDI"]) + mean(AprBaseModel_RE_3$Sol[,"(Intercept)"]) + mean(AprBaseModel_RE_3$Sol[,"date"])*BySite$Date + mean(AprBaseModel_RE_3$Sol[,"I(date^2)"])*BySite$Date^2 + mean(7.545*AprBaseModel_RE_3$Sol[,"date:Apr"])*BySite$Date + mean(7.545*AprBaseModel_RE_3$Sol[,"Apr"]))
-BySite$FOF <- exp(mean(AprBaseModel_RE_3$Sol[,"site.FOF"]) + mean(AprBaseModel_RE_3$Sol[,"(Intercept)"]) + mean(AprBaseModel_RE_3$Sol[,"date"])*BySite$Date + mean(AprBaseModel_RE_3$Sol[,"I(date^2)"])*BySite$Date^2 + mean(7.545*AprBaseModel_RE_3$Sol[,"date:Apr"])*BySite$Date + mean(7.545*AprBaseModel_RE_3$Sol[,"Apr"]))
-BySite$FOU <- exp(mean(AprBaseModel_RE_3$Sol[,"site.FOU"]) + mean(AprBaseModel_RE_3$Sol[,"(Intercept)"]) + mean(AprBaseModel_RE_3$Sol[,"date"])*BySite$Date + mean(AprBaseModel_RE_3$Sol[,"I(date^2)"])*BySite$Date^2 + mean(7.545*AprBaseModel_RE_3$Sol[,"date:Apr"])*BySite$Date + mean(7.545*AprBaseModel_RE_3$Sol[,"Apr"]))
-BySite$FSH <- exp(mean(AprBaseModel_RE_3$Sol[,"site.FSH"]) + mean(AprBaseModel_RE_3$Sol[,"(Intercept)"]) + mean(AprBaseModel_RE_3$Sol[,"date"])*BySite$Date + mean(AprBaseModel_RE_3$Sol[,"I(date^2)"])*BySite$Date^2 + mean(7.545*AprBaseModel_RE_3$Sol[,"date:Apr"])*BySite$Date + mean(7.545*AprBaseModel_RE_3$Sol[,"Apr"]))
-BySite$GLF <- exp(mean(AprBaseModel_RE_3$Sol[,"site.GLF"]) + mean(AprBaseModel_RE_3$Sol[,"(Intercept)"]) + mean(AprBaseModel_RE_3$Sol[,"date"])*BySite$Date + mean(AprBaseModel_RE_3$Sol[,"I(date^2)"])*BySite$Date^2 + mean(7.545*AprBaseModel_RE_3$Sol[,"date:Apr"])*BySite$Date + mean(7.545*AprBaseModel_RE_3$Sol[,"Apr"]))
-BySite$HWP <- exp(mean(AprBaseModel_RE_3$Sol[,"site.HWP"]) + mean(AprBaseModel_RE_3$Sol[,"(Intercept)"]) + mean(AprBaseModel_RE_3$Sol[,"date"])*BySite$Date + mean(AprBaseModel_RE_3$Sol[,"I(date^2)"])*BySite$Date^2 + mean(7.545*AprBaseModel_RE_3$Sol[,"date:Apr"])*BySite$Date + mean(7.545*AprBaseModel_RE_3$Sol[,"Apr"]))
-BySite$INS <- exp(mean(AprBaseModel_RE_3$Sol[,"site.INS"]) + mean(AprBaseModel_RE_3$Sol[,"(Intercept)"]) + mean(AprBaseModel_RE_3$Sol[,"date"])*BySite$Date + mean(AprBaseModel_RE_3$Sol[,"I(date^2)"])*BySite$Date^2 + mean(7.545*AprBaseModel_RE_3$Sol[,"date:Apr"])*BySite$Date + mean(7.545*AprBaseModel_RE_3$Sol[,"Apr"]))
-BySite$KCK <- exp(mean(AprBaseModel_RE_3$Sol[,"site.KCK"]) + mean(AprBaseModel_RE_3$Sol[,"(Intercept)"]) + mean(AprBaseModel_RE_3$Sol[,"date"])*BySite$Date + mean(AprBaseModel_RE_3$Sol[,"I(date^2)"])*BySite$Date^2 + mean(7.545*AprBaseModel_RE_3$Sol[,"date:Apr"])*BySite$Date + mean(7.545*AprBaseModel_RE_3$Sol[,"Apr"]))
-BySite$KCZ <- exp(mean(AprBaseModel_RE_3$Sol[,"site.KCZ"]) + mean(AprBaseModel_RE_3$Sol[,"(Intercept)"]) + mean(AprBaseModel_RE_3$Sol[,"date"])*BySite$Date + mean(AprBaseModel_RE_3$Sol[,"I(date^2)"])*BySite$Date^2 + mean(7.545*AprBaseModel_RE_3$Sol[,"date:Apr"])*BySite$Date + mean(7.545*AprBaseModel_RE_3$Sol[,"Apr"]))
-BySite$LVN <- exp(mean(AprBaseModel_RE_3$Sol[,"site.LVN"]) + mean(AprBaseModel_RE_3$Sol[,"(Intercept)"]) + mean(AprBaseModel_RE_3$Sol[,"date"])*BySite$Date + mean(AprBaseModel_RE_3$Sol[,"I(date^2)"])*BySite$Date^2 + mean(7.545*AprBaseModel_RE_3$Sol[,"date:Apr"])*BySite$Date + mean(7.545*AprBaseModel_RE_3$Sol[,"Apr"]))
-BySite$MCH <- exp(mean(AprBaseModel_RE_3$Sol[,"site.MCH"]) + mean(AprBaseModel_RE_3$Sol[,"(Intercept)"]) + mean(AprBaseModel_RE_3$Sol[,"date"])*BySite$Date + mean(AprBaseModel_RE_3$Sol[,"I(date^2)"])*BySite$Date^2 + mean(7.545*AprBaseModel_RE_3$Sol[,"date:Apr"])*BySite$Date + mean(7.545*AprBaseModel_RE_3$Sol[,"Apr"]))
-BySite$MUN <- exp(mean(AprBaseModel_RE_3$Sol[,"site.MUN"]) + mean(AprBaseModel_RE_3$Sol[,"(Intercept)"]) + mean(AprBaseModel_RE_3$Sol[,"date"])*BySite$Date + mean(AprBaseModel_RE_3$Sol[,"I(date^2)"])*BySite$Date^2 + mean(7.545*AprBaseModel_RE_3$Sol[,"date:Apr"])*BySite$Date + mean(7.545*AprBaseModel_RE_3$Sol[,"Apr"]))
-BySite$NEW <- exp(mean(AprBaseModel_RE_3$Sol[,"site.NEW"]) + mean(AprBaseModel_RE_3$Sol[,"(Intercept)"]) + mean(AprBaseModel_RE_3$Sol[,"date"])*BySite$Date + mean(AprBaseModel_RE_3$Sol[,"I(date^2)"])*BySite$Date^2 + mean(7.545*AprBaseModel_RE_3$Sol[,"date:Apr"])*BySite$Date + mean(7.545*AprBaseModel_RE_3$Sol[,"Apr"]))
-BySite$OSP <- exp(mean(AprBaseModel_RE_3$Sol[,"site.OSP"]) + mean(AprBaseModel_RE_3$Sol[,"(Intercept)"]) + mean(AprBaseModel_RE_3$Sol[,"date"])*BySite$Date + mean(AprBaseModel_RE_3$Sol[,"I(date^2)"])*BySite$Date^2 + mean(7.545*AprBaseModel_RE_3$Sol[,"date:Apr"])*BySite$Date + mean(7.545*AprBaseModel_RE_3$Sol[,"Apr"]))
-BySite$PIT <- exp(mean(AprBaseModel_RE_3$Sol[,"site.PIT"]) + mean(AprBaseModel_RE_3$Sol[,"(Intercept)"]) + mean(AprBaseModel_RE_3$Sol[,"date"])*BySite$Date + mean(AprBaseModel_RE_3$Sol[,"I(date^2)"])*BySite$Date^2 + mean(7.545*AprBaseModel_RE_3$Sol[,"date:Apr"])*BySite$Date + mean(7.545*AprBaseModel_RE_3$Sol[,"Apr"]))
-BySite$PTH <- exp(mean(AprBaseModel_RE_3$Sol[,"site.PTH"]) + mean(AprBaseModel_RE_3$Sol[,"(Intercept)"]) + mean(AprBaseModel_RE_3$Sol[,"date"])*BySite$Date + mean(AprBaseModel_RE_3$Sol[,"I(date^2)"])*BySite$Date^2 + mean(7.545*AprBaseModel_RE_3$Sol[,"date:Apr"])*BySite$Date + mean(7.545*AprBaseModel_RE_3$Sol[,"Apr"]))
-BySite$RSY <- exp(mean(AprBaseModel_RE_3$Sol[,"site.RSY"]) + mean(AprBaseModel_RE_3$Sol[,"(Intercept)"]) + mean(AprBaseModel_RE_3$Sol[,"date"])*BySite$Date + mean(AprBaseModel_RE_3$Sol[,"I(date^2)"])*BySite$Date^2 + mean(7.545*AprBaseModel_RE_3$Sol[,"date:Apr"])*BySite$Date + mean(7.545*AprBaseModel_RE_3$Sol[,"Apr"]))
-BySite$RTH <- exp(mean(AprBaseModel_RE_3$Sol[,"site.RTH"]) + mean(AprBaseModel_RE_3$Sol[,"(Intercept)"]) + mean(AprBaseModel_RE_3$Sol[,"date"])*BySite$Date + mean(AprBaseModel_RE_3$Sol[,"I(date^2)"])*BySite$Date^2 + mean(7.545*AprBaseModel_RE_3$Sol[,"date:Apr"])*BySite$Date + mean(7.545*AprBaseModel_RE_3$Sol[,"Apr"]))
-BySite$SER <- exp(mean(AprBaseModel_RE_3$Sol[,"site.SER"]) + mean(AprBaseModel_RE_3$Sol[,"(Intercept)"]) + mean(AprBaseModel_RE_3$Sol[,"date"])*BySite$Date + mean(AprBaseModel_RE_3$Sol[,"I(date^2)"])*BySite$Date^2 + mean(7.545*AprBaseModel_RE_3$Sol[,"date:Apr"])*BySite$Date + mean(7.545*AprBaseModel_RE_3$Sol[,"Apr"]))
-BySite$SLS <- exp(mean(AprBaseModel_RE_3$Sol[,"site.SLS"]) + mean(AprBaseModel_RE_3$Sol[,"(Intercept)"]) + mean(AprBaseModel_RE_3$Sol[,"date"])*BySite$Date + mean(AprBaseModel_RE_3$Sol[,"I(date^2)"])*BySite$Date^2 + mean(7.545*AprBaseModel_RE_3$Sol[,"date:Apr"])*BySite$Date + mean(7.545*AprBaseModel_RE_3$Sol[,"Apr"]))
-BySite$SPD <- exp(mean(AprBaseModel_RE_3$Sol[,"site.SPD"]) + mean(AprBaseModel_RE_3$Sol[,"(Intercept)"]) + mean(AprBaseModel_RE_3$Sol[,"date"])*BySite$Date + mean(AprBaseModel_RE_3$Sol[,"I(date^2)"])*BySite$Date^2 + mean(7.545*AprBaseModel_RE_3$Sol[,"date:Apr"])*BySite$Date + mean(7.545*AprBaseModel_RE_3$Sol[,"Apr"]))
-BySite$STY <- exp(mean(AprBaseModel_RE_3$Sol[,"site.STY"]) + mean(AprBaseModel_RE_3$Sol[,"(Intercept)"]) + mean(AprBaseModel_RE_3$Sol[,"date"])*BySite$Date + mean(AprBaseModel_RE_3$Sol[,"I(date^2)"])*BySite$Date^2 + mean(7.545*AprBaseModel_RE_3$Sol[,"date:Apr"])*BySite$Date + mean(7.545*AprBaseModel_RE_3$Sol[,"Apr"]))
-BySite$TAI <- exp(mean(AprBaseModel_RE_3$Sol[,"site.TAI"]) + mean(AprBaseModel_RE_3$Sol[,"(Intercept)"]) + mean(AprBaseModel_RE_3$Sol[,"date"])*BySite$Date + mean(AprBaseModel_RE_3$Sol[,"I(date^2)"])*BySite$Date^2 + mean(7.545*AprBaseModel_RE_3$Sol[,"date:Apr"])*BySite$Date + mean(7.545*AprBaseModel_RE_3$Sol[,"Apr"]))
-BySite$TOM <- exp(mean(AprBaseModel_RE_3$Sol[,"site.TOM"]) + mean(AprBaseModel_RE_3$Sol[,"(Intercept)"]) + mean(AprBaseModel_RE_3$Sol[,"date"])*BySite$Date + mean(AprBaseModel_RE_3$Sol[,"I(date^2)"])*BySite$Date^2 + mean(7.545*AprBaseModel_RE_3$Sol[,"date:Apr"])*BySite$Date + mean(7.545*AprBaseModel_RE_3$Sol[,"Apr"]))
-
-BySiteLong <- gather(BySite, key= "Site", value="Caterpillars", select=2:45)
-
-ggplot(BySiteLong, aes(Date, Caterpillars, colour=Site))+
+ggplot(BySiteShortLong, aes(Date, Caterpillars, colour=Site))+
   geom_smooth(aes(Date, Caterpillars, colour=Site), stat="identity", size=0.8)+
   theme_bw()
+
 
 ###########################################################
 #### Calculating the coefficient for each site with CI #### 
