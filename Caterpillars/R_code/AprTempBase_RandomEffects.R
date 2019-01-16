@@ -202,7 +202,7 @@ TOM <- mean(AprBaseModel_RE_3$Sol[,"site.TOM"]) + mean(AprBaseModel_RE_3$Sol[,"(
 
 
 plot(pred_day, exp(ALN), type="l", ylim=c(0,1.2), ylab="Caterpillars", xlab = "Date")
-points(pred_day, exp(average2014), type="l", lwd=5)
+points(pred_day, exp(average2014), type="l", lwd=4)
 points(pred_day, exp(ART), type="l")
 points(pred_day, exp(AVI), type="l")
 points(pred_day, exp(AVN), type="l")
@@ -247,9 +247,6 @@ points(pred_day, exp(STY), type="l")
 points(pred_day, exp(TAI), type="l")
 points(pred_day, exp(TOM), type="l")
 
-
-plot(BySiteShort$Date, BySiteShort$ALN, type="l", ylim=c(0,1.2), ylab="Caterpillars", xlab = "Date")
-for(i in ln=ength)
 
 ## ggplot
 
