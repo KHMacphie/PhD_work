@@ -210,3 +210,29 @@ points(pred_day2, exp(interactioncont9wrong), type="l", col=5) #lightblue
 
 ## quadratic coefficient, log() +/- describes orientation of curve
 # larger parameter size means narrower curve (regardless of +/- as that just determines orientation), so smaller number=broader peak
+
+### Going over how intercept/interaction effects curve AGAIN
+elevation <- glm(caterpillars~date+I(date^2)+date*year+elevation, family=poisson, data=all_data)
+elevationdate <- glm(caterpillars~date+I(date^2)+date*year+elevation*date, family=poisson, data=all_data)
+summary(elevation)
+summary(elevationdate)
+
+pred_day <- seq(120,175,1)
+elevation14L <- elevation$coef["(Intercept)"] + elevation$coef["date"]*pred_day + elevation$coef["I(date^2)"]*pred_day^2 + elevation$coef["elevation"]*50
+elevation14H <- elevation$coef["(Intercept)"] + elevation$coef["date"]*pred_day + elevation$coef["I(date^2)"]*pred_day^2 + elevation$coef["elevation"]*350
+
+plot(pred_day, elevation14L, type="l")
+points(pred_day, elevation14H, type="l", col=2)
+plot(pred_day, exp(elevation14L), type="l")
+points(pred_day, exp(elevation14H), type="l", col=2)   ## elevation only impacting intercept: height of peak changes, date stays the same!
+
+elevationdate14L <- elevationdate$coef["(Intercept)"] + elevationdate$coef["date"]*pred_day + elevationdate$coef["I(date^2)"]*pred_day^2 + (elevationdate$coef["date:elevation"]*150)*pred_day + elevationdate$coef["elevation"]*150 
+elevationdate14H <- elevationdate$coef["(Intercept)"] + elevationdate$coef["date"]*pred_day + elevationdate$coef["I(date^2)"]*pred_day^2 + (elevationdate$coef["date:elevation"]*350)*pred_day + elevationdate$coef["elevation"]*350 
+
+plot(pred_day, elevationdate14H, type="l")
+points(pred_day, elevationdate14L, type="l", col=2)
+plot(pred_day, exp(elevationdate14H), type="l")
+points(pred_day, exp(elevationdate14L), type="l", col=2)   ## elevationdate interaction affects both the height and the peak date- is this what ally was saying about with a change in gradient the intercept will also change?
+
+peakL <- -(elevationdate$coef["date"]+elevationdate$coef["date:elevation"]*150)/(2*elevationdate$coef["I(date^2)"]) # 150.9854 
+peakH <- -(elevationdate$coef["date"]+elevationdate$coef["date:elevation"]*350)/(2*elevationdate$coef["I(date^2)"]) # 155.4132 
