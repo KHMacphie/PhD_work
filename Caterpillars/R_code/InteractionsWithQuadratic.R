@@ -73,7 +73,7 @@ prior2<-list(R=list(V=1,nu=0.002),
                     G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k)))
 
 
-#######################
+#######################    !!!!!!!!!!!!!! Don't work, need a stronger prior :(
 
 TempModel_YearQuad<- MCMCglmm(caterpillars~date*year+Apr*date+I(date^2)*year, random=~site+sitetree+siteday, family="poisson", data=all_data, prior=prior2, nitt=250000, burnin=25000)
 TempModel_TempQuad<- MCMCglmm(caterpillars~date*year+Apr*date+I(date^2)*Apr+I(Apr^2), random=~site+sitetree+siteday, family="poisson", data=all_data, prior=prior2, nitt=250000, burnin=25000)
