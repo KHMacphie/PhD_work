@@ -14,15 +14,12 @@ library(MCMCglmm)
 
 cater <- read.csv("Dropbox/master_data/inverts/Branch_Beating_correctingID.csv")
 
-measured1718 <- read_csv("Documents/PhD/Caterpillar Measurements/CaterMeasurements1718.csv", 
-                         col_types = cols(Year = col_factor(levels = c("2017", 
-                                                                       "2018"))))
+measured1718 <- read.csv("Documents/PhD/Caterpillar Measurements/CaterMeasurements1718.csv")
 
 cater$STDY <- paste(cater$site, cater$tree, cater$date, cater$year)
 measured1718$STDY <- paste(measured1718$Site, measured1718$Tree, measured1718$Date, measured1718$Year)
 pmatch(measured1718$STDY, cater$STDY, duplicates.ok = TRUE)
 cater <- rename(cater, Biomass="caterpillar.mass")
-measured1718$Biomass <- cater$Biomass
 MeasuredBiomass1718 <- merge(measured1718, cater, by="STDY", duplicates.ok=TRUE)
 #### Why have 9 rows been removed?!
 
