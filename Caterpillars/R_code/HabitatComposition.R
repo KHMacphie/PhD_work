@@ -1,0 +1,104 @@
+########################
+#### Foliage Scores ####
+########################
+
+rm(list=ls())
+setwd('/Users/s1205615/')
+library(ggplot2)
+library(dplyr)
+library(ggfortify)
+library(readr)
+#library(doBy)
+library(lme4)
+library(MCMCglmm)
+
+### Habitat data set
+
+habitat <- read.csv("~/Dropbox/2018/Habitats_2018_all.csv")
+table(habitat$site) #checking all there- DLW 7+8 missing, not done yet :(
+
+### converting stands and thickets into no. of small trees
+
+St6 <- *0.5 
+St21 <- *1
+# thickets already as small trees
+
+## making a function for the weighting equation
+S <- 40
+M <- 100
+L <- 250
+weighting <- function(x){return(pi*(x/(2*pi))^2)}  ##weighted by cross secitonal area of the trunk (min possible size for each category)
+
+######## New data frame with stands, thickets and small trees combined as small trees and other deciduous combined
+#converting 6 stands into small trees and combining oth.decid and conifers (combining pine, yew, juniper and conifer)
+
+# combining other deciduous
+habitat$X6_oth.decid <- rowSums(habitat[,c("X6_cherry", "X6_elder", "X6_hazel", "X6_holly", "X6_rowan", "X6_rose")], na.rm=TRUE)
+habitat$X21_oth.decid <- rowSums(habitat[,c("X21_blackthorn", "X21_hazel", "X21_holly")], na.rm=TRUE)
+habitat$s_oth.decid <- rowSums(habitat[,c("s_cherry", "s_chestnut", "s_elder", "s_hawthorn", "s_hazel", "s_holly", "s_lime", "s_rowan", "s_whitebeam", "s_magnolia.")], na.rm=TRUE)
+habitat$m_oth.decid <- rowSums(habitat[,c("m_cherry", "m_chestnut", "m_holly", "m_lime", "m_rowan", "m_whitebeam", "m_horsechestnut")], na.rm=TRUE)
+habitat$l_oth.decid <- habitat$l_cherry
+habitat$z_oth.decid <- rowSums(habitat[,c("z_blackthorn", "z_cherry", "s_other.thicket")], na.rm=TRUE)
+
+# combining conifers
+habitat$X6_conifer_all <- habitat$X6_juniper
+habitat$s_conifer_all <- rowSums(habitat[,c("s_conifer", "s_pine", "s_yew", "s_juniper")], na.rm=TRUE)
+habitat$m_conifer_all <- rowSums(habitat[,c("m_conifer", "m_pine", "m_yew")], na.rm=TRUE)
+habitat$l_conifer_all <- rowSums(habitat[,c("l_conifer", "l_pine")], na.rm=TRUE)
+
+# converting 6 stands into small trees
+habitat$alder6smt <- habitat$X6_alder*0.5
+habitat$ash6smt <- habitat$X6_ash*0.5
+habitat$birch6smt <- habitat$X6_birch*0.5
+habitat$beech6smt <- habitat$X6_beech*0.5
+habitat$syc6smt <- habitat$X6_sycamore*0.5
+habitat$willow6smt <- habitat$X6_willow*0.5
+habitat$oth.decid6smt <- habitat$X6_oth.decid*0.5
+habitat$conifer6smt <- habitat$X6_conifer_all*0.5
+
+# combining stands, thickets and small trees
+habitat$Alder_S <- rowSums(habitat[,c("s_alder", "X21_alder", "alder6smt")], na.rm=TRUE)
+habitat$Ash_S <- rowSums(habitat[,c("s_ash", "ash6smt")], na.rm=TRUE)
+habitat$Beech_S <- rowSums(habitat[,c("s_beech", "beech6smt")], na.rm=TRUE)
+habitat$Birch_S <- rowSums(habitat[,c("s_birch", "X21_birch","birch6smt")], na.rm=TRUE)
+habitat$Sycamore_S <- rowSums(habitat[,c("s_sycamore", "syc6smt")], na.rm=TRUE)
+habitat$Willow_S <- rowSums(habitat[,c("s_willow", "willow6smt", "X21_willow", "z_willow")], na.rm=TRUE)
+habitat$Conifer_S <- rowSums(habitat[,c("X6_conifer_all", "s_conifer_all")], na.rm=TRUE)
+habitat$OthDecid_S <- rowSums(habitat[,c("X6_oth.decid", "X21_oth.decid", "s_oth.decid", "z_oth.decid")], na.rm=TRUE)
+
+
+Habitat_byNB <- data.frame(Site=habitat$site, 
+                           NB=habitat$nestbox, 
+                           Alder_S=habitat$Alder_S,
+                           Alder_M=habitat$m_alder,
+                           Ash_L=habitat$l_ash,
+                           Ash_M=habitat$m_ash,
+                           Ash_S=habitat$Ash_S,
+                           Aspen_M=habitat$m_aspen,
+                           Aspen_S=habitat$s_aspen,
+                           Beech_S=habitat$Beech_S,
+                           Beech_M=habitat$m_beech,
+                           Beech_L=habitat$l_beech,
+                           Birch_S=habitat$Birch_S,
+                           Birch_M=habitat$m_birch,
+                           Birch_L=habitat$l_birch,
+                           Elm_S=habitat$s_elm,
+                           Elm_M=habitat$m_elm,
+                           Elm_L=habitat$l_elm,
+                           Oak_S=habitat$s_oak,
+                           Oak_M=habitat$m_oak,
+                           Oak_L=habitat$l_oak, 
+                           Sycamore_S=habitat$Sycamore_S,
+                           Sycamore_M=habitat$m_sycamore,
+                           Sycamore_L=habitat$l_sycamore,
+                           Willow_S=habitat$Willow_S,
+                           Willow_M=habitat$m_willow,
+                           Willow_L=habitat$l_willow,
+                           Conifer_S=habitat$Conifer_S,
+                           Conifer_M=habitat$m_conifer_all,
+                           Conifer_L=habitat$l_conifer_all,
+                           #OthDecid_S=habitat$OthDecid_S,  not all numbers yet so won't work..
+                           OthDecid_M=habitat$m_oth.decid,
+                           OthDecid_L=habitat$l_oth.decid)
+
+##### Next step is to use the weighting function to calculate foliage per tree type at each NB
