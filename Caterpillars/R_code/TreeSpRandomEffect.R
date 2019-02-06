@@ -119,7 +119,6 @@ for(i in 1:length(treesp.df$treesp)) {   # loop for CIs
 } 
 treesp.df$treesp <- gsub("treespecies.","", treesp.df$treesp)
 
-## sites in alphabetical order
 ggplot(treesp.df, aes(treesp, coeff))+
   geom_point(size=3, alpha=0.5)+
   geom_errorbar(aes(ymax=upci, ymin=lowci, width=0.5))+
