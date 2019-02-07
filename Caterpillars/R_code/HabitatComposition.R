@@ -8,6 +8,7 @@ library(ggplot2)
 library(dplyr)
 library(ggfortify)
 library(readr)
+library(tidyr)
 #library(doBy)
 library(lme4)
 library(MCMCglmm)
@@ -156,3 +157,44 @@ Habitat_Site_mean$Conifer_prop <- Habitat_Site_mean$Conifer_FS/Habitat_Site_mean
 #checking its correct
 Habitat_Site_mean$propadd <- rowSums(Habitat_Site_mean[,13:22]) # it is
 
+#plot of total foliage by site
+# from mean
+ggplot(Habitat_Site_mean, aes(Site, Total))+
+  geom_point()+
+  theme_bw()+
+  theme(axis.text.x= element_text(angle=90))
+      
+#Make proportions long
+Habitat_props <- Habitat_Site_mean[,13:22]
+Habitat_props$Site <- Habitat_Site_mean$Site
+Habitat_props_long <- gather(Habitat_props, key="Tree", value="Proportion", select=1:10)
+
+#plot proportions of each tree category
+ggplot(Habitat_props_long, aes(Site, Proportion))+
+  geom_bar(aes(fill=Tree), stat="identity")+
+  theme_bw()+
+  theme(axis.text.x= element_text(angle=90))+
+  scale_fill_brewer(palette="Spectral")
+  #scale_fill_brewer(palette="Set3")
+
+#Make mean foliage scores long
+Habitat_FS <- Habitat_Site[,1:11]
+Habitat_FS_long <- gather(Habitat_FS, key="Tree", value="FS", select=2:11)
+#plot mean foliage scores of each tree category
+ggplot(Habitat_FS_long, aes(Site, FS))+
+  geom_bar(aes(fill=Tree), stat="identity")+
+  theme_bw()+
+  theme(axis.text.x= element_text(angle=90))+
+  scale_fill_brewer(palette="Spectral")
+#scale_fill_brewer(palette="Set3")
+
+#trying to order by lat
+site$Site <- site$site
+pmatch(site$Site, Habitat_FS_long$Site)
+Hab_FS_long_siteinfo <- merge(Habitat_FS_long, site, by="Site", duplicates.ok=TRUE)
+Hab_FS_long_siteinfo$Site <- factor(Hab_FS_long_siteinfo$Site, levels = Hab_FS_long_siteinfo$Site[order(Hab_FS_long_siteinfo$Mean.Lat)]) 
+ggplot(Hab_FS_long_siteinfo, aes(Site, FS))+
+  geom_bar(aes(fill=Tree), stat="identity")+
+  theme_bw()+
+  theme(axis.text.x= element_text(angle=90))+
+  scale_fill_brewer(palette="Spectral")
