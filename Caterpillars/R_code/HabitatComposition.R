@@ -196,7 +196,7 @@ ggplot(Hab_props_long_siteinfo, aes(ElevFactor, Proportion))+
   scale_fill_brewer(palette="Spectral")
 
 #Make mean foliage scores long
-Habitat_FS <- Habitat_Site[,1:11]
+Habitat_FS <- Habitat_Site_mean[,1:11]
 Habitat_FS_long <- gather(Habitat_FS, key="Tree", value="FS", select=2:11)
 #plot mean foliage scores of each tree category
 ggplot(Habitat_FS_long, aes(Site, FS))+
@@ -224,3 +224,6 @@ ggplot(Hab_FS_long_siteinfo, aes(ElevFactor, FS))+
   theme_bw()+
   theme(axis.text.x= element_text(angle=90))+
   scale_fill_brewer(palette="Spectral")
+
+
+#use order() -  df<- df[order(df$lat),]  so order dataframe rows by latitude     
