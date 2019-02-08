@@ -177,6 +177,24 @@ ggplot(Habitat_props_long, aes(Site, Proportion))+
   scale_fill_brewer(palette="Spectral")
   #scale_fill_brewer(palette="Set3")
 
+#prop by latitude
+pmatch(site$Site, Habitat_props_long$Site)
+Hab_props_long_siteinfo <- merge(Habitat_props_long, site, by="Site", duplicates.ok=TRUE)
+Hab_props_long_siteinfo$LatFactor <- as.factor(Hab_props_long_siteinfo$Mean.Lat) 
+ggplot(Hab_props_long_siteinfo, aes(LatFactor, Proportion))+
+  geom_bar(aes(fill=Tree), stat="identity")+
+  theme_bw()+
+  theme(axis.text.x= element_text(angle=90))+
+  scale_fill_brewer(palette="Spectral")
+
+#prop by elevation- some sites have same elevation so not quite right
+Hab_props_long_siteinfo$ElevFactor <- as.factor(Hab_props_long_siteinfo$Mean.Elev) 
+ggplot(Hab_props_long_siteinfo, aes(ElevFactor, Proportion))+
+  geom_bar(aes(fill=Tree), stat="identity")+
+  theme_bw()+
+  theme(axis.text.x= element_text(angle=90))+
+  scale_fill_brewer(palette="Spectral")
+
 #Make mean foliage scores long
 Habitat_FS <- Habitat_Site[,1:11]
 Habitat_FS_long <- gather(Habitat_FS, key="Tree", value="FS", select=2:11)
@@ -188,12 +206,20 @@ ggplot(Habitat_FS_long, aes(Site, FS))+
   scale_fill_brewer(palette="Spectral")
 #scale_fill_brewer(palette="Set3")
 
-#trying to order by lat
+#FS graph by latitude
 site$Site <- site$site
 pmatch(site$Site, Habitat_FS_long$Site)
 Hab_FS_long_siteinfo <- merge(Habitat_FS_long, site, by="Site", duplicates.ok=TRUE)
-Hab_FS_long_siteinfo$Site <- factor(Hab_FS_long_siteinfo$Site, levels = Hab_FS_long_siteinfo$Site[order(Hab_FS_long_siteinfo$Mean.Lat)]) 
-ggplot(Hab_FS_long_siteinfo, aes(Site, FS))+
+Hab_FS_long_siteinfo$LatFactor <- as.factor(Hab_FS_long_siteinfo$Mean.Lat) 
+ggplot(Hab_FS_long_siteinfo, aes(LatFactor, FS))+
+  geom_bar(aes(fill=Tree), stat="identity")+
+  theme_bw()+
+  theme(axis.text.x= element_text(angle=90))+
+  scale_fill_brewer(palette="Spectral")
+
+#FS graph by elevation
+Hab_FS_long_siteinfo$ElevFactor <- as.factor(Hab_FS_long_siteinfo$Mean.Elev) 
+ggplot(Hab_FS_long_siteinfo, aes(ElevFactor, FS))+
   geom_bar(aes(fill=Tree), stat="identity")+
   theme_bw()+
   theme(axis.text.x= element_text(angle=90))+
