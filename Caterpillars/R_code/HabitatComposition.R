@@ -12,11 +12,12 @@ library(tidyr)
 #library(doBy)
 library(lme4)
 library(MCMCglmm)
+library(forcats)
 
 ### Habitat data set
 
 habitat <- read.csv("~/Dropbox/2018/Habitats_2018_all.csv")
-table(habitat$site) #checking all there- DLW 7+8 missing, not done yet :(
+table(habitat$site) #checking all there
 
 ######## New data frame with stands, thickets and small trees combined as small trees and other deciduous combined
 #converting 6 stands into small trees and combining oth.decid and conifers (combining pine, yew, juniper and conifer)
@@ -24,10 +25,10 @@ table(habitat$site) #checking all there- DLW 7+8 missing, not done yet :(
 # combining other deciduous
 habitat$X6_oth.decid <- rowSums(habitat[,c("X6_cherry", "X6_elder", "X6_hazel", "X6_holly", "X6_rowan", "X6_rose")], na.rm=TRUE)
 habitat$X21_oth.decid <- rowSums(habitat[,c("X21_blackthorn", "X21_hazel", "X21_holly")], na.rm=TRUE)
-habitat$s_oth.decid <- rowSums(habitat[,c("s_cherry", "s_chestnut", "s_elder", "s_hawthorn", "s_hazel", "s_holly", "s_lime", "s_rowan", "s_whitebeam", "s_magnolia.")], na.rm=TRUE)
+habitat$s_oth.decid <- rowSums(habitat[,c("s_cherry", "s_chestnut", "s_elder", "s_hawthorn", "s_hazel", "s_holly", "s_lime", "s_rowan", "s_whitebeam", "s_other")], na.rm=TRUE)
 habitat$m_oth.decid <- rowSums(habitat[,c("m_cherry", "m_chestnut", "m_holly", "m_lime", "m_rowan", "m_whitebeam", "m_horsechestnut")], na.rm=TRUE)
 habitat$l_oth.decid <- habitat$l_cherry
-habitat$z_oth.decid <- rowSums(habitat[,c("z_blackthorn", "z_cherry", "s_other.thicket")], na.rm=TRUE)
+habitat$z_oth.decid <- rowSums(habitat[,c("z_blackthorn", "z_cherry", "z_other")], na.rm=TRUE)
 
 # combining conifers
 habitat$X6_conifer_all <- habitat$X6_juniper
@@ -59,10 +60,13 @@ habitat$OthDecid_S <- rowSums(habitat[,c("X6_oth.decid", "X21_oth.decid", "s_oth
 ##### Use the weighting function to calculate foliage per tree type and size at each NB
 
 ## making a function for the weighting equation
-weighting <- function(x){return(pi*(x/(2*pi)^2))}  ##weighted by cross secitonal area of the trunk in cm^2 (min possible size for each category)
-S <- weighting(40)
-M <- weighting(100)
-L <- weighting(250)
+weighting <- function(x){return(pi*(x/(2*pi))^2)}  ##weighted by cross secitonal area of the trunk in cm^2 (min possible size for each category)
+Sm <- weighting(40)
+Med <- weighting(100)
+Lar <- weighting(250)
+S=1
+M=Med/Sm
+L=Lar/Sm
 
 Habitat_byNB <- data.frame(Site=habitat$site, 
                            NB=habitat$nestbox, 
@@ -94,7 +98,7 @@ Habitat_byNB <- data.frame(Site=habitat$site,
                            Conifer_S=(S*habitat$Conifer_S),
                            Conifer_M=(M*habitat$m_conifer_all),
                            Conifer_L=(L*habitat$l_conifer_all),
-                           #OthDecid_S=(S*habitat$OthDecid_S),  not all numbers yet so won't work..
+                           OthDecid_S=(S*habitat$OthDecid_S),  
                            OthDecid_M=(M*habitat$m_oth.decid),
                            OthDecid_L=(L*habitat$l_oth.decid))
 Habitat_byNB[is.na(Habitat_byNB)] <- 0
@@ -110,16 +114,16 @@ Habitat_byNB$Oak_FS <- rowSums(Habitat_byNB[,c("Oak_S", "Oak_M", "Oak_L")], na.r
 Habitat_byNB$Sycamore_FS <- rowSums(Habitat_byNB[,c("Sycamore_S", "Sycamore_M", "Sycamore_L")], na.rm=TRUE)
 Habitat_byNB$Willow_FS <- rowSums(Habitat_byNB[,c("Willow_S", "Willow_M", "Willow_L")], na.rm=TRUE)
 Habitat_byNB$Conifer_FS <- rowSums(Habitat_byNB[,c("Conifer_S", "Conifer_M", "Conifer_L")], na.rm=TRUE)
-#Habitat_byNB$OthDecid_FS <- rowSums(Habitat_byNB[,c("OthDecid_S", "OthDecid_M", "OthDecid_L")], na.rm=TRUE)
+Habitat_byNB$OthDecid_FS <- rowSums(Habitat_byNB[,c("OthDecid_S", "OthDecid_M", "OthDecid_L")], na.rm=TRUE)
 
-## combining NB within each site
+## combining NB within each site- mean to account for different number of NBs at sites
 site <- read.csv("Dropbox/master_data/site/site_details.csv")
-Habitat_Site <- Habitat_byNB[,33:42]
+Habitat_Site <- Habitat_byNB[,34:44]
 Habitat_Site$Site <- Habitat_byNB$Site
-Habitat_Site <- aggregate(.~Site, Habitat_Site, sum)
+Habitat_Site <- aggregate(.~Site, Habitat_Site, mean)
 
-# gettign proportions fo each tree category
-Habitat_Site$Total <- rowSums(Habitat_Site[2:11])
+# getting proportions of each tree category
+Habitat_Site$Total <- rowSums(Habitat_Site[2:12])
 Habitat_Site$Alder_prop <- Habitat_Site$Alder_FS/Habitat_Site$Total
 Habitat_Site$Ash_prop <- Habitat_Site$Ash_FS/Habitat_Site$Total
 Habitat_Site$Aspen_prop <- Habitat_Site$Aspen_FS/Habitat_Site$Total
@@ -130,44 +134,22 @@ Habitat_Site$Oak_prop <- Habitat_Site$Oak_FS/Habitat_Site$Total
 Habitat_Site$Sycamore_prop <- Habitat_Site$Sycamore_FS/Habitat_Site$Total
 Habitat_Site$Willow_prop <- Habitat_Site$Willow_FS/Habitat_Site$Total
 Habitat_Site$Conifer_prop <- Habitat_Site$Conifer_FS/Habitat_Site$Total
-#Habitat_Site$OthDecid_prop <- Habitat_Site$OthDecid_FS/Habitat_Site$Total
+Habitat_Site$OthDecid_prop <- Habitat_Site$OthDecid_FS/Habitat_Site$Total
 
 #checking its correct
-Habitat_Site$propadd <- rowSums(Habitat_Site[,13:22]) # it is
-
-# is it different using mean or sum
-Habitat_Site_mean <- Habitat_byNB[,33:42]
-Habitat_Site_mean$Site <- Habitat_byNB$Site
-Habitat_Site_mean <- aggregate(.~Site, Habitat_Site_mean, mean)
-
-# gettign proportions fo each tree category
-Habitat_Site_mean$Total <- rowSums(Habitat_Site_mean[2:11])
-Habitat_Site_mean$Alder_prop <- Habitat_Site_mean$Alder_FS/Habitat_Site_mean$Total
-Habitat_Site_mean$Ash_prop <- Habitat_Site_mean$Ash_FS/Habitat_Site_mean$Total
-Habitat_Site_mean$Aspen_prop <- Habitat_Site_mean$Aspen_FS/Habitat_Site_mean$Total
-Habitat_Site_mean$Beech_prop <- Habitat_Site_mean$Beech_FS/Habitat_Site_mean$Total
-Habitat_Site_mean$Birch_prop <- Habitat_Site_mean$Birch_FS/Habitat_Site_mean$Total
-Habitat_Site_mean$Elm_prop <- Habitat_Site_mean$Elm_FS/Habitat_Site_mean$Total
-Habitat_Site_mean$Oak_prop <- Habitat_Site_mean$Oak_FS/Habitat_Site_mean$Total
-Habitat_Site_mean$Sycamore_prop <- Habitat_Site_mean$Sycamore_FS/Habitat_Site_mean$Total
-Habitat_Site_mean$Willow_prop <- Habitat_Site_mean$Willow_FS/Habitat_Site_mean$Total
-Habitat_Site_mean$Conifer_prop <- Habitat_Site_mean$Conifer_FS/Habitat_Site_mean$Total
-#Habitat_Site_mean$OthDecid_prop <- Habitat_Site_mean$OthDecid_FS/Habitat_Site_mean$Total
-
-#checking its correct
-Habitat_Site_mean$propadd <- rowSums(Habitat_Site_mean[,13:22]) # it is
+#Habitat_Site$propadd <- rowSums(Habitat_Site_mean[,14:24]) # it is
 
 #plot of total foliage by site
 # from mean
-ggplot(Habitat_Site_mean, aes(Site, Total))+
+ggplot(Habitat_Site, aes(Site, Total))+
   geom_point()+
   theme_bw()+
   theme(axis.text.x= element_text(angle=90))
       
 #Make proportions long
-Habitat_props <- Habitat_Site_mean[,13:22]
+Habitat_props <- Habitat_Site[,14:24]
 Habitat_props$Site <- Habitat_Site_mean$Site
-Habitat_props_long <- gather(Habitat_props, key="Tree", value="Proportion", select=1:10)
+Habitat_props_long <- gather(Habitat_props, key="Tree", value="Proportion", select=1:11)
 
 #plot proportions of each tree category
 ggplot(Habitat_props_long, aes(Site, Proportion))+
@@ -179,24 +161,25 @@ ggplot(Habitat_props_long, aes(Site, Proportion))+
 
 #prop by latitude
 pmatch(site$Site, Habitat_props_long$Site)
-Hab_props_long_siteinfo <- merge(Habitat_props_long, site, by="Site", duplicates.ok=TRUE)
-Hab_props_long_siteinfo$LatFactor <- as.factor(Hab_props_long_siteinfo$Mean.Lat) 
-ggplot(Hab_props_long_siteinfo, aes(LatFactor, Proportion))+
+site$Site <- site$site
+Props_long_siteinfo <- merge(Habitat_props_long, site, by="Site", duplicates.ok=TRUE)
+Props_long_siteinfo <- Props_long_siteinfo[order(Props_long_siteinfo$Mean.Lat),] 
+ggplot(Props_long_siteinfo, aes(fct_inorder(Site), Proportion))+
   geom_bar(aes(fill=Tree), stat="identity")+
   theme_bw()+
   theme(axis.text.x= element_text(angle=90))+
   scale_fill_brewer(palette="Spectral")
 
 #prop by elevation- some sites have same elevation so not quite right
-Hab_props_long_siteinfo$ElevFactor <- as.factor(Hab_props_long_siteinfo$Mean.Elev) 
-ggplot(Hab_props_long_siteinfo, aes(ElevFactor, Proportion))+
+Props_long_siteinfo <- Props_long_siteinfo[order(Props_long_siteinfo$Mean.Elev),] 
+ggplot(Props_long_siteinfo, aes(fct_inorder(Site), Proportion))+
   geom_bar(aes(fill=Tree), stat="identity")+
   theme_bw()+
   theme(axis.text.x= element_text(angle=90))+
   scale_fill_brewer(palette="Spectral")
 
 #Make mean foliage scores long
-Habitat_FS <- Habitat_Site_mean[,1:11]
+Habitat_FS <- Habitat_Site[,1:12]
 Habitat_FS_long <- gather(Habitat_FS, key="Tree", value="FS", select=2:11)
 #plot mean foliage scores of each tree category
 ggplot(Habitat_FS_long, aes(Site, FS))+
@@ -209,21 +192,20 @@ ggplot(Habitat_FS_long, aes(Site, FS))+
 #FS graph by latitude
 site$Site <- site$site
 pmatch(site$Site, Habitat_FS_long$Site)
-Hab_FS_long_siteinfo <- merge(Habitat_FS_long, site, by="Site", duplicates.ok=TRUE)
-Hab_FS_long_siteinfo$LatFactor <- as.factor(Hab_FS_long_siteinfo$Mean.Lat) 
-ggplot(Hab_FS_long_siteinfo, aes(LatFactor, FS))+
+FS_long_siteinfo <- merge(Habitat_FS_long, site, by="Site", duplicates.ok=TRUE)
+FS_long_siteinfo <- FS_long_siteinfo[order(FS_long_siteinfo$Mean.Lat),] 
+ggplot(FS_long_siteinfo, aes(fct_inorder(Site), FS))+
   geom_bar(aes(fill=Tree), stat="identity")+
   theme_bw()+
   theme(axis.text.x= element_text(angle=90))+
   scale_fill_brewer(palette="Spectral")
 
 #FS graph by elevation
-Hab_FS_long_siteinfo$ElevFactor <- as.factor(Hab_FS_long_siteinfo$Mean.Elev) 
-ggplot(Hab_FS_long_siteinfo, aes(ElevFactor, FS))+
+FS_long_siteinfo <- FS_long_siteinfo[order(FS_long_siteinfo$Mean.Elev),] 
+ggplot(FS_long_siteinfo, aes(fct_inorder(Site), FS))+
   geom_bar(aes(fill=Tree), stat="identity")+
   theme_bw()+
   theme(axis.text.x= element_text(angle=90))+
   scale_fill_brewer(palette="Spectral")
 
-
-#use order() -  df<- df[order(df$lat),]  so order dataframe rows by latitude     
+ 
