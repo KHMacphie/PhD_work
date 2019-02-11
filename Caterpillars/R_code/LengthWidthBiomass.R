@@ -14,14 +14,14 @@ library(MCMCglmm)
 
 cater <- read.csv("Dropbox/master_data/inverts/Branch_Beating_correctingID.csv")
 
-measured1718 <- read.csv("Documents/PhD/Caterpillar Measurements/CaterMeasurements1718.csv")
+measured1718 <- read.csv("Documents/PhD/Caterpillar Measurements/CaterMeasuredPlus.1718.csv")
 
 cater$STDY <- paste(cater$site, cater$tree, cater$date, cater$year)
 measured1718$STDY <- paste(measured1718$Site, measured1718$Tree, measured1718$Date, measured1718$Year)
 pmatch(measured1718$STDY, cater$STDY, duplicates.ok = TRUE)
 cater <- rename(cater, Biomass="caterpillar.mass")
 MeasuredBiomass1718 <- merge(measured1718, cater, by="STDY", duplicates.ok=TRUE)
-#### Why have 9 rows been removed?!
+#### Why have 5 rows been removed?!
 
 MeasuredBiomass1718$year <- NULL
 MeasuredBiomass1718$notes <- NULL
@@ -36,6 +36,7 @@ MeasuredBiomass1718$spiders <- NULL
 MeasuredBiomass1718$recorder <- NULL
 MeasuredBiomass1718$weather <- NULL
 MeasuredBiomass1718$date <- NULL
+MeasuredBiomass1718$mass.uncertain <- NULL
 
 ###### So many strange things
 
@@ -47,7 +48,7 @@ table(table(MeasuredBiomass1718$STDY)) ## in measured samples dataframe
 which(table(MeasuredBiomass1718$STDY)==2) # which STDY's have >1 row
 # AVI 13 141 2018 / AVI 14 141 2018 / GLF 6 147 2018 / PIT 10 147 2018 / RTH 4 168 2018 / STY 1 147 2018 / STY 8 147 2018
 table(MeasuredBiomass1718$caterpillars)
-# caterpillars: 0=10, 2=1, 6=1
+# caterpillars: 0=6, 2=1, biomass 0=6 (all same rows for 0 cater and 0g)
 
 ### removing ones that dont have 1 caterpillar reported
 onecaterpillar <- subset(MeasuredBiomass1718, caterpillars==1)
@@ -57,10 +58,12 @@ hist(onecaterpillar$Width)
 hist(onecaterpillar$Length)
 #hist(onecaterpillar$Biomass)  doesnt work because of <0.01s
 
-onecaterpillar.minustiny <- subset(MeasuredBiomass1718, Biomass!="<0.01")
+onecaterpillar.minustiny <- subset(onecaterpillar, Biomass!="<0.01")
 onecaterpillar.minustiny <- subset(onecaterpillar.minustiny, Biomass!="0")
 onecaterpillar.minustiny$Biomass <- as.numeric(as.character(onecaterpillar.minustiny$Biomass))
 onecaterpillar.minustiny <- subset(onecaterpillar.minustiny, Biomass!="NA")
+# removing the huge caterpillar- too different ot the rest and none that size in 14-16
+#onecaterpillar.minustiny <- subset(onecaterpillar.minustiny, Biomass!="0.97")
 hist(onecaterpillar.minustiny$Biomass) ## definitely not Gaussian
 
 # volume of a cylinder: V=π(r^2)h
