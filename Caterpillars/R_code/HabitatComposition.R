@@ -180,7 +180,7 @@ ggplot(Props_long_siteinfo, aes(fct_inorder(Site), Proportion))+
 
 #Make mean foliage scores long
 Habitat_FS <- Habitat_Site[,1:12]
-Habitat_FS_long <- gather(Habitat_FS, key="Tree", value="FS", select=2:11)
+Habitat_FS_long <- gather(Habitat_FS, key="Tree", value="FS", select=2:12)
 #plot mean foliage scores of each tree category
 ggplot(Habitat_FS_long, aes(Site, FS))+
   geom_bar(aes(fill=Tree), stat="identity")+
