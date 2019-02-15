@@ -14,7 +14,7 @@ library(MCMCglmm)
 
 cater <- read.csv("Dropbox/master_data/inverts/Branch_Beating_correctingID.csv")
 
-measured1718 <- read.csv("Documents/PhD/Caterpillar Measurements/CaterMeasuredPlus.1718.csv")
+measured1718 <- read.csv("/Users/s1205615/Documents/PhD (stopped using 12:2:19)/Caterpillar Measurements/CaterMeasuredPlus.1718.csv")
 
 cater$STDY <- paste(cater$site, cater$tree, cater$date, cater$year)
 measured1718$STDY <- paste(measured1718$Site, measured1718$Tree, measured1718$Date, measured1718$Year)
