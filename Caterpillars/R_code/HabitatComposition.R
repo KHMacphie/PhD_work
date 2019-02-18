@@ -139,6 +139,10 @@ Habitat_Site$OthDecid_prop <- Habitat_Site$OthDecid_FS/Habitat_Site$Total
 #checking its correct
 #Habitat_Site$propadd <- rowSums(Habitat_Site_mean[,14:24]) # it is
 
+#######################################
+#### Graphs of Habitat Composition ####
+#######################################
+
 #plot of total foliage by site
 # from mean
 ggplot(Habitat_Site, aes(Site, Total))+
@@ -148,7 +152,7 @@ ggplot(Habitat_Site, aes(Site, Total))+
       
 #Make proportions long
 Habitat_props <- Habitat_Site[,14:24]
-Habitat_props$Site <- Habitat_Site_mean$Site
+Habitat_props$Site <- Habitat_Site$Site
 Habitat_props_long <- gather(Habitat_props, key="Tree", value="Proportion", select=1:11)
 
 #plot proportions of each tree category
@@ -209,3 +213,91 @@ ggplot(FS_long_siteinfo, aes(fct_inorder(Site), FS))+
   scale_fill_brewer(palette="Spectral")
 
  
+
+
+
+#########################################
+#### Putting Aspen, Beech + Elm in OthDecid ####
+#########################################
+Habitat_Site_condensed <- Habitat_Site
+Habitat_Site_condensed$OthDecid_prop <- Habitat_Site_condensed$Elm_prop+Habitat_Site_condensed$Aspen_prop+Habitat_Site_condensed$OthDecid_prop+Habitat_Site_condensed$Beech_prop
+Habitat_Site_condensed$OthDecid_FS <- Habitat_Site_condensed$Elm_FS+Habitat_Site_condensed$Aspen_FS+Habitat_Site_condensed$OthDecid_FS+Habitat_Site_condensed$Beech_FS
+
+################################################
+#### Multi-membership with tree proportions ####
+################################################
+
+# Habitat_Site columns 14-24 for tree proportions
+cater <- read.csv("Dropbox/master_data/inverts/Branch_Beating_correctingID.csv")
+Habitat_Site$site <- Habitat_Site$Site
+pmatch(cater$site,Habitat_Site$site,duplicates.ok=TRUE)
+cater_habitat<- merge(cater, Habitat_Site, by="site", duplicates.ok=TRUE)
+cater_habitat$sitetree <- paste(cater_habitat$tree, cater_habitat$site)
+cater_habitat$siteday <- paste(cater_habitat$site, cater_habitat$date, cater_habitat$year)
+
+Habitat_Site_condensed$site <- Habitat_Site_condensed$Site
+pmatch(cater$site,Habitat_Site_condensed$site,duplicates.ok=TRUE)
+cater_habitat_condensed<- merge(cater, Habitat_Site_condensed, by="site", duplicates.ok=TRUE)
+cater_habitat_condensed$sitetree <- paste(cater_habitat_condensed$tree, cater_habitat_condensed$site)
+cater_habitat_condensed$siteday <- paste(cater_habitat_condensed$site, cater_habitat_condensed$date, cater_habitat_condensed$year)
+
+# Model priors
+#k<-10000
+#prior<-list(R=list(V=1,nu=0.002),
+#            G=list(G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
+#                   G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
+#                   G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
+#                   G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
+#                   G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k)))
+
+##### Need stronger prior --  no fixed effects
+#MultiMembProp<- MCMCglmm(caterpillars~1, 
+#                       random=~site+sitetree+siteday+tree.species+idv(~Alder_prop+Ash_prop+Birch_prop+Oak_prop+Sycamore_prop+Willow_prop+Conifer_prop+OthDecid_prop), 
+#                       family="poisson", data=cater_habitat_condensed, prior=prior, nitt=250000, burnin=25000, pr=TRUE)
+#save(MultiMembProp, file = "~/Documents/Models/MultiMembProp.RData")
+load("~/Documents/Models/MultiMembProp.RData")
+
+summary(MultiMembProp)
+
+### finding tree species and multimemb columns
+which(colnames(MultiMembProp$Sol)=="tree.species. Elm") #5040   Need to correct Elm as 2 at the moment
+which(colnames(MultiMembProp$Sol)=="tree.species.Willow") #5058
+which(colnames(MultiMembProp$Sol)=="Alder_prop.NA.1") #5059
+which(colnames(MultiMembProp$Sol)=="OthDecid_prop.NA.1") # 5066
+
+
+#dataframe for coeffs and Cis for tree species
+MMtreespREcropped <- MultiMembProp$Sol[,5040:5058] # crop to just the columns wanted
+MMtreesp.df <- data.frame(treesp=c(colnames(MMtreespREcropped))) #dataframe with column for yearsite 
+MMtreesp.df$coeff <- apply(MMtreespREcropped,2, mean) # mean 
+for(i in 1:length(MMtreesp.df$treesp)) {   # loop for CIs
+  A <- HPDinterval(MMtreespREcropped[,i])
+  MMtreesp.df$lowci[i] <- A["var1","lower"] 
+  MMtreesp.df$upci[i] <- A["var1","upper"] 
+} 
+MMtreesp.df$treesp <- gsub("tree.species.","", MMtreesp.df$treesp)
+
+#dataframe for coeffs and Cis for tree proportions
+treepropREcropped <- MultiMembProp$Sol[,5059:5066] # crop to just the columns wanted
+treeprop.df <- data.frame(treesp=c(colnames(treepropREcropped))) #dataframe with column for yearsite 
+treeprop.df$coeff <- apply(treepropREcropped,2, mean) # mean 
+for(i in 1:length(treeprop.df$treesp)) {   # loop for CIs
+  A <- HPDinterval(treepropREcropped[,i])
+  treeprop.df$lowci[i] <- A["var1","lower"] 
+  treeprop.df$upci[i] <- A["var1","upper"] 
+} 
+treeprop.df$treesp <- gsub("_prop.NA.1","", treeprop.df$treesp)
+
+#plot tree species
+ggplot(MMtreesp.df, aes(treesp, coeff))+
+  geom_point(size=3, alpha=0.5)+
+  geom_errorbar(aes(ymax=upci, ymin=lowci, width=0.5))+
+  theme_bw()+
+  theme(axis.text.x= element_text(angle=90))
+
+#plot tree proportion
+ggplot(treeprop.df, aes(treesp, coeff))+
+  geom_point(size=3, alpha=0.5)+
+  geom_errorbar(aes(ymax=upci, ymin=lowci, width=0.5))+
+  theme_bw()+
+  theme(axis.text.x= element_text(angle=90))
