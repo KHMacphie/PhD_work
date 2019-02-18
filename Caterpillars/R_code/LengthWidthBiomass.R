@@ -1,6 +1,7 @@
 rm(list=ls())
 setwd('/Users/s1205615/')
 library(ggplot2)
+library(plyr)
 library(dplyr)
 library(ggfortify)
 library(readr)
@@ -37,57 +38,57 @@ MeasuredBiomass1718$recorder <- NULL
 MeasuredBiomass1718$weather <- NULL
 MeasuredBiomass1718$date <- NULL
 MeasuredBiomass1718$mass.uncertain <- NULL
+MeasuredBiomass1718$cater.sample <- NULL
 
-###### So many strange things
-
-## some sites have 2 entries for the same STDY
-table(table(cater$STDY)) ## in whole dataframe
-#  2x same STDY= 384, 3x same STDY= 8 
-table(table(MeasuredBiomass1718$STDY)) ## in measured samples dataframe
-#  2x same STDY= 7
-which(table(MeasuredBiomass1718$STDY)==2) # which STDY's have >1 row
-# AVI 13 141 2018 / AVI 14 141 2018 / GLF 6 147 2018 / PIT 10 147 2018 / RTH 4 168 2018 / STY 1 147 2018 / STY 8 147 2018
-table(MeasuredBiomass1718$caterpillars)
-# caterpillars: 0=6, 2=1, biomass 0=6 (all same rows for 0 cater and 0g)
-
-### removing ones that dont have 1 caterpillar reported
+### removing ones that dont have 1 caterpillar reported or have no mass
 onecaterpillar <- subset(MeasuredBiomass1718, caterpillars==1)
-  # still 3 duplicate STDYs but leaving in for now   AVI 13 141 2018 / STY 1 147 2018 / STY 8 147 2018
-
-hist(onecaterpillar$Width)
-hist(onecaterpillar$Length)
-#hist(onecaterpillar$Biomass)  doesnt work because of <0.01s
-
-onecaterpillar.minustiny <- subset(onecaterpillar, Biomass!="<0.01")
-onecaterpillar.minustiny <- subset(onecaterpillar.minustiny, Biomass!="0")
-onecaterpillar.minustiny$Biomass <- as.numeric(as.character(onecaterpillar.minustiny$Biomass))
-onecaterpillar.minustiny <- subset(onecaterpillar.minustiny, Biomass!="NA")
-# removing the huge caterpillar- too different ot the rest and none that size in 14-16
-#onecaterpillar.minustiny <- subset(onecaterpillar.minustiny, Biomass!="0.97")
-hist(onecaterpillar.minustiny$Biomass) ## definitely not Gaussian
+onecaterpillar <- subset(onecaterpillar, Biomass!="")
+onecaterpillar$Year <- as.factor(onecaterpillar$Year)
+#interval cencoring <0.01-0.02
+onecaterpillar$Biomass1 <- revalue(onecaterpillar$Biomass, c("<0.01"="0.00", "0.01"="0.00", "0.02"="0.00"))
+onecaterpillar$Biomass2 <- revalue(onecaterpillar$Biomass, c("<0.01"="0.02", "0.01"="0.02", "0.02"="0.02"))
+onecaterpillar$Biomass1 <- as.numeric(as.character(onecaterpillar$Biomass1))
+onecaterpillar$Biomass2 <- as.numeric(as.character(onecaterpillar$Biomass2))
 
 # volume of a cylinder: V=π(r^2)h
-onecaterpillar.minustiny$radiussqu <- (onecaterpillar.minustiny$Width/2)^2
-onecaterpillar.minustiny$volume <- pi*onecaterpillar.minustiny$radiussqu*onecaterpillar.minustiny$Length
+onecaterpillar$radiussqu <- (onecaterpillar$Width/2)^2
+onecaterpillar$Volume <- pi*onecaterpillar$radiussqu*onecaterpillar$Length
 
-plot(onecaterpillar.minustiny$volume, onecaterpillar.minustiny$Biomass)
+plot(onecaterpillar$Volume, onecaterpillar$Biomass2)
 ### pretty good line, a few rogue ones..
 
-massvolumelm <- lm(Biomass~volume, data=onecaterpillar.minustiny)
-summary(massvolumelm)
-autoplot(massvolumelm, smooth.colour = NA) #not good..?
+hist(onecaterpillar$Biomass1) ## definitely not Gaussian
+hist(onecaterpillar$volume) ## definitely not Gaussian
 
-ggplot(onecaterpillar.minustiny, aes(volume, Biomass))+
+#log transforming volume and biomass- problem with zero?!
+onecaterpillar$logVolume <- log(onecaterpillar$Volume)
+hist(onecaterpillar$logVolume) ## far more normally distributed
+
+onecaterpillar$logBiomass1 <- log(onecaterpillar$Biomass1) ### zero becomes infinity, do I add 1?
+onecaterpillar$logBiomass2 <- log(onecaterpillar$Biomass2)
+hist(onecaterpillar$logBiomass1) # still not normal
+hist(onecaterpillar$logBiomass2) # still not normal
+
+# plots before logged
+ggplot(onecaterpillar, aes(Volume, Biomass1))+
   geom_point()+
   geom_smooth(method="lm")+
   theme_bw()
 
-ggplot(onecaterpillar.minustiny, aes(volume, Biomass, colour=Year))+
+
+ggplot(onecaterpillar, aes(Volume, Biomass2, colour=Year))+
   geom_point()+
   geom_smooth(method="lm")+
   theme_bw()
-## different betwen years..?
-massvolumeyearlm <- lm(Biomass~volume*Year, data=onecaterpillar.minustiny)
+
+#plot logged
+ggplot(onecaterpillar, aes(logVolume, logBiomass2, colour=Year))+
+  geom_point()+
+  geom_smooth(method="lm")+
+  theme_bw()
+
+## different between years..? cant put in logged as -inf in biomass 1
+massvolumeyearlm <- lm(cbind(Biomass1,Biomass2)~Volume*Year, data=onecaterpillar)
 summary(massvolumeyearlm)
-# not significant
+
 
