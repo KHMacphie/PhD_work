@@ -13,6 +13,7 @@ library(tidyr)
 library(lme4)
 library(MCMCglmm)
 library(forcats)
+library(gridExtra)
 
 ### Habitat data set
 
@@ -160,7 +161,8 @@ ggplot(Habitat_props_long, aes(Site, Proportion))+
   geom_bar(aes(fill=Tree), stat="identity")+
   theme_bw()+
   theme(axis.text.x= element_text(angle=90))+
-  scale_fill_brewer(palette="Spectral")
+  scale_fill_brewer(palette="Spectral")+
+  xlab("Site")
   #scale_fill_brewer(palette="Set3")
 
 #prop by latitude
@@ -172,7 +174,8 @@ ggplot(Props_long_siteinfo, aes(fct_inorder(Site), Proportion))+
   geom_bar(aes(fill=Tree), stat="identity")+
   theme_bw()+
   theme(axis.text.x= element_text(angle=90))+
-  scale_fill_brewer(palette="Spectral")
+  scale_fill_brewer(palette="Spectral")+
+  xlab("Site")
 
 #prop by elevation- some sites have same elevation so not quite right
 Props_long_siteinfo <- Props_long_siteinfo[order(Props_long_siteinfo$Mean.Elev),] 
@@ -180,7 +183,8 @@ ggplot(Props_long_siteinfo, aes(fct_inorder(Site), Proportion))+
   geom_bar(aes(fill=Tree), stat="identity")+
   theme_bw()+
   theme(axis.text.x= element_text(angle=90))+
-  scale_fill_brewer(palette="Spectral")
+  scale_fill_brewer(palette="Spectral")+
+  xlab("Site")
 
 #Make mean foliage scores long
 Habitat_FS <- Habitat_Site[,1:12]
@@ -190,7 +194,8 @@ ggplot(Habitat_FS_long, aes(Site, FS))+
   geom_bar(aes(fill=Tree), stat="identity")+
   theme_bw()+
   theme(axis.text.x= element_text(angle=90))+
-  scale_fill_brewer(palette="Spectral")
+  scale_fill_brewer(palette="Spectral")+
+  xlab("Site")
 #scale_fill_brewer(palette="Set3")
 
 #FS graph by latitude
@@ -202,7 +207,8 @@ ggplot(FS_long_siteinfo, aes(fct_inorder(Site), FS))+
   geom_bar(aes(fill=Tree), stat="identity")+
   theme_bw()+
   theme(axis.text.x= element_text(angle=90))+
-  scale_fill_brewer(palette="Spectral")
+  scale_fill_brewer(palette="Spectral")+
+  xlab("Site")
 
 #FS graph by elevation
 FS_long_siteinfo <- FS_long_siteinfo[order(FS_long_siteinfo$Mean.Elev),] 
@@ -210,7 +216,8 @@ ggplot(FS_long_siteinfo, aes(fct_inorder(Site), FS))+
   geom_bar(aes(fill=Tree), stat="identity")+
   theme_bw()+
   theme(axis.text.x= element_text(angle=90))+
-  scale_fill_brewer(palette="Spectral")
+  scale_fill_brewer(palette="Spectral")+
+  xlab("Site")
 
  
 
@@ -301,3 +308,128 @@ ggplot(treeprop.df, aes(treesp, coeff))+
   geom_errorbar(aes(ymax=upci, ymin=lowci, width=0.5))+
   theme_bw()+
   theme(axis.text.x= element_text(angle=90))
+
+##########################################################################################
+#### Redo model with no fixed effects for proportion and FS not condensing otherdecid ####
+##########################################################################################
+# Model priors
+k<-10000
+prior<-list(R=list(V=1,nu=0.002),
+            G=list(G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
+                   G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
+                   G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
+                   G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
+                   G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k)))
+
+
+#MMpropNoFixed<- MCMCglmm(caterpillars~1, 
+#                       random=~site+sitetree+siteday+tree.species+idv(~Alder_prop+Ash_prop+Aspen_prop+Beech_prop+Birch_prop+Elm_prop+Oak_prop+Sycamore_prop+Willow_prop+Conifer_prop+OthDecid_prop), 
+#                       family="poisson", data=cater_habitat, prior=prior, nitt=200000, burnin=20000, pr=TRUE)
+#save(MMpropNoFixed, file = "~/Documents/Models/MMpropNoFixed.RData")
+load("~/Documents/Models/MMpropNoFixed.RData")
+
+colnames(MMpropNoFixed$Sol[,5039:5067]) # tree sp= 5039:5056, prop= 5057:5067
+
+
+#MMFSNoFixed<- MCMCglmm(caterpillars~1, 
+#                         random=~site+sitetree+siteday+tree.species+idv(~Alder_FS+Ash_FS+Aspen_FS+Beech_FS+Birch_FS+Elm_FS+Oak_FS+Sycamore_FS+Willow_FS+Conifer_FS+OthDecid_FS), 
+#                         family="poisson", data=cater_habitat, prior=prior, nitt=200000, burnin=20000, pr=TRUE)
+#save(MMFSNoFixed, file = "~/Documents/Models/MMFSNoFixed.RData")
+load("~/Documents/Models/MMFSNoFixed.RData")
+
+#######################
+#### MMpropNoFixed ####
+#######################
+
+# Dataframe for coeffs and CIs for tree species
+MMproptreesp <- MMpropNoFixed$Sol[,5039:5056] # crop to just the columns wanted
+MMproptreesp.df <- data.frame(treesp=c(colnames(MMproptreesp))) #dataframe with column for yearsite 
+MMproptreesp.df$coeff <- apply(MMproptreesp,2, mean) # mean 
+for(i in 1:length(MMproptreesp.df$treesp)) {   # loop for CIs
+  A <- HPDinterval(MMproptreesp[,i])
+  MMproptreesp.df$lowci[i] <- A["var1","lower"] 
+  MMproptreesp.df$upci[i] <- A["var1","upper"] 
+} 
+MMproptreesp.df$treesp <- gsub("tree.species.","", MMproptreesp.df$treesp)
+
+#dataframe for coeffs and CIs for tree proportions
+MMproptreeprops <- MMpropNoFixed$Sol[,5057:5067] # crop to just the columns wanted
+MMproptreeprops.df <- data.frame(treesp=c(colnames(MMproptreeprops))) #dataframe with column for yearsite 
+MMproptreeprops.df$coeff <- apply(MMproptreeprops,2, mean) # mean 
+for(i in 1:length(MMproptreeprops.df$treesp)) {   # loop for CIs
+  A <- HPDinterval(MMproptreeprops[,i])
+  MMproptreeprops.df$lowci[i] <- A["var1","lower"] 
+  MMproptreeprops.df$upci[i] <- A["var1","upper"] 
+} 
+MMproptreeprops.df$treesp <- gsub("_prop.NA.1","", MMproptreeprops.df$treesp)
+
+#plot tree species
+MMpropBeaten <- ggplot(MMproptreesp.df, aes(treesp, coeff))+
+  geom_point(size=3, alpha=0.5)+
+  geom_errorbar(aes(ymax=upci, ymin=lowci, width=0.5))+
+  theme_bw()+
+  theme(axis.text.x= element_text(angle=90))+
+  ggtitle("Tree Beaten, Prop")
+
+#plot tree proportion
+MMpropHabitat <- ggplot(MMproptreeprops.df, aes(treesp, coeff))+
+  geom_point(size=3, alpha=0.5)+
+  geom_errorbar(aes(ymax=upci, ymin=lowci, width=0.5))+
+  theme_bw()+
+  theme(axis.text.x= element_text(angle=90))+
+  ggtitle("Habitat Composition, Prop")
+
+MMproprow1 <- grid.arrange(MMpropHabitat)
+MMproprow2 <- grid.arrange(MMpropBeaten)
+MMprop.panel <- grid.arrange(MMproprow1, MMproprow2, nrow = 2, heights = c(1, 1))
+
+#######################
+#### MMFSNoFixed ####
+#######################
+
+# Dataframe for coeffs and CIs for tree species
+MMFStreesp <- MMFSNoFixed$Sol[,5039:5056] # crop to just the columns wanted
+MMFStreesp.df <- data.frame(treesp=c(colnames(MMFStreesp))) #dataframe with column for yearsite 
+MMFStreesp.df$coeff <- apply(MMFStreesp,2, mean) # mean 
+for(i in 1:length(MMFStreesp.df$treesp)) {   # loop for CIs
+  A <- HPDinterval(MMFStreesp[,i])
+  MMFStreesp.df$lowci[i] <- A["var1","lower"] 
+  MMFStreesp.df$upci[i] <- A["var1","upper"] 
+} 
+MMFStreesp.df$treesp <- gsub("tree.species.","", MMFStreesp.df$treesp)
+
+#dataframe for coeffs and CIs for tree proportions
+MMFStreeprops <- MMFSNoFixed$Sol[,5057:5067] # crop to just the columns wanted
+MMFStreeprops.df <- data.frame(treesp=c(colnames(MMFStreeprops))) #dataframe with column for yearsite 
+MMFStreeprops.df$coeff <- apply(MMFStreeprops,2, mean) # mean 
+for(i in 1:length(MMFStreeprops.df$treesp)) {   # loop for CIs
+  A <- HPDinterval(MMFStreeprops[,i])
+  MMFStreeprops.df$lowci[i] <- A["var1","lower"] 
+  MMFStreeprops.df$upci[i] <- A["var1","upper"] 
+} 
+MMFStreeprops.df$treesp <- gsub("_FS.NA.1","", MMFStreeprops.df$treesp)
+
+#plot tree species
+MMFSBeaten <- ggplot(MMFStreesp.df, aes(treesp, coeff))+
+  geom_point(size=3, alpha=0.5)+
+  geom_errorbar(aes(ymax=upci, ymin=lowci, width=0.5))+
+  theme_bw()+
+  theme(axis.text.x= element_text(angle=90))+
+  ggtitle("Tree Beaten, FS")
+
+#plot tree proportion
+MMFSHabitat <- ggplot(MMFStreeprops.df, aes(treesp, coeff))+
+  geom_point(size=3, alpha=0.5)+
+  geom_errorbar(aes(ymax=upci, ymin=lowci, width=0.5))+
+  theme_bw()+
+  theme(axis.text.x= element_text(angle=90))+
+  ggtitle("Habitat Composition, FS")
+
+MMFSrow1 <- grid.arrange(MMFSHabitat)
+MMFSrow2 <- grid.arrange(MMFSBeaten)
+MMFS.panel <- grid.arrange(MMFSrow1, MMFSrow2, nrow = 2, heights = c(1, 1))
+
+## all 4 in one grid
+MMrow1 <- grid.arrange(MMpropHabitat, MMFSHabitat, ncol = 2, widths = c(1, 1))
+MMrow2 <- grid.arrange(MMpropBeaten, MMFSBeaten, ncol = 2, widths = c(1, 1))
+MM.panel <- grid.arrange(MMrow1, MMrow2, nrow = 2, heights = c(1, 1))
