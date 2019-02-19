@@ -20,7 +20,7 @@ measured1718 <- read.csv("/Users/s1205615/Documents/PhD (stopped using 12:2:19)/
 cater$STDY <- paste(cater$site, cater$tree, cater$date, cater$year)
 measured1718$STDY <- paste(measured1718$Site, measured1718$Tree, measured1718$Date, measured1718$Year)
 pmatch(measured1718$STDY, cater$STDY, duplicates.ok = TRUE)
-cater <- rename(cater, Biomass="caterpillar.mass")
+cater$Biomass <- cater$caterpillar.mass
 MeasuredBiomass1718 <- merge(measured1718, cater, by="STDY", duplicates.ok=TRUE)
 #### Why have 5 rows been removed?!
 
@@ -39,13 +39,14 @@ MeasuredBiomass1718$weather <- NULL
 MeasuredBiomass1718$date <- NULL
 MeasuredBiomass1718$mass.uncertain <- NULL
 MeasuredBiomass1718$cater.sample <- NULL
+MeasuredBiomass1718$caterpillar.mass <- NULL
 
 ### removing ones that dont have 1 caterpillar reported or have no mass
 onecaterpillar <- subset(MeasuredBiomass1718, caterpillars==1)
 onecaterpillar <- subset(onecaterpillar, Biomass!="")
 onecaterpillar$Year <- as.factor(onecaterpillar$Year)
 #interval cencoring <0.01-0.02
-onecaterpillar$Biomass1 <- revalue(onecaterpillar$Biomass, c("<0.01"="0.00", "0.01"="0.00", "0.02"="0.00"))
+onecaterpillar$Biomass1 <- revalue(onecaterpillar$Biomass, c("<0.01"="0.001", "0.01"="0.001", "0.02"="0.001"))
 onecaterpillar$Biomass2 <- revalue(onecaterpillar$Biomass, c("<0.01"="0.02", "0.01"="0.02", "0.02"="0.02"))
 onecaterpillar$Biomass1 <- as.numeric(as.character(onecaterpillar$Biomass1))
 onecaterpillar$Biomass2 <- as.numeric(as.character(onecaterpillar$Biomass2))
@@ -64,7 +65,7 @@ hist(onecaterpillar$volume) ## definitely not Gaussian
 onecaterpillar$logVolume <- log(onecaterpillar$Volume)
 hist(onecaterpillar$logVolume) ## far more normally distributed
 
-onecaterpillar$logBiomass1 <- log(onecaterpillar$Biomass1) ### zero becomes infinity, do I add 1?
+onecaterpillar$logBiomass1 <- log(onecaterpillar$Biomass1)
 onecaterpillar$logBiomass2 <- log(onecaterpillar$Biomass2)
 hist(onecaterpillar$logBiomass1) # still not normal
 hist(onecaterpillar$logBiomass2) # still not normal
@@ -82,13 +83,13 @@ ggplot(onecaterpillar, aes(Volume, Biomass2, colour=Year))+
   theme_bw()
 
 #plot logged
-ggplot(onecaterpillar, aes(logVolume, logBiomass2, colour=Year))+
+ggplot(onecaterpillar, aes(logVolume, logBiomass1, colour=Year))+
   geom_point()+
   geom_smooth(method="lm")+
   theme_bw()
 
-## different between years..? cant put in logged as -inf in biomass 1
-massvolumeyearlm <- lm(cbind(Biomass1,Biomass2)~Volume*Year, data=onecaterpillar)
-summary(massvolumeyearlm)
+#need priors...
 
-
+BiomassVolume <- MCMCglmm(cbind(logBiomass1, logBiomass2) ~ logVolume, family= c("cengaussian", "cengaussian"), data=onecaterpillar, prior=prior, nitt=200000, burnin=20000) 
+                   
+                            
