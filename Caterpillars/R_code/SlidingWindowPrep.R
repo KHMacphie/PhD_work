@@ -23,8 +23,18 @@ cater$year <- as.factor(cater$year)
 cater$siteyear <- paste(cater$site, cater$year)
 cater$sitetree <- paste(cater$site, cater$tree)
 
-SiteYear <- glmer(caterpillars~date*year+I(date^2)+(date|siteyear), family=poisson , data=cater)
+#SiteYear <- glmer(caterpillars~date+I(date^2)+(date|year)+(date|siteyear)+(date|site), family=poisson , data=cater)
+#save(SiteYear, file = "~/Documents/Models/SiteYear.RData")
+load("~/Documents/Models/SiteYear.RData")
+
 summary(SiteYear)
+coef(SiteYear)$site
+coef(SiteYear)$siteyear
+coef(SiteYear)$year
+
+
+
+
 
 
 ## bayesian?
@@ -35,9 +45,9 @@ prior<-list(R=list(V=1,nu=0.002),
                    G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
                    G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k)))
 
-##### Need stronger prior
+### is idh() different variances and us() uniform variances?
 SiteCurves<- MCMCglmm(caterpillars~date*year+I(date^2), 
-                       random=~us(1+date):siteyear+sitetree+siteday, 
+                       random=~us(1+date):siteyear+us(1+date):site+sitetree+siteday, 
                        family="poisson", data=cater_habitat_condensed, prior=prior, nitt=250000, burnin=25000, pr=TRUE)
-save(MultiMembRE, file = "~/Documents/Models/MultiMembRE.RData")
-load("~/Documents/Models/MultiMembRE.RData")
+save(MultiMembRE, file = "~/Documents/Models/SiteCurves.RData")
+load("~/Documents/Models/SiteCurves.RData")
