@@ -16,53 +16,19 @@ library(MCMCglmm)
 
 ##### Setting up dataframe #####
 
-site <- read_csv("Dropbox/master_data/site/site_details.csv", 
-                 col_types = cols(`Mean Elev` = col_double()))
+site <- read.csv("Dropbox/master_data/site/site_details.csv")
+colnames(site)[4:6] <- c("latitude", "longitude", "elevation")
 
-#site <- read_csv("~/Dropbox/master_data/site/site_details.csv", 
-#col_types = cols(`Mean Elev` = col_double()))
-cater <- read_csv("Dropbox/master_data/inverts/Branch_Beating_correctingID.csv", 
-                  col_types = cols(year = col_factor(levels = c("2014", 
-                                                                "2015", "2016", "2017", "2018"))))
-#cater <- read_csv("~/Dropbox/master_data/inverts/Branch_Beating.csv", 
-#col_types = cols(year = col_factor(levels = c("2014", 
-#                                             "2015", "2016", "2017", "2018"))))
+cater <- read_csv("Dropbox/master_data/inverts/Branch_Beating_correctingID.csv")
+cater$year <- as.factor(cater$year)
 
-temp <- read_csv("Dropbox/master_data/site/temperatures.csv", 
-                 col_types = cols(year = col_factor(levels = c("2014", 
-                                                               "2015", "2016", "2017", "2018"))))
 
-#cater<- mutate(cater, catbinom=caterpillars)
-#cater$catbinom[which(cater$caterpillars>1)]<-1
-#cater<-cater[-which(is.na(cater$catbinom)==TRUE),]
 pmatch(cater$site,site$site,duplicates.ok=TRUE)
 all_data<- merge(cater, site, by="site", duplicates.ok=TRUE)
-all_data<- rename(all_data, latitude="Mean Lat")
-all_data<- rename(all_data, longitude="Mean Long")
-all_data<- rename(all_data, elevation="Mean Elev")
-all_data$sitetree <- paste(all_data$tree, all_data$site)
-#all_data<-all_data[-which(is.na(all_data$caterpillars)==TRUE),] 
+
+
 all_data$treespecies <- all_data$`tree species`
-
-temp$yearsite<- paste(temp$site, temp$year) #nests site and year
-
-#### Temperature data frame ####
-mean_temps <- data.frame(site=temp$site, year=temp$year)
-#View(mean_temps)
-mean_temps <- mean_temps[!duplicated(mean_temps), ] #remove duplicated rows
-mean_temps$yearsite <- paste(mean_temps$site, mean_temps$year)
-pmatch(mean_temps$yearsite, temp$yearsite)
-mean_temps <- mean_temps %>% arrange(site) #arrange by site to match means order
-
-## Using mean temp through Apr
-
-mean_temps$Apr <-   tapply(apply(temp[, 1059:1778],1, mean), temp$yearsite, mean) #calculating mean temp within time window for each logger then the mean of the two values per site
-
-## Putting into full dataframe with all beating and site data
 all_data$yearsite<- paste(all_data$site, all_data$year)
-pmatch(all_data$yearsite, mean_temps$yearsite)
-mean_temps <- select(mean_temps, -site, -year)
-all_data<- merge(all_data, mean_temps, by="yearsite", duplicates.ok=TRUE)
 all_data$sitetree <- paste(all_data$tree, all_data$site)
 all_data$siteday <- paste(all_data$site, all_data$date, all_data$year)
 all_data$obs<-as.factor(seq(1,length(all_data[,1])))
@@ -124,3 +90,32 @@ ggplot(treesp.df, aes(treesp, coeff))+
   geom_errorbar(aes(ymax=upci, ymin=lowci, width=0.5))+
   theme_bw()+
   theme(axis.text.x= element_text(angle=90))
+
+
+##########################################################
+#### Interaction with tree species:date and site:date ####
+##########################################################
+
+
+all_data$datecentred <- all_data$date-mean(all_data$date)
+
+a<-1000
+prior<-list(R=list(V=diag(1), nu=0.002), 
+               G=list(G1=list(V=diag(1), nu=1, alpha.mu=c(0), alpha.V=diag(1)*a),
+                      G1=list(V=diag(2), nu=2, alpha.mu=c(0,0), alpha.V=diag(2)*a),
+                      G1=list(V=diag(2), nu=2, alpha.mu=c(0,0), alpha.V=diag(2)*a)))
+
+#TreeSpeciesDateRE<- MCMCglmm(caterpillars~datecentred*year+I(datecentred^2), random=~sitetree+us(1+datecentred):site+us(1+datecentred):treespecies, family="poisson", data=all_data, prior=prior, nitt=200000, burnin=20000, pr=TRUE)
+#save(TreeSpeciesDateRE, file = "~/Documents/Models/TreeSpeciesDateRE.RData")
+load("~/Documents/Models/TreeSpeciesDateRE.RData")
+
+a<-1000
+prior2<-list(R=list(V=diag(1), nu=0.002), 
+            G=list(G1=list(V=diag(1), nu=1, alpha.mu=c(0), alpha.V=diag(1)*a),
+                   G1=list(V=diag(2), nu=2, alpha.mu=c(0,0), alpha.V=diag(2)*a),
+                   G1=list(V=diag(2), nu=2, alpha.mu=c(0,0), alpha.V=diag(2)*a),
+                   G1=list(V=diag(2), nu=2, alpha.mu=c(0,0), alpha.V=diag(2)*a)))
+
+#TreeSpDSY<- MCMCglmm(caterpillars~datecentred*year+I(datecentred^2), random=~sitetree+us(1+datecentred):site+us(1+datecentred):treespecies+us(1+datecentred):yearsite, family="poisson", data=all_data, prior=prior2, nitt=200000, burnin=20000, pr=TRUE)
+#save(TreeSpDSY, file = "~/Documents/Models/TreeSpDSY.RData")
+load("~/Documents/Models/TreeSpDSY.RData")
