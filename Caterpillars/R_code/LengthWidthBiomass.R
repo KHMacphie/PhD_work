@@ -71,7 +71,7 @@ hist(onecaterpillar$logBiomass1) # still not normal
 hist(onecaterpillar$logBiomass2) # still not normal
 
 # plots before logged
-ggplot(onecaterpillar, aes(Volume, Biomass1))+
+ggplot(onecaterpillar, aes(Volume, Biomass1, colour=y))+
   geom_point()+
   geom_smooth(method="lm")+
   theme_bw()
@@ -89,7 +89,7 @@ ggplot(onecaterpillar, aes(logVolume, logBiomass1, colour=Year))+
   theme_bw()
 
 #need priors...
-
-BiomassVolume <- MCMCglmm(cbind(logBiomass1, logBiomass2) ~ logVolume, family= c("cengaussian", "cengaussian"), data=onecaterpillar, prior=prior, nitt=200000, burnin=20000) 
-                   
+prior<-list(R=list(V=diag(1), nu=0.002))
+BiomassVolume <- MCMCglmm(cbind(logBiomass1, logBiomass2) ~ logVolume, family= "cengaussian", data=onecaterpillar, prior=prior, nitt=200000, burnin=20000) 
+BiomassVolumeYear <-MCMCglmm(cbind(logBiomass1, logBiomass2) ~ logVolume*Year, family= "cengaussian", data=onecaterpillar, prior=prior, nitt=200000, burnin=20000)
                             
