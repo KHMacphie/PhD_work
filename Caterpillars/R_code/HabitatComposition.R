@@ -137,6 +137,8 @@ Habitat_Site$Willow_prop <- Habitat_Site$Willow_FS/Habitat_Site$Total
 Habitat_Site$Conifer_prop <- Habitat_Site$Conifer_FS/Habitat_Site$Total
 Habitat_Site$OthDecid_prop <- Habitat_Site$OthDecid_FS/Habitat_Site$Total
 
+#write.table(Habitat_Site,"Dropbox/master_data/site/Habitat_Site.csv", sep=",", col.names=T, row.names=F)
+#write.table(Habitat_Site,"Dropbox/Ross Judge/data/Habitat_Site.csv", sep=",", col.names=T, row.names=F)
 #checking its correct
 #Habitat_Site$propadd <- rowSums(Habitat_Site_mean[,14:24]) # it is
 
