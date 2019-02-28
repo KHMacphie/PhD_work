@@ -29,9 +29,10 @@ all_data<- merge(cater, site, by="site", duplicates.ok=TRUE)
 
 all_data$treespecies <- all_data$`tree species`
 all_data$yearsite<- paste(all_data$site, all_data$year)
-all_data$sitetree <- paste(all_data$tree, all_data$site)
+all_data$sitetree <- paste(all_data$site, all_data$tree)
 all_data$siteday <- paste(all_data$site, all_data$date, all_data$year)
 all_data$obs<-as.factor(seq(1,length(all_data[,1])))
+all_data$sitetreesp <- paste(all_data$site, all_data$treespecies)
 
 ########################################################################################
 ##### MCMCglmm for base date, year date^2 model with tree species as random effect #####
@@ -119,3 +120,14 @@ prior2<-list(R=list(V=diag(1), nu=0.002),
 #TreeSpDSY<- MCMCglmm(caterpillars~datecentred*year+I(datecentred^2), random=~sitetree+us(1+datecentred):site+us(1+datecentred):treespecies+us(1+datecentred):yearsite, family="poisson", data=all_data, prior=prior2, nitt=200000, burnin=20000, pr=TRUE)
 #save(TreeSpDSY, file = "~/Documents/Models/TreeSpDSY.RData")
 load("~/Documents/Models/TreeSpDSY.RData")
+
+a<-1000
+prior2<-list(R=list(V=diag(1), nu=0.002), 
+             G=list(G1=list(V=diag(1), nu=1, alpha.mu=c(0), alpha.V=diag(1)*a),
+                    G1=list(V=diag(2), nu=2, alpha.mu=c(0,0), alpha.V=diag(2)*a),
+                    G1=list(V=diag(2), nu=2, alpha.mu=c(0,0), alpha.V=diag(2)*a),
+                    G1=list(V=diag(2), nu=2, alpha.mu=c(0,0), alpha.V=diag(2)*a)))
+
+TreeSpSite <- MCMCglmm(caterpillars~datecentred*year+I(datecentred^2), random=~sitetree+us(1+datecentred):sitetreesp+us(1+datecentred):site+us(1+datecentred):treespecies, family="poisson", data=all_data, prior=prior2, nitt=200000, burnin=20000, pr=TRUE)
+save(TreeSpSite, file = "~/Documents/Models/TreeSpSite.RData")
+load("~/Documents/Models/TreeSpSite.RData")  
