@@ -225,9 +225,9 @@ ggplot(FS_long_siteinfo, aes(fct_inorder(Site), FS))+
 
 
 
-#########################################
+################################################
 #### Putting Aspen, Beech + Elm in OthDecid ####
-#########################################
+################################################
 Habitat_Site_condensed <- Habitat_Site
 Habitat_Site_condensed$OthDecid_prop <- Habitat_Site_condensed$Elm_prop+Habitat_Site_condensed$Aspen_prop+Habitat_Site_condensed$OthDecid_prop+Habitat_Site_condensed$Beech_prop
 Habitat_Site_condensed$OthDecid_FS <- Habitat_Site_condensed$Elm_FS+Habitat_Site_condensed$Aspen_FS+Habitat_Site_condensed$OthDecid_FS+Habitat_Site_condensed$Beech_FS
@@ -385,9 +385,9 @@ MMproprow1 <- grid.arrange(MMpropHabitat)
 MMproprow2 <- grid.arrange(MMpropBeaten)
 MMprop.panel <- grid.arrange(MMproprow1, MMproprow2, nrow = 2, heights = c(1, 1))
 
-#######################
+#####################
 #### MMFSNoFixed ####
-#######################
+#####################
 
 # Dataframe for coeffs and CIs for tree species
 MMFStreesp <- MMFSNoFixed$Sol[,5039:5056] # crop to just the columns wanted
@@ -435,3 +435,41 @@ MMFS.panel <- grid.arrange(MMFSrow1, MMFSrow2, nrow = 2, heights = c(1, 1))
 MMrow1 <- grid.arrange(MMpropHabitat, MMFSHabitat, ncol = 2, widths = c(1, 1))
 MMrow2 <- grid.arrange(MMpropBeaten, MMFSBeaten, ncol = 2, widths = c(1, 1))
 MM.panel <- grid.arrange(MMrow1, MMrow2, nrow = 2, heights = c(1, 1))
+
+
+#####################################
+#### Tree props as fixed effects ####
+#####################################
+k<-10000
+prior2<-list(R=list(V=1,nu=0.002),
+            G=list(G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
+                   G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
+                   G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
+                   G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k)))
+
+HabitatFixed<- MCMCglmm(caterpillars~Alder_prop+Ash_prop+Aspen_prop+Beech_prop+Birch_prop+Elm_prop+Oak_prop+Sycamore_prop+Willow_prop+Conifer_prop+OthDecid_prop, 
+                       random=~site+sitetree+siteday+tree.species, 
+                       family="poisson", data=cater_habitat, prior=prior2, nitt=300000, burnin=30000, pr=TRUE)
+save(HabitatFixed, file = "~/Documents/Models/HabitatFixed.RData")
+load("~/Documents/Models/HabitatFixed.RData")
+
+#Warning message:
+#  In MCMCglmm(caterpillars ~ Alder_prop + Ash_prop + Aspen_prop +  :
+#                some fixed effects are not estimable and have been removed. Use singular.ok=TRUE to sample these effects, but use an informative prior!
+
+HabFixedProp <- HabitatFixed$Sol[,2:11] # crop to just the columns wanted
+HabFixedProp.df <- data.frame(treesp=c(colnames(HabFixedProp))) #dataframe with column for yearsite 
+HabFixedProp.df$coeff <- apply(HabFixedProp,2, mean) # mean 
+for(i in 1:length(HabFixedProp.df$treesp)) {   # loop for CIs
+  A <- HPDinterval(HabFixedProp[,i])
+  HabFixedProp.df$lowci[i] <- A["var1","lower"] 
+  HabFixedProp.df$upci[i] <- A["var1","upper"] 
+} 
+HabFixedProp.df$treesp <- gsub("_prop.","", HabFixedProp.df$treesp)
+
+ggplot(HabFixedProp.df, aes(treesp, coeff))+
+  geom_point(size=3, alpha=0.5)+
+  geom_errorbar(aes(ymax=upci, ymin=lowci, width=0.5))+
+  theme_bw()+
+  theme(axis.text.x= element_text(angle=90))+
+  ggtitle("Habitat Composition Fixed, Prop")
