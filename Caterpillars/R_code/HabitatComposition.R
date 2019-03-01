@@ -447,10 +447,10 @@ prior2<-list(R=list(V=1,nu=0.002),
                    G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
                    G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k)))
 
-HabitatFixed<- MCMCglmm(caterpillars~Alder_prop+Ash_prop+Aspen_prop+Beech_prop+Birch_prop+Elm_prop+Oak_prop+Sycamore_prop+Willow_prop+Conifer_prop+OthDecid_prop, 
-                       random=~site+sitetree+siteday+tree.species, 
-                       family="poisson", data=cater_habitat, prior=prior2, nitt=300000, burnin=30000, pr=TRUE)
-save(HabitatFixed, file = "~/Documents/Models/HabitatFixed.RData")
+#HabitatFixed<- MCMCglmm(caterpillars~Alder_prop+Ash_prop+Aspen_prop+Beech_prop+Birch_prop+Elm_prop+Oak_prop+Sycamore_prop+Willow_prop+Conifer_prop+OthDecid_prop, 
+#                       random=~site+sitetree+siteday+tree.species, 
+#                       family="poisson", data=cater_habitat, prior=prior2, nitt=300000, burnin=30000, pr=TRUE)
+#save(HabitatFixed, file = "~/Documents/Models/HabitatFixed.RData")
 load("~/Documents/Models/HabitatFixed.RData")
 
 #Warning message:

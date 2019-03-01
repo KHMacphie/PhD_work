@@ -96,6 +96,7 @@ prior<-list(R=list(V=diag(1), nu=0.002))
 #save(BiomassVolume, file = "~/Documents/Models/BiomassVolume.RData")
 load("~/Documents/Models/BiomassVolume.RData")  
 
+par(mfcol=c(1,1))
 hist(BiomassVolume$VCV)
 #### get ally to check histogram of residuals
 
