@@ -52,7 +52,7 @@ prior3<-list(R=list(V=1,nu=0.002),
 
 #TreeSpeciesRE<- MCMCglmm(caterpillars~date*year+I(date^2), random=~site+sitetree+siteday+treespecies, family="poisson", data=all_data, prior=prior3, nitt=200000, burnin=20000, pr=TRUE)
 #save(TreeSpeciesRE, file = "~/Documents/PhD/GitHub/R/Caterpillar analysis/Models/TreeSpeciesRE.RData")
-load("~/Documents/PhD/GitHub/R/Caterpillar analysis/Models/TreeSpeciesRE.RData")
+load("~/Documents/PhD (stopped using 12:2:19)/GitHub/R/Caterpillar analysis/Models/TreeSpeciesRE.RData")
 
 #check if model generates sensible results
 # TreeSpeciesRE
@@ -86,11 +86,13 @@ for(i in 1:length(treesp.df$treesp)) {   # loop for CIs
 } 
 treesp.df$treesp <- gsub("treespecies.","", treesp.df$treesp)
 
-ggplot(treesp.df, aes(treesp, coeff))+
+ggplot(treesp.df, aes(treesp, exp(coeff)))+
   geom_point(size=3, alpha=0.5)+
-  geom_errorbar(aes(ymax=upci, ymin=lowci, width=0.5))+
+  geom_errorbar(aes(ymax=exp(upci), ymin=exp(lowci), width=0.5))+
   theme_bw()+
-  theme(axis.text.x= element_text(angle=90))
+  theme(axis.text.x= element_text(angle=90))+
+  xlab("Tree Type")+
+ theme(text = element_text(size=30))
 
 
 ##########################################################
@@ -131,3 +133,53 @@ prior2<-list(R=list(V=diag(1), nu=0.002),
 TreeSpSite <- MCMCglmm(caterpillars~datecentred*year+I(datecentred^2), random=~sitetree+us(1+datecentred):sitetreesp+us(1+datecentred):site+us(1+datecentred):treespecies, family="poisson", data=all_data, prior=prior2, nitt=200000, burnin=20000, pr=TRUE)
 save(TreeSpSite, file = "~/Documents/Models/TreeSpSite.RData")
 load("~/Documents/Models/TreeSpSite.RData")  
+
+## plotting site*date vs treesp*date for WEG
+which(colnames(TreeSpeciesDateRE$VCV)=="datecentred:datecentred.site") #= 5
+which(colnames(TreeSpeciesDateRE$VCV)=="datecentred:datecentred.treespecies") #= 9
+A <- HPDinterval((TreeSpeciesDateRE$VCV[,5]))
+B <- HPDinterval((TreeSpeciesDateRE$VCV[,9]))
+SDTD <- data.frame(variable=c("site:date", "treetype:date"), 
+                   coeff=c(mean(TreeSpeciesDateRE$VCV[,5]), mean(TreeSpeciesDateRE$VCV[,9])),
+                   lowerci=c(A["var1","lower"], B["var1","lower"]),
+                   upperci=c(A["var1","upper"], B["var1","upper"]))
+
+
+ggplot(SDTD, aes(variable, coeff))+
+  geom_point(size=3, alpha=0.5)+
+  geom_errorbar(aes(ymax=upperci, ymin=lowerci, width=0.5))+
+  theme_bw()+
+  theme(axis.text.x= element_text(angle=90))+
+  theme(text = element_text(size=25),axis.text.x = element_text(angle=45, hjust=1))+
+  xlab(NULL)
+
+
+### treesp:date actually might be significant? lower ci 1.220188e-05
+which(colnames(TreeSpeciesRE$Sol)=="treespecies.?") #= 5022
+which(colnames(TreeSpeciesRE$Sol)=="treespecies.Willow") #= 5039
+
+treespdateREcropped <- TreeSpeciesDateRE$Sol[,795:812] # crop to just the columns wanted
+treespdate.df <- data.frame(treetype=c(colnames(treespdateREcropped))) #dataframe with column for yearsite 
+treespdate.df$coeff <- apply(treespdateREcropped,2, mean) # mean 
+for(i in 1:length(treespdate.df$treetype)) {   # loop for CIs
+  A <- HPDinterval(treespdateREcropped[,i])
+  treespdate.df$lowci[i] <- A["var1","lower"] 
+  treespdate.df$upci[i] <- A["var1","upper"] 
+} 
+treespdate.df$treetype <- gsub("datecentred.treespecies.","", treespdate.df$treetype)
+
+ggplot(treespdate.df, aes(treetype, coeff))+
+  geom_point(size=3, alpha=0.5)+
+  geom_errorbar(aes(ymax=upci, ymin=lowci, width=0.5))+
+  theme_bw()+
+  theme(axis.text.x= element_text(angle=90))+
+  xlab("Tree Type")+
+  theme(text = element_text(size=30))
+
+ggplot(treespdate.df, aes(treetype, exp(coeff)))+
+  geom_point(size=3, alpha=0.5)+
+  geom_errorbar(aes(ymax=exp(upci), ymin=exp(lowci), width=0.5))+
+  theme_bw()+
+  theme(axis.text.x= element_text(angle=90))+
+  xlab("Tree Type")+
+  theme(text = element_text(size=30))

@@ -137,6 +137,43 @@ L.TempPoisson.2018 <-
   mean(6.817*TempPoisson$Sol[,"date:Apr"])*pred_day +  #date*Apr
   mean(6.817*TempPoisson$Sol[,"Apr"])  #Apr
 
+
+M.TempPoisson.2014 <-  
+  mean(TempPoisson$Sol[,"(Intercept)"]) +  #Intercept+yearchange
+  mean(TempPoisson$Sol[,"date"])*pred_day +  #date+yearchange
+  mean(TempPoisson$Sol[,"I(date^2)"])*pred_day^2 +  #I(date^2)
+  mean(7.545*TempPoisson$Sol[,"date:Apr"])*pred_day +  #date*Apr
+  mean(7.545*TempPoisson$Sol[,"Apr"]) #Apr
+
+M.TempPoisson.2015 <-  
+  mean(TempPoisson$Sol[,"(Intercept)"]+TempPoisson$Sol[,"year2015"]) +  #Intercept+yearchange
+  mean(TempPoisson$Sol[,"date"]+TempPoisson$Sol[,"date:year2015"])*pred_day +  #date+yearchange
+  mean(TempPoisson$Sol[,"I(date^2)"])*pred_day^2 +  #I(date^2)
+  mean(7.545*TempPoisson$Sol[,"date:Apr"])*pred_day +  #date*Apr
+  mean(7.545*TempPoisson$Sol[,"Apr"])  #Apr
+
+M.TempPoisson.2016 <-
+  mean(TempPoisson$Sol[,"(Intercept)"]+TempPoisson$Sol[,"year2016"]) +  #Intercept+yearchange
+  mean(TempPoisson$Sol[,"date"]+TempPoisson$Sol[,"date:year2016"])*pred_day +  #date+yearchange
+  mean(TempPoisson$Sol[,"I(date^2)"])*pred_day^2 +  #I(date^2)
+  mean(7.545*TempPoisson$Sol[,"date:Apr"])*pred_day +  #date*Apr
+  mean(7.545*TempPoisson$Sol[,"Apr"])  #Apr
+
+M.TempPoisson.2017 <-  
+  mean(TempPoisson$Sol[,"(Intercept)"]+TempPoisson$Sol[,"year2017"]) +  #Intercept+yearchange
+  mean(TempPoisson$Sol[,"date"]+TempPoisson$Sol[,"date:year2017"])*pred_day +  #date+yearchange
+  mean(TempPoisson$Sol[,"I(date^2)"])*pred_day^2 +  #I(date^2)
+  mean(7.545*TempPoisson$Sol[,"date:Apr"])*pred_day +  #date*Apr
+  mean(7.545*TempPoisson$Sol[,"Apr"])  #Apr
+
+M.TempPoisson.2018 <- 
+  mean(TempPoisson$Sol[,"(Intercept)"]+TempPoisson$Sol[,"year2018"]) +  #Intercept+yearchange
+  mean(TempPoisson$Sol[,"date"]+TempPoisson$Sol[,"date:year2018"])*pred_day +  #date+yearchange
+  mean(TempPoisson$Sol[,"I(date^2)"])*pred_day^2 +  #I(date^2)
+  mean(7.545*TempPoisson$Sol[,"date:Apr"])*pred_day +  #date*Apr
+  mean(7.545*TempPoisson$Sol[,"Apr"])  #Apr
+
+
 #Q3 for mean Apr temps input for higher temperature curves by year
 
 H.TempPoisson.2014 <-  
@@ -174,27 +211,38 @@ H.TempPoisson.2018 <-
   mean(8.442*TempPoisson$Sol[,"date:Apr"])*pred_day +  #date*Apr
   mean(8.442*TempPoisson$Sol[,"Apr"])  #Apr
 
+par(mfcol=c(1,1),mar=c(2,1,1,1), oma=c(1,3,0,0),cex=1.8)
+plot(pred_day, exp(H.TempPoisson.2014), type="l", lwd=3, xlab="Date", ylab="Abundance", ylim=c(0,0.17)) #black
+points(pred_day, exp(H.TempPoisson.2015), type="l",lwd=3, col=2) #red
+points(pred_day, exp(H.TempPoisson.2016), type="l",lwd=3,col=3) #green
+points(pred_day, exp(H.TempPoisson.2017), type="l", lwd=3, col=4)
+points(pred_day, exp(H.TempPoisson.2018), type="l", lwd=3, col=5)
+legend("topleft", legend=c("2014","2015", "2016", "2017", "2018"), lty=c(1,1,1,1,1), lwd=3, col=c(1,2,3,4,5), cex=0.95, seg.len=0.8)
+title(ylab="Abundance", outer=TRUE, line = 1)
+title( xlab="Date", outer=TRUE, line = 0)
+legend("topright", legend="8.4°C", bty="n")
+
 
 par(mfcol=c(2,1), mar=c(2,1,1,1), oma=c(2,4,0,0), cex=1.8)
-plot(pred_day, exp(L.TempPoisson.2014), type="l", lwd=3, xlab=NA, ylab=NA, ylim=c(0,0.27), axes=F) #black
+plot(pred_day, exp(L.TempPoisson.2014), type="l", lwd=3, xlab=NA, ylab=NA, ylim=c(0,0.3), axes=F) #black
 points(pred_day, exp(L.TempPoisson.2015), type="l",lwd=3, col=2) #red
 points(pred_day, exp(L.TempPoisson.2016), type="l",lwd=3,col=3) #green
 points(pred_day, exp(L.TempPoisson.2017), type="l", lwd=3, col=4)
 points(pred_day, exp(L.TempPoisson.2018), type="l", lwd=3, col=5)
 legend("topleft", legend=c("2014","2015", "2016", "2017", "2018"), lty=c(1,1,1,1,1), lwd=3, col=c(1,2,3,4,5), cex=0.85, seg.len=0.8)
-legend("topright", legend="Q1", bty="n")
+legend("topright", legend="6.8°C", bty="n")
 box()
 axis(side = 1, tck = -.015, labels = NA)
 axis(side = 2, tck = -.015, labels = NA)
 axis(side = 1, lwd = 0, line = -.4)
 axis(side = 2, lwd = 0, line = -.4, las = 1)
 
-plot(pred_day, exp(H.TempPoisson.2014), type="l", lwd=3,  ylab=NA, xlab=NA, ylim=c(0,0.27), axes=F) #black
+plot(pred_day, exp(H.TempPoisson.2014), type="l", lwd=3,  ylab=NA, xlab=NA, ylim=c(0,0.3), axes=F) #black
 points(pred_day, exp(H.TempPoisson.2015), type="l",lwd=3, col=2) #red
 points(pred_day, exp(H.TempPoisson.2016), type="l",lwd=3,col=3) #green
 points(pred_day, exp(H.TempPoisson.2017), type="l", lwd=3, col=4)
 points(pred_day, exp(H.TempPoisson.2018), type="l", lwd=3, col=5)
-legend("topright", legend="Q3", bty="n")
+legend("topright", legend="8.4°C", bty="n")
 box()
 axis(side = 1, tck = -.015, labels = NA)
 axis(side = 2, tck = -.015, labels = NA)
@@ -203,6 +251,9 @@ axis(side = 2, lwd = 0, line = -.4, las = 1)
 title(ylab="Caterpillar Abundance", outer=TRUE, line = 2)
 title( xlab="Date", outer=TRUE, line = 0)
 
+plot(pred_day, exp(H.TempPoisson.2014), type="l", lwd=3, xlab="Date", ylab="Abundance", ylim=c(0,0.27))
+points(pred_day, exp(M.TempPoisson.2014), type="l", lwd=3, col=2)
+points(pred_day, exp(L.TempPoisson.2014), type="l", lwd=3, col=3)
 #### Calculating peak dates #### 
 
 #Peak for each year at Apr Q1, mean and Q3 with CI
@@ -304,6 +355,25 @@ ggplot(TempPoisson.caterpeaks, aes(year, peakdate, colour= as.factor(temp)))+
   geom_point(size=3, alpha=0.5)+
   #geom_errorbar(aes(ymin=lowerCI, ymax=upperCI, width=0.3))+
   theme_bw()
+
+TempPoisson14 <- subset(TempPoisson.caterpeaks, year=="2014")
+
+TempTiming <- ggplot(TempPoisson14, aes(x=temp, y=peakdate))+
+  geom_point()+
+  geom_smooth(stat="identity")+
+  geom_errorbar(aes(ymax=upperCI, ymin=lowerCI, width=0.05))+
+  theme_bw()+
+  xlab("Temperature (°C)")+
+  ylab("Peak Date")+
+  theme(text = element_text(size=30))
+TempTiming
+
+
+# B
+-mean(TempPoisson$Sol[,"date:Apr"]/(2*TempPoisson$Sol[,"I(date^2)"])) #-4.688788
+-HPDinterval(TempPoisson$Sol[,"date:Apr"]/(2*TempPoisson$Sol[,"I(date^2)"])) # -2.688257 -6.620825
+# graph gradient
+(TempPoisson14[1,2]-TempPoisson14[2,2])/(TempPoisson14[1,3]-TempPoisson14[2,3]) #-4.688788
 
 
 #### loop for posterior distribution of peak date 2014 lower temp ####

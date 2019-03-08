@@ -378,7 +378,7 @@ MMpropHabitat <- ggplot(MMproptreeprops.df, aes(treesp, coeff))+
   geom_point(size=3, alpha=0.5)+
   geom_errorbar(aes(ymax=upci, ymin=lowci, width=0.5))+
   theme_bw()+
-  theme(axis.text.x= element_text(angle=90))+
+  theme(text = element_text(size=25),axis.text.x= element_text(angle=90))+
   ggtitle("Habitat Composition, Prop")
 
 MMproprow1 <- grid.arrange(MMpropHabitat)
@@ -424,7 +424,7 @@ MMFSHabitat <- ggplot(MMFStreeprops.df, aes(treesp, coeff))+
   geom_point(size=3, alpha=0.5)+
   geom_errorbar(aes(ymax=upci, ymin=lowci, width=0.5))+
   theme_bw()+
-  theme(axis.text.x= element_text(angle=90))+
+  theme(text = element_text(size=25),axis.text.x= element_text(angle=90))+
   ggtitle("Habitat Composition, FS")
 
 MMFSrow1 <- grid.arrange(MMFSHabitat)
@@ -436,6 +436,9 @@ MMrow1 <- grid.arrange(MMpropHabitat, MMFSHabitat, ncol = 2, widths = c(1, 1))
 MMrow2 <- grid.arrange(MMpropBeaten, MMFSBeaten, ncol = 2, widths = c(1, 1))
 MM.panel <- grid.arrange(MMrow1, MMrow2, nrow = 2, heights = c(1, 1))
 
+# just habitat
+MMrow1 <- grid.arrange(MMpropHabitat, MMFSHabitat, ncol = 1, widths = c(1, 1))
+MM.panel.hab <- grid.arrange(MMrow1, nrow = 1)
 
 #####################################
 #### Tree props as fixed effects ####

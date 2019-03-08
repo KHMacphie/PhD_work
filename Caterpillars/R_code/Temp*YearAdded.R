@@ -75,7 +75,7 @@ cater.temp$obs<-as.factor(seq(1,length(cater.temp[,1])))
 
 #TempYear<- MCMCglmm(catbinom~date*year+Apr*date+Apr*year+I(date^2), random=~site+sitetree+siteday, family="categorical", data=cater.temp, prior=prior1, nitt=200000)
 #save(TempYear, file = "~/Dropbox/KirstyMacPhie/caterpillar analysis/results/TempYear.RData")
-load("~/Dropbox/KirstyMacPhie/caterpillar analysis/results/TempYear.RData")
+load("~/Documents/PhD (stopped using 12:2:19)/GitHub/R/Caterpillar analysis/results/TempYear.RData")
 
 
 #### looking at model output ####

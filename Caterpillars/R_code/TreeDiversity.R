@@ -47,5 +47,32 @@ divSY$N <- SpSY$Freq
 divSY$Npart <- divSY$N*(divSY$N-1)
 divSY$D <- 1-(divSY$npart/divSY$Npart)
 divSY$expD <- exp(divSY$D)
+expD.SY <- data.frame(SY=divSY$SY, expD=divSY$expD)
 
-###  So few trees of so few species D has strange numbers and -Inf's
+###  using expD to remove -Inf and makes positive and smaller value variation
+
+cater <- read.csv("~/Dropbox/master_data/inverts/Branch_Beating_correctingID.csv")
+cater$SY <- paste(cater$site, cater$year)
+cater <- merge(cater, expD.SY, by="SY", duplicates.ok=TRUE, all.x=TRUE)
+
+cater$datecentred <- cater$date-mean(cater$date)
+cater$siteday <- paste(cater$site, cater$date, cater$year)
+cater$sitetree <- paste(cater$site, cater$tree)
+cater$year <- as.factor(cater$year)
+
+########################################################################
+#### Model with interaction between expD and quadratic ####
+########################################################################
+
+k<-10000
+prior<-list(R=list(V=1,nu=0.002),
+            G=list(G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
+                   G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
+                   G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k)))
+
+#expDivQuad<- MCMCglmm(caterpillars~datecentred*year+I(datecentred^2)*expD+I(expD^2), random=~sitetree+site+siteday, family="poisson", data=cater, prior=prior, nitt=300000, burnin=30000)
+#save(expDivQuad, file = "~/Documents/Models/expDivQuad.RData")
+load("~/Documents/Models/expDivQuad.RData")
+
+summary(expDivQuad)
+plot(expDivQuad$Sol) #fixedeffects

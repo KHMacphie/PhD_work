@@ -41,7 +41,7 @@ prior<-list(R=list(V=1,nu=0.002),
                     G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k)))
 
 #TreePhenQuad<- MCMCglmm(caterpillars~datecentred*year+I(datecentred^2)*FLwidth+I(FLwidth^2), random=~sitetree+site+siteday, family="poisson", data=cater, prior=prior, nitt=300000, burnin=30000)
-save(TreePhenQuad, file = "~/Documents/Models/TreePhenQuad.RData")
+#save(TreePhenQuad, file = "~/Documents/Models/TreePhenQuad.RData")
 load("~/Documents/Models/TreePhenQuad.RData")
 
 summary(TreePhenQuad)
