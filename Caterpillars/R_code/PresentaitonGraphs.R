@@ -56,4 +56,54 @@ points(pred_day, exp(H.TempPoisson.2018.6), type="l", lwd=3, col=2)
 title(ylab="Abundance", outer=TRUE, line = 1)
 title( xlab="Date", outer=TRUE, line = 0)
 
+# to make graph with different peak date
 plot(pred_day, exp(H.TempPoisson.2018), type="l", lwd=3, col=2, xlab="Date", ylab="Abundance", ylim=c(0,0.12), xlim=c(100,200)) 
+
+
+# elev/lat/temp graph for Apr temp
+rm(list=ls())
+setwd('/Users/s1205615/')
+library(ggplot2)
+library(dplyr)
+library(ggfortify)
+library(readr)
+library(tidyr)
+
+site <- read.csv("Dropbox/master_data/site/site_details.csv")
+
+site<- rename(site, latitude="Mean.Lat")
+site<- rename(site, longitude="Mean.Long")
+site<- rename(site, elevation="Mean.Elev")
+glimpse(site)
+
+temp <- read.csv("Dropbox/master_data/site/temperatures.csv")
+temp$year <- as.factor(temp$year)
+temp$yearsite<- paste(temp$site, temp$year) #nests site and year?
+
+##making data frame for the required data- site, year, latitude, elevation- need to add mean temp
+mean_temps <- data.frame(site=temp$site, year=temp$year)
+View(mean_temps)
+mean_temps <- mean_temps[!duplicated(mean_temps), ] #remove duplicated rows
+mean_temps$yearsite <- paste(mean_temps$site, mean_temps$year)
+pmatch(mean_temps$yearsite, temp$yearsite)
+mean_temps <- mean_temps %>% arrange(site) #arrange by site to match means order
+
+Means <- data.frame(site=mean_temps$site, year=mean_temps$year, yearsite=mean_temps$yearsite, MeanTemp=tapply(apply(temp[, 1059:1778],1, mean), temp$yearsite, mean))
+View(Means)
+pmatch(Means$site, site$site)
+temp_lat_elev <- merge(Means, site, by="site", duplicates.ok=TRUE)
+View(temp_lat_elev)
+temp_lat_elev <- select(temp_lat_elev, site, year, MeanTemp, latitude, elevation)
+
+temp_lat_elev_wide <- spread(temp_lat_elev, year, MeanTemp)
+View(temp_lat_elev_wide)
+
+temp_lat_elev_wide <- arrange(temp_lat_elev_wide, latitude)
+
+par(oma=c(1,1,1,4))
+plot(temp_lat_elev_wide$latitude, temp_lat_elev_wide$elevation, type="l", col=1, ylim=c(0,850), xlab=expression("Latitude ("~degree~"N)"), ylab="Elevation (m)", cex.axis=1.5, cex.lab=1.5)
+par(new = T)
+plot(temp_lat_elev_wide$latitude, temp_lat_elev_wide$`2018`, col=2, type="l", axes=F, xlab=NA, ylab=NA, ylim=c(0,10), cex.axis=1.5)
+axis(side = 4, cex.axis=1.5)
+mtext(side = 4, line = 3, expression("Mean Temperature (°C)"), cex=1.5)
+legend("topright", legend=c("Elevation","Temperature"), lty=c(1,1), pch=c(NA, NA), col=c("black", "red3"), cex=1.2)
