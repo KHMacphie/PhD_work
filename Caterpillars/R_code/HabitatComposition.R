@@ -476,3 +476,35 @@ ggplot(HabFixedProp.df, aes(treesp, coeff))+
   theme_bw()+
   theme(axis.text.x= element_text(angle=90))+
   ggtitle("Habitat Composition Fixed, Prop")
+
+
+######################################################
+#### Random look at possible site width variation ####
+######################################################
+
+cater$sitetree <- paste(cater$tree, cater$site)
+cater$siteday <- paste(cater$site, cater$date, cater$year)
+cater$datecent <-cater$date-mean(cater$date)
+cater$year <- as.factor(cater$year)
+
+k<-10000
+prior<-list(R=list(V=1,nu=0.002),
+             G=list(G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
+                    G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k)))
+
+#SiteWidth<- MCMCglmm(caterpillars~datecent*year+datecent*site+I(datecent^2)*site, 
+#                       random=~sitetree+siteday, 
+#                       family="poisson", data=cater, prior=prior, nitt=300000, burnin=30000)
+#save(SiteWidth, file = "~/Documents/Models/SiteWidth.RData")
+load("~/Documents/Models/SiteWidth.RData")
+
+summary(SiteWidth)
+plot(SiteWidth$Sol)
+site <- read.csv("Dropbox/master_data/site/site_details.csv")
+site <- site[order(site$site),] 
+SiteCurves <- data.frame(site=site$site)
+siteint <- SiteWidth$Sol[,1:49]
+colnames(siteint)
+siteint[,2:6]= NULL
+
+### im just wasting time...
