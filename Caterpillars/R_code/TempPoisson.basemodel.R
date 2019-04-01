@@ -76,6 +76,7 @@ prior2<-list(R=list(V=1,nu=0.002),
 #TempPoisson<- MCMCglmm(caterpillars~date*year+Apr*date+I(date^2), random=~site+sitetree+siteday, family="poisson", data=cater.temp, prior=prior2, nitt=200000, burnin=20000)
 #save(TempPoisson, file = "~/Dropbox/KirstyMacPhie/caterpillar analysis/results/TempPoisson.RData")
 load("~/Dropbox/KirstyMacPhie/caterpillar analysis/results/TempPoisson.RData")
+load('/Volumes/s1205615/PhD/GitHub/R/Caterpillar analysis/results/TempPoisson.RData')
 summary(TempPoisson)
 
 plot(TempPoisson$VCV) #random effects
@@ -432,3 +433,148 @@ HPDinterval(postdistributions$peakheight) # lower 0.09813638 upper 0.4848575
 ##lots of ridiculously extreme values in the post distributions...
 
 
+
+##### trying a 3d plot   temp 6.5-8.5
+df3d <- data.frame(date=seq(120,175,1))
+df3d$'6.5' <-  
+  exp(mean(TempPoisson$Sol[,"(Intercept)"]) +  #Intercept+yearchange
+  mean(TempPoisson$Sol[,"date"])*df3d$date +  #date+yearchange
+  mean(TempPoisson$Sol[,"I(date^2)"])*df3d$date^2 +  #I(date^2)
+  mean(6.5*TempPoisson$Sol[,"date:Apr"])*df3d$date +  #date*Apr
+  mean(6.5*TempPoisson$Sol[,"Apr"]))  #Apr
+df3d$'8.5' <-  
+  exp(mean(TempPoisson$Sol[,"(Intercept)"]) +  #Intercept+yearchange
+        mean(TempPoisson$Sol[,"date"])*df3d$date +  #date+yearchange
+        mean(TempPoisson$Sol[,"I(date^2)"])*df3d$date^2 +  #I(date^2)
+        mean(8.5*TempPoisson$Sol[,"date:Apr"])*df3d$date +  #date*Apr
+        mean(8.5*TempPoisson$Sol[,"Apr"]))  #Apr
+
+df3d$'6.6' <-  
+  +   exp(mean(TempPoisson$Sol[,"(Intercept)"]) +  #Intercept+yearchange
+            +         mean(TempPoisson$Sol[,"date"])*df3d$date +  #date+yearchange
+            +         mean(TempPoisson$Sol[,"I(date^2)"])*df3d$date^2 +  #I(date^2)
+            +         mean(6.6*TempPoisson$Sol[,"date:Apr"])*df3d$date +  #date*Apr
+            +         mean(6.6*TempPoisson$Sol[,"Apr"]))  #Apr
+ df3d$'6.7' <-  
+  +   exp(mean(TempPoisson$Sol[,"(Intercept)"]) +  #Intercept+yearchange
+            +         mean(TempPoisson$Sol[,"date"])*df3d$date +  #date+yearchange
+            +         mean(TempPoisson$Sol[,"I(date^2)"])*df3d$date^2 +  #I(date^2)
+            +         mean(6.7*TempPoisson$Sol[,"date:Apr"])*df3d$date +  #date*Apr
+            +         mean(6.7*TempPoisson$Sol[,"Apr"]))  #Apr
+ df3d$'6.8' <-  
+  +   exp(mean(TempPoisson$Sol[,"(Intercept)"]) +  #Intercept+yearchange
+            +         mean(TempPoisson$Sol[,"date"])*df3d$date +  #date+yearchange
+            +         mean(TempPoisson$Sol[,"I(date^2)"])*df3d$date^2 +  #I(date^2)
+            +         mean(6.8*TempPoisson$Sol[,"date:Apr"])*df3d$date +  #date*Apr
+            +         mean(6.8*TempPoisson$Sol[,"Apr"]))  #Apr
+ df3d$'6.9' <-  
+  +   exp(mean(TempPoisson$Sol[,"(Intercept)"]) +  #Intercept+yearchange
+            +         mean(TempPoisson$Sol[,"date"])*df3d$date +  #date+yearchange
+            +         mean(TempPoisson$Sol[,"I(date^2)"])*df3d$date^2 +  #I(date^2)
+            +         mean(6.9*TempPoisson$Sol[,"date:Apr"])*df3d$date +  #date*Apr
+            +         mean(6.9*TempPoisson$Sol[,"Apr"]))  #Apr
+ df3d$'7.0' <-  
+  +   exp(mean(TempPoisson$Sol[,"(Intercept)"]) +  #Intercept+yearchange
+            +         mean(TempPoisson$Sol[,"date"])*df3d$date +  #date+yearchange
+            +         mean(TempPoisson$Sol[,"I(date^2)"])*df3d$date^2 +  #I(date^2)
+            +         mean(7.0*TempPoisson$Sol[,"date:Apr"])*df3d$date +  #date*Apr
+            +         mean(7.0*TempPoisson$Sol[,"Apr"]))  #Apr
+ df3d$'7.1' <-  
+  +   exp(mean(TempPoisson$Sol[,"(Intercept)"]) +  #Intercept+yearchange
+            +         mean(TempPoisson$Sol[,"date"])*df3d$date +  #date+yearchange
+            +         mean(TempPoisson$Sol[,"I(date^2)"])*df3d$date^2 +  #I(date^2)
+            +         mean(7.1*TempPoisson$Sol[,"date:Apr"])*df3d$date +  #date*Apr
+            +         mean(7.1*TempPoisson$Sol[,"Apr"]))  #Apr
+ df3d$'7.2' <-  
+  +   exp(mean(TempPoisson$Sol[,"(Intercept)"]) +  #Intercept+yearchange
+            +         mean(TempPoisson$Sol[,"date"])*df3d$date +  #date+yearchange
+            +         mean(TempPoisson$Sol[,"I(date^2)"])*df3d$date^2 +  #I(date^2)
+            +         mean(7.2*TempPoisson$Sol[,"date:Apr"])*df3d$date +  #date*Apr
+            +         mean(7.2*TempPoisson$Sol[,"Apr"]))  #Apr
+ df3d$'7.3' <-  
+  +   exp(mean(TempPoisson$Sol[,"(Intercept)"]) +  #Intercept+yearchange
+            +         mean(TempPoisson$Sol[,"date"])*df3d$date +  #date+yearchange
+            +         mean(TempPoisson$Sol[,"I(date^2)"])*df3d$date^2 +  #I(date^2)
+            +         mean(7.3*TempPoisson$Sol[,"date:Apr"])*df3d$date +  #date*Apr
+            +         mean(7.3*TempPoisson$Sol[,"Apr"]))  #Apr
+ df3d$'7.4' <-  
+  +   exp(mean(TempPoisson$Sol[,"(Intercept)"]) +  #Intercept+yearchange
+            +         mean(TempPoisson$Sol[,"date"])*df3d$date +  #date+yearchange
+            +         mean(TempPoisson$Sol[,"I(date^2)"])*df3d$date^2 +  #I(date^2)
+            +         mean(7.4*TempPoisson$Sol[,"date:Apr"])*df3d$date +  #date*Apr
+            +         mean(7.4*TempPoisson$Sol[,"Apr"]))  #Apr
+ df3d$'7.5' <-  
+  +   exp(mean(TempPoisson$Sol[,"(Intercept)"]) +  #Intercept+yearchange
+            +         mean(TempPoisson$Sol[,"date"])*df3d$date +  #date+yearchange
+            +         mean(TempPoisson$Sol[,"I(date^2)"])*df3d$date^2 +  #I(date^2)
+            +         mean(7.5*TempPoisson$Sol[,"date:Apr"])*df3d$date +  #date*Apr
+            +         mean(7.5*TempPoisson$Sol[,"Apr"]))  #Apr
+ df3d$'7.6' <-  
+  +   exp(mean(TempPoisson$Sol[,"(Intercept)"]) +  #Intercept+yearchange
+            +         mean(TempPoisson$Sol[,"date"])*df3d$date +  #date+yearchange
+            +         mean(TempPoisson$Sol[,"I(date^2)"])*df3d$date^2 +  #I(date^2)
+            +         mean(7.6*TempPoisson$Sol[,"date:Apr"])*df3d$date +  #date*Apr
+            +         mean(7.6*TempPoisson$Sol[,"Apr"]))  #Apr
+ df3d$'7.7' <-  
+  +   exp(mean(TempPoisson$Sol[,"(Intercept)"]) +  #Intercept+yearchange
+            +         mean(TempPoisson$Sol[,"date"])*df3d$date +  #date+yearchange
+            +         mean(TempPoisson$Sol[,"I(date^2)"])*df3d$date^2 +  #I(date^2)
+            +         mean(7.7*TempPoisson$Sol[,"date:Apr"])*df3d$date +  #date*Apr
+            +         mean(7.7*TempPoisson$Sol[,"Apr"]))  #Apr
+ df3d$'7.8' <-  
+  +   exp(mean(TempPoisson$Sol[,"(Intercept)"]) +  #Intercept+yearchange
+            +         mean(TempPoisson$Sol[,"date"])*df3d$date +  #date+yearchange
+            +         mean(TempPoisson$Sol[,"I(date^2)"])*df3d$date^2 +  #I(date^2)
+            +         mean(7.8*TempPoisson$Sol[,"date:Apr"])*df3d$date +  #date*Apr
+            +         mean(7.8*TempPoisson$Sol[,"Apr"]))  #Apr
+ df3d$'7.9' <-  
+  +   exp(mean(TempPoisson$Sol[,"(Intercept)"]) +  #Intercept+yearchange
+            +         mean(TempPoisson$Sol[,"date"])*df3d$date +  #date+yearchange
+            +         mean(TempPoisson$Sol[,"I(date^2)"])*df3d$date^2 +  #I(date^2)
+            +         mean(7.9*TempPoisson$Sol[,"date:Apr"])*df3d$date +  #date*Apr
+            +         mean(7.9*TempPoisson$Sol[,"Apr"]))  #Apr
+ df3d$'8.0' <-  
+  +   exp(mean(TempPoisson$Sol[,"(Intercept)"]) +  #Intercept+yearchange
+            +         mean(TempPoisson$Sol[,"date"])*df3d$date +  #date+yearchange
+            +         mean(TempPoisson$Sol[,"I(date^2)"])*df3d$date^2 +  #I(date^2)
+            +         mean(8.0*TempPoisson$Sol[,"date:Apr"])*df3d$date +  #date*Apr
+            +         mean(8.0*TempPoisson$Sol[,"Apr"]))  #Apr
+ df3d$'8.1' <-  
+  +   exp(mean(TempPoisson$Sol[,"(Intercept)"]) +  #Intercept+yearchange
+            +         mean(TempPoisson$Sol[,"date"])*df3d$date +  #date+yearchange
+            +         mean(TempPoisson$Sol[,"I(date^2)"])*df3d$date^2 +  #I(date^2)
+            +         mean(8.1*TempPoisson$Sol[,"date:Apr"])*df3d$date +  #date*Apr
+            +         mean(8.1*TempPoisson$Sol[,"Apr"]))  #Apr
+ df3d$'8.2' <-  
+  +   exp(mean(TempPoisson$Sol[,"(Intercept)"]) +  #Intercept+yearchange
+            +         mean(TempPoisson$Sol[,"date"])*df3d$date +  #date+yearchange
+            +         mean(TempPoisson$Sol[,"I(date^2)"])*df3d$date^2 +  #I(date^2)
+            +         mean(8.2*TempPoisson$Sol[,"date:Apr"])*df3d$date +  #date*Apr
+            +         mean(8.2*TempPoisson$Sol[,"Apr"]))  #Apr
+ df3d$'8.3' <-  
+  +   exp(mean(TempPoisson$Sol[,"(Intercept)"]) +  #Intercept+yearchange
+            +         mean(TempPoisson$Sol[,"date"])*df3d$date +  #date+yearchange
+            +         mean(TempPoisson$Sol[,"I(date^2)"])*df3d$date^2 +  #I(date^2)
+            +         mean(8.3*TempPoisson$Sol[,"date:Apr"])*df3d$date +  #date*Apr
+            +         mean(8.3*TempPoisson$Sol[,"Apr"]))  #Apr
+ df3d$'8.4' <-  
+  +   exp(mean(TempPoisson$Sol[,"(Intercept)"]) +  #Intercept+yearchange
+            +         mean(TempPoisson$Sol[,"date"])*df3d$date +  #date+yearchange
+            +         mean(TempPoisson$Sol[,"I(date^2)"])*df3d$date^2 +  #I(date^2)
+            +         mean(8.4*TempPoisson$Sol[,"date:Apr"])*df3d$date +  #date*Apr
+            +         mean(8.4*TempPoisson$Sol[,"Apr"]))  #Apr
+ df3d$'8.5' <-  
+  +   exp(mean(TempPoisson$Sol[,"(Intercept)"]) +  #Intercept+yearchange
+            +         mean(TempPoisson$Sol[,"date"])*df3d$date +  #date+yearchange
+            +         mean(TempPoisson$Sol[,"I(date^2)"])*df3d$date^2 +  #I(date^2)
+            +         mean(8.5*TempPoisson$Sol[,"date:Apr"])*df3d$date +  #date*Apr
+            +         mean(8.5*TempPoisson$Sol[,"Apr"]))  #Apr
+
+library(tidyr)
+df3dlong <- gather(df3d, temp, cater,2:22)
+df3dlong$temp <- as.numeric(as.character(df3dlong$temp))
+library(lattice)
+cloud(df3dlong$cater ~ df3dlong$date*df3dlong$temp)
+library(rgl)
+library(car)
+scatter3d(df3dlong$cater,df3dlong$date,df3dlong$temp) # does work but not in r studio
