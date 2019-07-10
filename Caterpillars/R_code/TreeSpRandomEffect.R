@@ -13,6 +13,7 @@ library(tidyr)
 #library(doBy)
 library(lme4)
 library(MCMCglmm)
+library(grid)
 
 ##### Setting up dataframe #####
 
@@ -86,13 +87,24 @@ for(i in 1:length(treesp.df$treesp)) {   # loop for CIs
 } 
 treesp.df$treesp <- gsub("treespecies.","", treesp.df$treesp)
 
-ggplot(treesp.df, aes(treesp, exp(coeff)))+
+par(mfcol=c(1,1), cex=1.5)
+hist(TreeSpeciesRE$VCV[,"treespecies"], breaks=40)
+abline(v=0, col=2,type="l", lty=2)
+title(ylab="Frequency", outer=TRUE, line = 2)
+title( xlab="Variance", outer=TRUE, line = 0)
+legend("topright", legend="B", bty="n") 
+
+
+ggplot(treesp.df, aes(treesp, coeff))+
   geom_point(size=3, alpha=0.5)+
-  geom_errorbar(aes(ymax=exp(upci), ymin=exp(lowci), width=0.5))+
+  geom_errorbar(aes(ymax=upci, ymin=lowci, width=0.5))+
   theme_bw()+
   theme(axis.text.x= element_text(angle=90))+
-  xlab("Tree Type")+
+  xlab("Tree Taxa")+
+  geom_hline(yintercept=0, linetype="dashed", color = "red")+
+  #labs(tag = "B")+
  theme(text = element_text(size=30))
+
 
 
 ##########################################################
@@ -152,6 +164,20 @@ ggplot(SDTD, aes(variable, coeff))+
   theme(axis.text.x= element_text(angle=90))+
   theme(text = element_text(size=25),axis.text.x = element_text(angle=45, hjust=1))+
   xlab(NULL)
+
+par(mfcol=c(1,1), cex=1.5)
+hist(TreeSpeciesDateRE$VCV[,"datecentred:datecentred.treespecies"], breaks=40)#, xlim=c(0,0.005))
+abline(v=0, col=2,type="l", lty=2)
+title(ylab="Frequency", outer=TRUE, line = 2)
+title( xlab="Variance", outer=TRUE, line = 0)
+legend("topright", legend="A", bty="n") 
+
+par(mfcol=c(1,1), cex=1.5)
+hist(TreeSpeciesDateRE$VCV[,"datecentred:datecentred.site"], breaks=40, xlim=c(0,0.005))
+abline(v=0, col=2,type="l", lty=2)
+title(ylab="Frequency", outer=TRUE, line = 2)
+title( xlab="Variance", outer=TRUE, line = 0)
+legend("topright", legend="B", bty="n") 
 
 
 ### treesp:date actually might be significant? lower ci 1.220188e-05

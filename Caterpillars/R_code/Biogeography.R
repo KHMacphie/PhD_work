@@ -736,7 +736,7 @@ points(predday, exp(Lat15.low), type="l",lwd=3, col=2) #red
 points(predday, exp(Lat16.low), type="l",lwd=3,col=3) #green
 points(predday, exp(Lat17.low), type="l", lwd=3, col=4)
 points(predday, exp(Lat18.low), type="l", lwd=3, col=5)
-legend("topright", legend="56°", bty="n")
+legend("topright", legend="A", bty="n") #"56°"
 box()
 axis(side = 1, tck = -.015, labels = NA)
 axis(side = 2, tck = -.015, labels = NA)
@@ -748,8 +748,8 @@ points(predday, exp(Lat15.high), type="l",lwd=3, col=2) #red
 points(predday, exp(Lat16.high), type="l",lwd=3,col=3) #green
 points(predday, exp(Lat17.high), type="l", lwd=3, col=4)
 points(predday, exp(Lat18.high), type="l", lwd=3, col=5)
-legend("topleft", legend=c("2014","2015", "2016", "2017", "2018"), lty=c(1,1,1,1,1), lwd=3, col=c(1,2,3,4,5), cex=0.85, seg.len=0.8)
-legend("topright", legend="57.5°", bty="n")
+legend("topleft", legend=c("2014","2015", "2016", "2017", "2018"), lty=c(1,1,1,1,1), lwd=3, col=c(1,2,3,4,5), cex=0.8, seg.len=0.5, bty="n")
+legend("topright", legend="B", bty="n") #"57.5°"
 box()
 axis(side = 1, tck = -.015, labels = NA)
 axis(side = 2, tck = -.015, labels = NA)
@@ -766,7 +766,7 @@ points(predday, exp(Elev15.low), type="l",lwd=3, col=2) #red
 points(predday, exp(Elev16.low), type="l",lwd=3,col=3) #green
 points(predday, exp(Elev17.low), type="l", lwd=3, col=4)
 points(predday, exp(Elev18.low), type="l", lwd=3, col=5)
-legend("topright", legend="50m", bty="n")
+legend("topright", legend="A", bty="n") #"50m"
 box()
 axis(side = 1, tck = -.015, labels = NA)
 axis(side = 2, tck = -.015, labels = NA)
@@ -778,8 +778,8 @@ points(predday, exp(Elev15.high), type="l",lwd=3, col=2) #red
 points(predday, exp(Elev16.high), type="l",lwd=3,col=3) #green
 points(predday, exp(Elev17.high), type="l", lwd=3, col=4)
 points(predday, exp(Elev18.high), type="l", lwd=3, col=5)
-legend("topleft", legend=c("2014","2015", "2016", "2017", "2018"), lty=c(1,1,1,1,1), lwd=3, col=c(1,2,3,4,5), cex=0.85, seg.len=0.8)
-legend("topright", legend="350m", bty="n")
+legend("topleft", legend=c("2014","2015", "2016", "2017", "2018"), lty=c(1,1,1,1,1), lwd=3, col=c(1,2,3,4,5), cex=0.8, seg.len=0.5, bty="n")
+legend("topright", legend="B", bty="n") #350m
 box()
 axis(side = 1, tck = -.015, labels = NA)
 axis(side = 2, tck = -.015, labels = NA)

@@ -431,6 +431,21 @@ MMFSrow1 <- grid.arrange(MMFSHabitat)
 MMFSrow2 <- grid.arrange(MMFSBeaten)
 MMFS.panel <- grid.arrange(MMFSrow1, MMFSrow2, nrow = 2, heights = c(1, 1))
 
+par(mfcol=c(1,1), cex=1.5)
+hist(MMFSNoFixed$VCV[,5], breaks=40)
+abline(v=0, col=2,type="l", lty=2)
+title(ylab="Frequency", outer=TRUE, line = 2)
+title( xlab="Variance", outer=TRUE, line = 0)
+legend("topright", legend="A", bty="n") 
+
+ggplot(MMFStreeprops.df, aes(treesp, coeff))+
+  geom_point(size=3, alpha=0.5)+
+  geom_errorbar(aes(ymax=upci, ymin=lowci, width=0.5))+
+  theme_bw()+
+  theme(text = element_text(size=25),axis.text.x= element_text(angle=90))+
+  xlab("Tree Taxa")+
+  geom_hline(yintercept=0, linetype="dashed", color = "red")
+
 ## all 4 in one grid
 MMrow1 <- grid.arrange(MMpropHabitat, MMFSHabitat, ncol = 2, widths = c(1, 1))
 MMrow2 <- grid.arrange(MMpropBeaten, MMFSBeaten, ncol = 2, widths = c(1, 1))
