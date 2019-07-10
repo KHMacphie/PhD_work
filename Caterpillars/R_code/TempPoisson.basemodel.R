@@ -15,20 +15,15 @@ site <- read_csv("Dropbox/master_data/site/site_details.csv",
 
 #site <- read_csv("~/Dropbox/master_data/site/site_details.csv", 
 #col_types = cols(`Mean Elev` = col_double()))
-cater <- read_csv("Dropbox/master_data/inverts/Branch_Beating.csv", 
-                  col_types = cols(year = col_factor(levels = c("2014", 
-                                                                "2015", "2016", "2017", "2018"))))
-#cater <- read_csv("~/Dropbox/master_data/inverts/Branch_Beating.csv", 
-#col_types = cols(year = col_factor(levels = c("2014", 
-#                                             "2015", "2016", "2017", "2018"))))
+cater <- read.csv("Dropbox/master_data/inverts/Branch_Beating_correctingID.csv")
+temp <- read.csv("Dropbox/master_data/site/temperatures.csv")
 
-temp <- read_csv("Dropbox/master_data/site/temperatures.csv", 
-                 col_types = cols(year = col_factor(levels = c("2014", 
-                                                               "2015", "2016", "2017", "2018"))))
+cater$year <- as.factor(cater$year)
+temp$year <- as.factor(temp$year)
 
-cater<- mutate(cater, catbinom=caterpillars)
-cater$catbinom[which(cater$caterpillars>1)]<-1
-cater<-cater[-which(is.na(cater$catbinom)==TRUE),]
+#cater<- mutate(cater, catbinom=caterpillars)
+#cater$catbinom[which(cater$caterpillars>1)]<-1
+#cater<-cater[-which(is.na(cater$catbinom)==TRUE),]
 pmatch(cater$site,site$site,duplicates.ok=TRUE)
 all_data<- merge(cater, site, by="site", duplicates.ok=TRUE)
 all_data<- rename(all_data, latitude="Mean Lat")
@@ -65,7 +60,7 @@ cater.temp$siteday <- paste(cater.temp$site, cater.temp$date, cater.temp$year)
 cater.temp$obs<-as.factor(seq(1,length(cater.temp[,1])))
 
 
-#### TempMCMCglmm with Apr*year ####
+#### TempMCMCglmm with Apr*date ####
 
 k<-1000
 prior2<-list(R=list(V=1,nu=0.002),
@@ -76,7 +71,7 @@ prior2<-list(R=list(V=1,nu=0.002),
 #TempPoisson<- MCMCglmm(caterpillars~date*year+Apr*date+I(date^2), random=~site+sitetree+siteday, family="poisson", data=cater.temp, prior=prior2, nitt=200000, burnin=20000)
 #save(TempPoisson, file = "~/Dropbox/KirstyMacPhie/caterpillar analysis/results/TempPoisson.RData")
 load("~/Dropbox/KirstyMacPhie/caterpillar analysis/results/TempPoisson.RData")
-load('/Volumes/s1205615/PhD/GitHub/R/Caterpillar analysis/results/TempPoisson.RData')
+load("/Users/s1205615/Documents/PhD (stopped using 12:2:19)/GitHub/R/Caterpillar analysis/results/TempPoisson.RData")
 summary(TempPoisson)
 
 plot(TempPoisson$VCV) #random effects
@@ -434,7 +429,7 @@ HPDinterval(postdistributions$peakheight) # lower 0.09813638 upper 0.4848575
 
 
 
-##### trying a 3d plot   temp 6.5-8.5
+##### trying a 3d plot   temp 6.5-8.5 ####
 df3d <- data.frame(date=seq(120,175,1))
 df3d$'6.5' <-  
   exp(mean(TempPoisson$Sol[,"(Intercept)"]) +  #Intercept+yearchange
@@ -578,3 +573,77 @@ cloud(df3dlong$cater ~ df3dlong$date*df3dlong$temp)
 library(rgl)
 library(car)
 scatter3d(df3dlong$cater,df3dlong$date,df3dlong$temp) # does work but not in r studio
+
+
+#### Model with temp^2 ####
+
+k<-1000
+prior2<-list(R=list(V=1,nu=0.002),
+             G=list(G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
+                    G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
+                    G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k)))
+
+#TempSquPoisson<- MCMCglmm(caterpillars~date*year+Apr*date+I(date^2)+I(Apr^2), random=~site+sitetree+siteday, family="poisson", data=cater.temp, prior=prior2, nitt=250000, burnin=25000)
+save(TempSquPoisson, file = "~/Documents/Models/TempSquPoisson.RData")
+load("~/Documents/Models/TempSquPoisson.RData")
+summary(TempSquPoisson)
+
+pred_day<-seq(120,175,1)
+plot(pred_day, exp(mean(TempSquPoisson$Sol[,"(Intercept)"]) +  #Intercept+yearchange
+                       +                        mean(TempSquPoisson$Sol[,"date"])*pred_day +  #date+yearchange
+                       +                        mean(TempSquPoisson$Sol[,"I(date^2)"])*pred_day^2 +  #I(date^2)
+                       +                        mean(6.817*TempSquPoisson$Sol[,"date:Apr"])*pred_day +  #date*Apr
+                       +                        mean(6.817*TempSquPoisson$Sol[,"Apr"]) +
+                                                mean(6.817^2*TempSquPoisson$Sol[,"I(Apr^2)"])), type="l", ylab="")
+points(pred_day, exp(mean(TempSquPoisson$Sol[,"(Intercept)"]) +  #Intercept+yearchange
+                         +                        mean(TempSquPoisson$Sol[,"date"])*pred_day +  #date+yearchange
+                         +                        mean(TempSquPoisson$Sol[,"I(date^2)"])*pred_day^2 +  #I(date^2)
+                         +                        mean(7.317*TempSquPoisson$Sol[,"date:Apr"])*pred_day +  #date*Apr
+                         +                        mean(7.317*TempSquPoisson$Sol[,"Apr"]) +
+                       mean(7.317^2*TempSquPoisson$Sol[,"I(Apr^2)"])), type="l", ylab="")
+points(pred_day, exp(mean(TempSquPoisson$Sol[,"(Intercept)"]) +  #Intercept+yearchange
+                         +                        mean(TempSquPoisson$Sol[,"date"])*pred_day +  #date+yearchange
+                         +                        mean(TempSquPoisson$Sol[,"I(date^2)"])*pred_day^2 +  #I(date^2)
+                         +                        mean(7.817*TempSquPoisson$Sol[,"date:Apr"])*pred_day +  #date*Apr
+                         +                        mean(7.817*TempSquPoisson$Sol[,"Apr"]) +
+                       mean(7.817^2*TempSquPoisson$Sol[,"I(Apr^2)"])), type="l", ylab="")
+points(pred_day, exp(mean(TempSquPoisson$Sol[,"(Intercept)"]) +  #Intercept+yearchange
+                         +                        mean(TempSquPoisson$Sol[,"date"])*pred_day +  #date+yearchange
+                         +                        mean(TempSquPoisson$Sol[,"I(date^2)"])*pred_day^2 +  #I(date^2)
+                         +                        mean(8.217*TempSquPoisson$Sol[,"date:Apr"])*pred_day +  #date*Apr
+                         +                        mean(8.217*TempSquPoisson$Sol[,"Apr"]) +
+                       mean(8.217^2*TempSquPoisson$Sol[,"I(Apr^2)"])), type="l", ylab="")
+points(pred_day, exp(mean(TempSquPoisson$Sol[,"(Intercept)"]) +  #Intercept+yearchange
+                         +                        mean(TempSquPoisson$Sol[,"date"])*pred_day +  #date+yearchange
+                         +                        mean(TempSquPoisson$Sol[,"I(date^2)"])*pred_day^2 +  #I(date^2)
+                         +                        mean(8.517*TempSquPoisson$Sol[,"date:Apr"])*pred_day +  #date*Apr
+                         +                        mean(8.517*TempSquPoisson$Sol[,"Apr"]) +
+                       mean(8.517^2*TempSquPoisson$Sol[,"I(Apr^2)"])), type="l", ylab="")
+points(pred_day, exp(mean(TempSquPoisson$Sol[,"(Intercept)"]) +  #Intercept+yearchange
+                         +                        mean(TempSquPoisson$Sol[,"date"])*pred_day +  #date+yearchange
+                         +                        mean(TempSquPoisson$Sol[,"I(date^2)"])*pred_day^2 +  #I(date^2)
+                         +                        mean(8.817*TempSquPoisson$Sol[,"date:Apr"])*pred_day +  #date*Apr
+                         +                        mean(8.817*TempSquPoisson$Sol[,"Apr"]) +
+                       mean(8.817^2*TempSquPoisson$Sol[,"I(Apr^2)"])), type="l", ylab="")
+points(pred_day, exp(mean(TempSquPoisson$Sol[,"(Intercept)"]) +  #Intercept+yearchange
+                         +                        mean(TempSquPoisson$Sol[,"date"])*pred_day +  #date+yearchange
+                         +                        mean(TempSquPoisson$Sol[,"I(date^2)"])*pred_day^2 +  #I(date^2)
+                         +                        mean(9.217*TempSquPoisson$Sol[,"date:Apr"])*pred_day +  #date*Apr
+                         +                        mean(9.217*TempSquPoisson$Sol[,"Apr"]) +
+                       mean(9.217^2*TempSquPoisson$Sol[,"I(Apr^2)"])), type="l", ylab="")
+points(pred_day, exp(mean(TempSquPoisson$Sol[,"(Intercept)"]) +  #Intercept+yearchange
+                         +                        mean(TempSquPoisson$Sol[,"date"])*pred_day +  #date+yearchange
+                         +                        mean(TempSquPoisson$Sol[,"I(date^2)"])*pred_day^2 +  #I(date^2)
+                         +                        mean(10.17*TempSquPoisson$Sol[,"date:Apr"])*pred_day +  #date*Apr
+                         +                        mean(10.17*TempSquPoisson$Sol[,"Apr"]) +
+                       mean(10.17^2*TempSquPoisson$Sol[,"I(Apr^2)"])), type="l", ylab="")
+points(pred_day, exp(mean(TempSquPoisson$Sol[,"(Intercept)"]) +  #Intercept+yearchange
+                         +                        mean(TempSquPoisson$Sol[,"date"])*pred_day +  #date+yearchange
+                         +                        mean(TempSquPoisson$Sol[,"I(date^2)"])*pred_day^2 +  #I(date^2)
+                         +                        mean(10.87*TempSquPoisson$Sol[,"date:Apr"])*pred_day +  #date*Apr
+                         +                        mean(10.87*TempSquPoisson$Sol[,"Apr"]) +
+                       mean(10.87^2*TempSquPoisson$Sol[,"I(Apr^2)"])), type="l", ylab="")
+
+#### still quadratic but broader
+
+#### plot peak height against temp
