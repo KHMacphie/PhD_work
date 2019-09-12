@@ -13,7 +13,7 @@ library(MCMCglmm)
 ##### Setting up dataframe #####
 
 
-cater <- read.csv("Dropbox/master_data/inverts/Branch_Beating_correctingID.csv")
+cater <- read.csv("Dropbox/master_data/inverts/Branch_Beating.csv")
 
 measured1718 <- read.csv("/Users/s1205615/Documents/PhD (stopped using 12:2:19)/Caterpillar Measurements/CaterMeasuredPlus.1718.csv")
 
@@ -61,7 +61,7 @@ plot(onecaterpillar$Volume, onecaterpillar$Biomass2)
 ### pretty good line, a few rogue ones..
 
 hist(onecaterpillar$Biomass1) ## definitely not Gaussian
-hist(onecaterpillar$volume) ## definitely not Gaussian
+hist(onecaterpillar$Volume) ## definitely not Gaussian
 
 #log transforming volume and biomass- problem with zero?!
 onecaterpillar$logVolume <- log(onecaterpillar$Volume)
@@ -116,9 +116,9 @@ plot(onecaterpillar$logVolume, onecaterpillar$logBiomass1, col=2)
 points(predlogvol, predlogmass, type="l")
 points(onecaterpillar$logVolume, onecaterpillar$logBiomass2, col=1)
 
-plot(onecaterpillar$Volume, onecaterpillar$Biomass2, col=1)
+plot(onecaterpillar$Volume, onecaterpillar$Biomass1, col=2)
 points(exp(predlogvol), exp(predlogmass), type="l")
-points(onecaterpillar$Volume, onecaterpillar$Biomass1, col=2)
+points(onecaterpillar$Volume, onecaterpillar$Biomass2, col=1)
 
 #check prediction in onecaterpillar
 onecaterpillar$predmass <- exp(coeff*onecaterpillar$logVolume + intercept)
