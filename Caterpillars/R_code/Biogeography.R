@@ -17,7 +17,7 @@ library(MCMCglmm)
 site <- read.csv("Dropbox/master_data/site/site_details.csv")
 colnames(site)[4:6] <- c("latitude", "longitude", "elevation")
 
-cater <- read_csv("Dropbox/master_data/inverts/Branch_Beating_correctingID.csv")
+cater <- read.csv("Dropbox/master_data/inverts/Branch_Beating.csv")
 cater$year <- as.factor(cater$year)
 
 pmatch(cater$site,site$site,duplicates.ok=TRUE)
@@ -787,3 +787,128 @@ axis(side = 1, lwd = 0, line = -.4)
 axis(side = 2, lwd = 0, line = -.4, las = 1)
 title(ylab="Caterpillar Abundance", outer=TRUE, line = 2)
 title( xlab="Date", outer=TRUE, line = 0)
+
+#### Putting elevation and latitude squared in ####
+all_data$elevcent <- all_data$elevation-mean(all_data$elevation)
+all_data$latcent <- all_data$latitude-mean(all_data$latitude)
+all_data$elevscaled <- all_data$elevation/max(all_data$elevation)
+all_data$datescaled <- all_data$date/max(all_data$date)
+a<-10000
+prior<-list(R=list(V=diag(1), nu=0.002), 
+            G=list(G1=list(V=diag(1), nu=1, alpha.mu=c(0), alpha.V=diag(1)*a),
+                   G1=list(V=diag(1), nu=1, alpha.mu=c(0), alpha.V=diag(1)*a),
+                   G1=list(V=diag(1), nu=1, alpha.mu=c(0), alpha.V=diag(1)*a)))
+
+#Biogeog2<- MCMCglmm(caterpillars~datecentred*year+latcent*datecentred+elevcent*datecentred+I(datecentred^2)*elevcent, 
+#                    random=~site+sitetree+siteday+recorder, family="poisson", data=all_data, prior=prior, nitt=250000, burnin=25000)
+#save(Biogeog2, file = "~/Documents/Models/Biogeog2.RData")
+#load("~/Documents/Models/Biogeog2.RData") 
+
+# elevation: mean: 154.9, Q1 54.0,     Q3 242.0
+# elevcent:  mean: 0.00,  Q1 -100.904, Q3 87.096
+# latitude:  mean: 56.94, Q1 56.54,    Q3 57.33
+# latcent    mean; 0.00,  Q1 -0.40541, Q3 0.38261
+
+
+### just elevation or wont run
+Biogeog2<- MCMCglmm(caterpillars~datecentred*year+elevscaled*datecentred+I(datecentred^2)+I(elevscaled^2), 
+                    random=~site+sitetree+siteday, family="poisson", data=all_data, prior=prior, nitt=250000, burnin=25000, pr=TRUE)
+save(Biogeog2, file = "~/Documents/Models/Biogeog2.RData")
+load("~/Documents/Models/Biogeog2.RData") 
+
+
+Biogeog2.1<- MCMCglmm(caterpillars~datecentred*year+elevscaled*datecentred+I(datecentred^2), 
+                      random=~site+sitetree+siteday, family="poisson", data=all_data, prior=prior, nitt=250000, burnin=25000, pr=TRUE)
+save(Biogeog2.1, file = "~/Documents/Models/Biogeog2.1.RData")
+load("~/Documents/Models/Biogeog2.1.RData")
+# datecentred: -29.4   28.6
+# elev scaled to 0.02 to 1
+
+predday <- seq(-29.4,28.6,0.1)
+elev0.1 <-  mean(Biogeog2$Sol[,1])+
+            mean(Biogeog2$Sol[,2])*predday+
+            mean(Biogeog2$Sol[,8]*0.1)+
+            mean(Biogeog2$Sol[,9])*predday^2+
+            mean(Biogeog2$Sol[,10]*0.1^2)+
+            mean(Biogeog2$Sol[,16]*0.1)*predday
+
+elev0.3 <-  mean(Biogeog2$Sol[,1])+
+  mean(Biogeog2$Sol[,2])*predday+
+  mean(Biogeog2$Sol[,8]*0.3)+
+  mean(Biogeog2$Sol[,9])*predday^2+
+  mean(Biogeog2$Sol[,10]*0.3^2)+
+  mean(Biogeog2$Sol[,16]*0.3)*predday
+
+elev0.5 <-  mean(Biogeog2$Sol[,1])+
+  mean(Biogeog2$Sol[,2])*predday+
+  mean(Biogeog2$Sol[,8]*0.5)+
+  mean(Biogeog2$Sol[,9])*predday^2+
+  mean(Biogeog2$Sol[,10]*0.5^2)+
+  mean(Biogeog2$Sol[,16]*0.5)*predday
+
+elev0.7 <-  mean(Biogeog2$Sol[,1])+
+  mean(Biogeog2$Sol[,2])*predday+
+  mean(Biogeog2$Sol[,8]*0.7)+
+  mean(Biogeog2$Sol[,9])*predday^2+
+  mean(Biogeog2$Sol[,10]*0.7^2)+
+  mean(Biogeog2$Sol[,16]*0.7)*predday
+
+elev0.9 <-  mean(Biogeog2$Sol[,1])+
+  mean(Biogeog2$Sol[,2])*predday+
+  mean(Biogeog2$Sol[,8]*0.9)+
+  mean(Biogeog2$Sol[,9])*predday^2+
+  mean(Biogeog2$Sol[,10]*0.9^2)+
+  mean(Biogeog2$Sol[,16]*0.9)*predday
+
+plot(predday,exp(elev0.9), type="l", ylim=c(0,0.2))
+points(predday,exp(elev0.7), type="l")
+points(predday,exp(elev0.5), type="l")
+points(predday,exp(elev0.3), type="l")
+points(predday,exp(elev0.1), type="l")
+
+elev20.1 <-  mean(Biogeog2.1$Sol[,1])+
+  mean(Biogeog2.1$Sol[,2])*predday+
+  mean(Biogeog2.1$Sol[,8]*0.1)+
+  mean(Biogeog2.1$Sol[,9])*predday^2+
+  mean(Biogeog2.1$Sol[,15]*0.1)*predday
+
+elev20.3 <-  mean(Biogeog2.1$Sol[,1])+
+  mean(Biogeog2.1$Sol[,2])*predday+
+  mean(Biogeog2.1$Sol[,8]*0.3)+
+  mean(Biogeog2.1$Sol[,9])*predday^2+
+  mean(Biogeog2.1$Sol[,15]*0.3)*predday
+
+elev20.5 <-  mean(Biogeog2.1$Sol[,1])+
+  mean(Biogeog2.1$Sol[,2])*predday+
+  mean(Biogeog2.1$Sol[,8]*0.5)+
+  mean(Biogeog2.1$Sol[,9])*predday^2+
+  mean(Biogeog2.1$Sol[,15]*0.5)*predday
+
+elev20.7 <-  mean(Biogeog2.1$Sol[,1])+
+  mean(Biogeog2.1$Sol[,2])*predday+
+  mean(Biogeog2.1$Sol[,8]*0.7)+
+  mean(Biogeog2.1$Sol[,9])*predday^2+
+  mean(Biogeog2.1$Sol[,15]*0.7)*predday
+
+elev20.9 <-  mean(Biogeog2.1$Sol[,1])+
+  mean(Biogeog2.1$Sol[,2])*predday+
+  mean(Biogeog2.1$Sol[,8]*0.9)+
+  mean(Biogeog2.1$Sol[,9])*predday^2+
+  mean(Biogeog2.1$Sol[,15]*0.9)*predday
+
+par(mfcol=c(1,2))
+plot(predday,exp(elev0.9), type="l", col="mediumturquoise", ylim=c(0,0.2), xlab="Date centred", ylab="Caterpillar abundance")
+points(predday,exp(elev0.7), type="l", col="olivedrab3")
+points(predday,exp(elev0.5), type="l", col="darkgoldenrod1")
+points(predday,exp(elev0.3), type="l", col="chocolate1")
+points(predday,exp(elev0.1), type="l", col="red")
+legend("topright", legend="With elev^2", bty="n")
+legend("topleft", legend=c("Elevation scaled","0.1","0.3", "0.5", "0.7", "0.9"), lty=c(0,1,1,1,1,1), lwd=3, col=c(0,"red", "chocolate1", "darkgoldenrod1", "olivedrab3", "mediumturquoise"), cex=0.8, seg.len=0.5, bty="n")
+plot(predday,exp(elev20.9), type="l", col="mediumturquoise", ylim=c(0,0.2), xlab="Date centred", ylab="Caterpillar abundance")
+points(predday,exp(elev20.7), type="l", col="olivedrab3")
+points(predday,exp(elev20.5), type="l", col="darkgoldenrod1")
+points(predday,exp(elev20.3), type="l", col="chocolate1")
+points(predday,exp(elev20.1), type="l", col="red")
+legend("topright", legend="Without elev^2", bty="n")
+legend("topleft", legend=c("Elevation scaled","0.1","0.3", "0.5", "0.7", "0.9"), lty=c(0,1,1,1,1,1), lwd=3, col=c(0,"red", "chocolate1", "darkgoldenrod1", "olivedrab3", "mediumturquoise"), cex=0.8, seg.len=0.5, bty="n")
+c("red", "chocolate1", "darkgoldenrod1", "olivedrab3", "mediumturquoise")
