@@ -11,6 +11,8 @@ library(readr)
 #library(doBy)
 library(lme4)
 library(MCMCglmm)
+library(forcats)
+library(gridExtra)
 
 ##### Setting up dataframe #####
 
@@ -811,20 +813,20 @@ prior<-list(R=list(V=diag(1), nu=0.002),
 
 
 ### just elevation or wont run
-Biogeog2<- MCMCglmm(caterpillars~datecentred*year+elevscaled*datecentred+I(datecentred^2)+I(elevscaled^2), 
-                    random=~site+sitetree+siteday, family="poisson", data=all_data, prior=prior, nitt=250000, burnin=25000, pr=TRUE)
-save(Biogeog2, file = "~/Documents/Models/Biogeog2.RData")
+#Biogeog2<- MCMCglmm(caterpillars~datescaled*year+elevscaled*datescaled+I(datescaled^2)+I(elevscaled^2), 
+#                    random=~site+sitetree+siteday, family="poisson", data=all_data, prior=prior, nitt=250000, burnin=25000, pr=TRUE)
+#save(Biogeog2, file = "~/Documents/Models/Biogeog2.RData")
 load("~/Documents/Models/Biogeog2.RData") 
 
 
-Biogeog2.1<- MCMCglmm(caterpillars~datecentred*year+elevscaled*datecentred+I(datecentred^2), 
-                      random=~site+sitetree+siteday, family="poisson", data=all_data, prior=prior, nitt=250000, burnin=25000, pr=TRUE)
-save(Biogeog2.1, file = "~/Documents/Models/Biogeog2.1.RData")
+#Biogeog2.1<- MCMCglmm(caterpillars~datescaled*year+elevscaled*datescaled+I(datescaled^2), 
+#                      random=~site+sitetree+siteday, family="poisson", data=all_data, prior=prior, nitt=250000, burnin=25000, pr=TRUE)
+#save(Biogeog2.1, file = "~/Documents/Models/Biogeog2.1.RData")
 load("~/Documents/Models/Biogeog2.1.RData")
 # datecentred: -29.4   28.6
 # elev scaled to 0.02 to 1
 
-predday <- seq(-29.4,28.6,0.1)
+predday <- seq(0.67,1,0.01)
 elev0.1 <-  mean(Biogeog2$Sol[,1])+
             mean(Biogeog2$Sol[,2])*predday+
             mean(Biogeog2$Sol[,8]*0.1)+
@@ -912,3 +914,177 @@ points(predday,exp(elev20.1), type="l", col="red")
 legend("topright", legend="Without elev^2", bty="n")
 legend("topleft", legend=c("Elevation scaled","0.1","0.3", "0.5", "0.7", "0.9"), lty=c(0,1,1,1,1,1), lwd=3, col=c(0,"red", "chocolate1", "darkgoldenrod1", "olivedrab3", "mediumturquoise"), cex=0.8, seg.len=0.5, bty="n")
 c("red", "chocolate1", "darkgoldenrod1", "olivedrab3", "mediumturquoise")
+
+
+#### Use site random effects paired with elevation at each site ####
+#### For Biogeog2
+site[,7:16] <- NULL
+site[,2:5] <- NULL 
+site$elevscaled <- site$elevation/max(site$elevation)
+
+Sitecropped <- Biogeog2$Sol[,17:60] # crop to just the columns wanted
+SiteElev.df <- data.frame(site=c(colnames(Sitecropped))) #dataframe with column for yearsite 
+SiteElev.df$site <- gsub("site.","", SiteElev.df$site)
+SiteElev.df<- merge(SiteElev.df, site, by="site")
+
+for(i in 1:length(SiteElev.df$site)) {
+  SiteElev.df$peakdate[i] <- (-(mean(Biogeog2$Sol[,2])+mean(Biogeog2$Sol[,16])*SiteElev.df$elevscaled[i]))/(2*mean(Biogeog2$Sol[,9]))
+}
+
+for(i in 1:length(SiteElev.df$site)){
+  SiteElev.df$height[i] <- exp(mean(Biogeog2$Sol[,1]+
+                               Biogeog2$Sol[,2]*SiteElev.df$peakdate[i]+
+                               Biogeog2$Sol[,8]*SiteElev.df$elevscaled[i]+
+                               Biogeog2$Sol[,9]*SiteElev.df$peakdate[i]^2+ 
+                               Biogeog2$Sol[,16]*SiteElev.df$elevscaled[i]*SiteElev.df$peakdate[i]+
+                               Biogeog2$Sol[,10]*SiteElev.df$elevscaled[i]^2))
+}
+
+
+SiteElev.df$siteadjust <- apply(Sitecropped,2, mean)
+for(i in 1:length(SiteElev.df$site)) {
+  A <- HPDinterval(Sitecropped[,i])
+  SiteElev.df$lowci[i] <- A["var1","lower"] 
+  SiteElev.df$upci[i] <- A["var1","upper"] 
+} 
+SiteElev.df$heightadjust <- SiteElev.df$height + exp(SiteElev.df$siteadjust)
+
+plot(SiteElev.df$elevscaled, SiteElev.df$height)
+plot(SiteElev.df$peakdate, SiteElev.df$height)
+plot(SiteElev.df$elevscaled, SiteElev.df$peakdate)
+plot(SiteElev.df$elevscaled, SiteElev.df$heightadjust)
+plot(SiteElev.df$peakdate, SiteElev.df$heightadjust)
+
+plot(SiteElev.df$height, SiteElev.df$siteadjust)
+
+#### For Biogeog2.1
+
+Sitecropped2 <- Biogeog2.1$Sol[,16:59] # crop to just the columns wanted
+SiteElev.df2 <- data.frame(site=c(colnames(Sitecropped2))) #dataframe with column for yearsite 
+SiteElev.df2$site <- gsub("site.","", SiteElev.df2$site)
+SiteElev.df2<- merge(SiteElev.df2, site, by="site")
+
+for(i in 1:length(SiteElev.df2$site)) {
+  SiteElev.df2$peakdate[i] <- (-(mean(Biogeog2.1$Sol[,2])+mean(Biogeog2.1$Sol[,15])*SiteElev.df2$elevscaled[i]))/(2*mean(Biogeog2.1$Sol[,9]))
+}
+
+for(i in 1:length(SiteElev.df2$site)){
+  SiteElev.df2$height[i] <- exp(mean(Biogeog2.1$Sol[,1]+
+                                      Biogeog2.1$Sol[,2]*SiteElev.df2$peakdate[i]+
+                                      Biogeog2.1$Sol[,8]*SiteElev.df2$elevscaled[i]+
+                                      Biogeog2.1$Sol[,9]*SiteElev.df2$peakdate[i]^2+ 
+                                      Biogeog2.1$Sol[,15]*SiteElev.df2$elevscaled[i]*SiteElev.df2$peakdate[i]))
+}
+
+
+
+
+SiteElev.df2$siteadjust <- apply(Sitecropped2,2, mean)
+for(i in 1:length(SiteElev.df2$site)) {
+  A <- HPDinterval(Sitecropped2[,i])
+  SiteElev.df2$lowci[i] <- A["var1","lower"] 
+  SiteElev.df2$upci[i] <- A["var1","upper"] 
+} 
+SiteElev.df2$heightadjust <- SiteElev.df2$height + exp(SiteElev.df2$siteadjust)
+
+plot(SiteElev.df2$elevscaled, SiteElev.df2$height)
+plot(SiteElev.df2$peakdate, SiteElev.df2$height)
+plot(SiteElev.df2$elevscaled, SiteElev.df2$peakdate)
+plot(SiteElev.df$elevscaled, SiteElev.df$heightadjust)
+plot(SiteElev.df2$elevscaled, SiteElev.df2$heightadjust)
+
+plot(SiteElev.df2$height, SiteElev.df2$siteadjust)
+
+par(mfcol=c(2,2))
+plot(SiteElev.df$elevscaled, SiteElev.df$height, main = "model inc elev^2, just from elev", xlab="elevation scaled", ylab="peak height")
+plot(SiteElev.df2$elevscaled, SiteElev.df2$height, main = "model w/ no elev^2, just from elev", xlab="elevation scaled", ylab="peak height")
+plot(SiteElev.df$elevscaled, SiteElev.df$heightadjust, main = "model inc elev^2, adjusted for site random term", xlab="elevation scaled", ylab="peak height")
+plot(SiteElev.df2$elevscaled, SiteElev.df2$heightadjust, main = "model w/ no elev^2, adjusted for site random term", xlab="elevation scaled", ylab="peak height")
+
+legend("topright", legend="With elev^2", bty="n")
+legend("topleft", legend=c("Elevation scaled","0.1","0.3", "0.5", "0.7", "0.9"), lty=c(0,1,1,1,1,1), lwd=3, col=c(0,"red", "chocolate1", "darkgoldenrod1", "olivedrab3", "mediumturquoise"), cex=0.8, seg.len=0.5, bty="n")
+
+SiteElev.df <- SiteElev.df[order(SiteElev.df$elevscaled),] 
+biogeog2a <- ggplot(SiteElev.df, aes(elevscaled, height))+
+  geom_point()+
+  ylim(0.1,0.21)+
+  ylab("Height")+
+  xlab("Elevation Scaled")+
+  ggtitle("Model including elev^2")+
+  theme_bw()
+biogeog2b <- ggplot(SiteElev.df, aes(fct_inorder(site), siteadjust))+
+  geom_point(size=3, alpha=0.5)+
+  geom_errorbar(aes(ymax=upci, ymin=lowci, width=0.5))+
+  theme_bw()+
+  theme(axis.text.x= element_text(angle=90))+
+  xlab("Site (ordered by elevation)")+
+  ylab("Site coefficient")+
+  ylim(-2.8, 2.7)+
+  theme(text = element_text(size=10))
+biogeog2c <- ggplot(SiteElev.df, aes(fct_inorder(site), exp(siteadjust)))+
+  geom_point(size=3, alpha=0.5)+
+  geom_errorbar(aes(ymax=exp(upci), ymin=exp(lowci), width=0.5))+
+  theme_bw()+
+  theme(axis.text.x= element_text(angle=90))+
+  xlab("Site (ordered by elevation)")+
+  ylab("exp(Site Coefficient)")+
+  ylim(0,15)+
+  theme(text = element_text(size=10))
+biogeog2d <- ggplot(SiteElev.df, aes(elevscaled, heightadjust))+
+  geom_point()+
+  ylim(0,9)+  ylab("Adjusted Height")+
+  xlab("Elevation Scaled")+
+  theme_bw()
+ biogeog2e <- ggplot(SiteElev.df, aes(height, siteadjust))+
+  geom_point()+
+  ylim(-2,2.2)+  
+  ylab("Site Coefficient")+
+  xlab("Height from elevation")+
+  theme_bw()
+
+SiteElev.df2 <- SiteElev.df2[order(SiteElev.df2$elevscaled),] 
+biogeog2.1a <- ggplot(SiteElev.df2, aes(elevscaled, height))+
+  geom_point()+
+  ylim(0.1,0.21)+  
+  ylab("Height")+
+  xlab("Elevation Scaled")+
+  ggtitle("Original model (no elev^2)")+
+  theme_bw()
+biogeog2.1b <- ggplot(SiteElev.df2, aes(fct_inorder(site), siteadjust))+
+  geom_point(size=3, alpha=0.5)+
+  geom_errorbar(aes(ymax=upci, ymin=lowci, width=0.5))+
+  theme_bw()+
+  theme(axis.text.x= element_text(angle=90))+
+  xlab("Site (ordered by elevation)")+
+  ylab("Site Coefficient")+
+  ylim(-2.8, 2.7)+
+  theme(text = element_text(size=10))
+biogeog2.1c <- ggplot(SiteElev.df2, aes(fct_inorder(site), exp(siteadjust)))+
+  geom_point(size=3, alpha=0.5)+
+  geom_errorbar(aes(ymax=exp(upci), ymin=exp(lowci), width=0.5))+
+  theme_bw()+
+  theme(axis.text.x= element_text(angle=90))+
+  xlab("Site (ordered by elevation)")+
+  ylab("exp(Site Coefficient)")+
+  ylim(0,15)+
+  theme(text = element_text(size=10))
+biogeog2.1d <- ggplot(SiteElev.df2, aes(elevscaled, heightadjust))+
+  geom_point()+
+  ylim(0,9)+
+  ylab("Adjusted Height")+
+  xlab("Elevation Scaled")+
+  theme_bw()
+ biogeog2.1e <- ggplot(SiteElev.df2, aes(height, siteadjust))+
+  geom_point()+
+  ylim(-2,2.2)+  
+  ylab("Site Coefficient")+
+  xlab("Height from elevation")+
+  theme_bw()
+
+row1 <- grid.arrange(biogeog2.1a, biogeog2a, ncol = 2, widths = c(1, 1))
+row2 <- grid.arrange(biogeog2.1b, biogeog2b, ncol = 2, widths = c(1, 1))
+row3 <- grid.arrange(biogeog2.1c, biogeog2c, ncol = 2, widths = c(1, 1))
+row4 <- grid.arrange(biogeog2.1d, biogeog2d, ncol = 2, widths = c(1, 1))
+row5 <- grid.arrange(biogeog2.1e, biogeog2e, ncol = 2, widths = c(1, 1))
+elevationheights <- grid.arrange(row1, row2, row3, row4, row5, nrow = 5, heights = c(1,1,1,1,1))
+
