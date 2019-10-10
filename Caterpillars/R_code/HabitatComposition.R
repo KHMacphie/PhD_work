@@ -1009,8 +1009,8 @@ points(predday2, div150, type="l")#, col=1, lwd=2)
 colnames(Habitat_Site)
 max(Habitat_Site[,2:12]) #97.125
 
-Habitat_Site[,26:36] <- (Habitat_Site[,2:12]/max(Habitat_Site[,2:12])) # Dividing all FS's by max FS
-colnames(Habitat_Site)[26:36] <- c("Alder_Sld","Ash_Sld","Aspen_Sld","Beech_Sld","Birch_Sld","Elm_Sld","Oak_Sld","Sycamore_Sld","Willow_Sld","Conifer_Sld","OthDecid_Sld")
+Habitat_Site[,25:35] <- (Habitat_Site[,2:12]/max(Habitat_Site[,2:12])) # Dividing all FS's by max FS
+colnames(Habitat_Site)[25:35] <- c("Alder_Sld","Ash_Sld","Aspen_Sld","Beech_Sld","Birch_Sld","Elm_Sld","Oak_Sld","Sycamore_Sld","Willow_Sld","Conifer_Sld","OthDecid_Sld")
 
 cater <- read.csv("Dropbox/master_data/inverts/Branch_Beating.csv")
 Habitat_Site$site <- Habitat_Site$Site
@@ -1029,8 +1029,164 @@ prior<-list(R=list(V=1,nu=0.002),
                    G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k)))
 
 
-MMFS_scaled<- MCMCglmm(caterpillars~1, 
-                     random=~tree.species+idv(~Alder_Sld+Ash_Sld+Aspen_Sld+Beech_Sld+Birch_Sld+Elm_Sld+Oak_Sld+Sycamore_Sld+Willow_Sld+Conifer_Sld+OthDecid_Sld)+site+sitetree+siteday+recorder, 
-                     family="poisson", data=cater_habitat, prior=prior, nitt=900000, burnin=40000, pr=TRUE)
+#MMFS_scaled<- MCMCglmm(caterpillars~1, 
+#                     random=~tree.species+idv(~Alder_Sld+Ash_Sld+Aspen_Sld+Beech_Sld+Birch_Sld+Elm_Sld+Oak_Sld+Sycamore_Sld+Willow_Sld+Conifer_Sld+OthDecid_Sld)+site+sitetree+siteday+recorder, 
+#                     family="poisson", data=cater_habitat, prior=prior, nitt=900000, burnin=40000, pr=TRUE)
 #save(MMFS_scaled, file = "~/Documents/Models/MMFS_scaled.RData")
 load("~/Documents/Models/MMFS_scaled.RData")
+# removed from zero! woooo
+
+
+########## Use HabitatTreeTaxaCategories code! ###########
+k<-10000
+prior<-list(R=list(V=1,nu=0.002),
+            G=list(G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
+                   G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
+                   G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
+                   G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
+                   G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
+                   G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
+                   G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
+                   G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k)))
+
+
+#TreeTaxaHabAbund<- MCMCglmm(caterpillars~1, 
+#                     random=~tree.species+idv(~Alder_Scld+Ash_Scld+Beech_Scld+Birch_Scld+Elm_Scld+Hazel_Scld+Oak_Scld+Rowan_Scld+Sycamore_Scld+Willow_Scld+Conifer_Scld+OthDecid_Scld)+site+year+siteyear+sitetree+siteday+recorder, 
+#                     family="poisson", data=cater_habitat, prior=prior, nitt=300000, burnin=30000, pr=TRUE, thin=50)
+#save(TreeTaxaHabAbund, file = "~/Documents/Models/TreeTaxaHabAbund.RData")
+load("~/Documents/Models/TreeTaxaHabAbund.RData")
+
+TTHA.Sim<-simulate(TreeTaxaHabAbund,nsim=100)
+sum(cater_habitat$caterpillars)
+par(mfcol=c(1,1))
+hist(apply(TTHA.Sim,2,sum), breaks=50)
+abline(v=sum(cater_habitat$caterpillars),col=2)
+
+propzero <- function(x){return(length(which(x==0))/length(x))}
+hist(apply(TTHA.Sim,2,propzero), breaks=50)
+abline(v=propzero(cater_habitat$caterpillars), col="red")
+
+
+#dataframe for coeffs and CIs for beaten tree taxa
+TTHA <- TreeTaxaHabAbund$Sol[,2:11] # crop to just the columns wanted
+TTHA.df <- data.frame(treetaxa=c(colnames(TTHA))) #dataframe with column for beaten tree taxa
+TTHA.df$coeff <- apply(TTHA,2, mean) # mean 
+for(i in 1:length(TTHA.df$treetaxa)) {   # loop for CIs
+  A <- HPDinterval(TTHA[,i])
+  TTHA.df$lowci[i] <- A["var1","lower"] 
+  TTHA.df$upci[i] <- A["var1","upper"] 
+} 
+TTHA.df$treetaxa <- gsub("tree.species.","", TTHA.df$treetaxa)
+
+
+#plot beaten tree taxa
+plot1 <- ggplot(TTHA.df, aes(treetaxa, coeff))+
+  geom_point(size=3, alpha=0.5)+
+  geom_errorbar(aes(ymax=upci, ymin=lowci, width=0.5))+
+  theme_bw()+
+  theme(text = element_text(size=25),axis.text.x= element_text(angle=90))+
+  geom_hline(yintercept=0, linetype="dashed", colour="red")+
+  ggtitle("Beaten Tree Taxa")
+
+#dataframe for coeffs and CIs for habitat FS's
+TTHA2 <- TreeTaxaHabAbund$Sol[,12:23] # crop to just the columns wanted
+TTHA2.df <- data.frame(treetaxa=c(colnames(TTHA2))) #dataframe with column for beaten tree taxa
+TTHA2.df$coeff <- apply(TTHA2,2, mean) # mean 
+for(i in 1:length(TTHA2.df$treetaxa)) {   # loop for CIs
+  A <- HPDinterval(TTHA2[,i])
+  TTHA2.df$lowci[i] <- A["var1","lower"] 
+  TTHA2.df$upci[i] <- A["var1","upper"] 
+} 
+TTHA2.df$treetaxa <- gsub("_Scld.NA.1","", TTHA2.df$treetaxa)
+
+
+#plot for habitat FS's
+plot2 <- ggplot(TTHA2.df, aes(treetaxa, coeff))+
+  geom_point(size=3, alpha=0.5)+
+  geom_errorbar(aes(ymax=upci, ymin=lowci, width=0.5))+
+  theme_bw()+
+  theme(text = element_text(size=25),axis.text.x= element_text(angle=90))+
+  geom_hline(yintercept=0, linetype="dashed", colour="red")+
+  ggtitle("Habitat composition FS")
+
+row1 <- grid.arrange(plot1, ncol = 1, widths = c(1))
+row2 <- grid.arrange(plot2, ncol = 1, widths = c(1))
+TTHAcoeffs <- grid.arrange(row1, row2, nrow = 2, heights = c(1,1))
+
+
+#### Using proportion and including total FS in fixed ####
+########## Use HabitatTreeTaxaCategories code! ###########
+k<-10000
+prior<-list(R=list(V=1,nu=0.002),
+            G=list(G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
+                   G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
+                   G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
+                   G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
+                   G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
+                   G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
+                   G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
+                   G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k)))
+
+
+#TTHPA<- MCMCglmm(caterpillars~Total, 
+#                     random=~tree.species+idv(~Alder_prop+Ash_prop+Beech_prop+Birch_prop+Elm_prop+Hazel_prop+Oak_prop+Rowan_prop+Sycamore_prop+Willow_prop+Conifer_prop+OthDecid_prop)+site+year+siteyear+sitetree+siteday+recorder, 
+#                     family="poisson", data=cater_habitat, prior=prior, nitt=1000000, burnin=50000, pr=TRUE, thin=100)
+#save(TTHPA, file = "~/Documents/Models/TTHPA.RData")
+load("~/Documents/Models/TTHPA.RData")
+
+TTHPA.Sim<-simulate(TTHPA,nsim=100)
+sum(cater_habitat$caterpillars)
+par(mfcol=c(1,1))
+hist(apply(TTHPA.Sim,2,sum), breaks=50)
+abline(v=sum(cater_habitat$caterpillars),col=2)
+
+propzero <- function(x){return(length(which(x==0))/length(x))}
+hist(apply(TTHPA.Sim,2,propzero), breaks=50)
+abline(v=propzero(cater_habitat$caterpillars), col="red")
+
+
+#dataframe for coeffs and CIs for beaten tree taxa
+TTHA <- TTHPA$Sol[,3:12] # crop to just the columns wanted
+TTHA.df <- data.frame(treetaxa=c(colnames(TTHA))) #dataframe with column for beaten tree taxa
+TTHA.df$coeff <- apply(TTHA,2, mean) # mean 
+for(i in 1:length(TTHA.df$treetaxa)) {   # loop for CIs
+  A <- HPDinterval(TTHA[,i])
+  TTHA.df$lowci[i] <- A["var1","lower"] 
+  TTHA.df$upci[i] <- A["var1","upper"] 
+} 
+TTHA.df$treetaxa <- gsub("tree.species.","", TTHA.df$treetaxa)
+
+
+#plot beaten tree taxa
+plot1 <- ggplot(TTHA.df, aes(treetaxa, coeff))+
+  geom_point(size=3, alpha=0.5)+
+  geom_errorbar(aes(ymax=upci, ymin=lowci, width=0.5))+
+  theme_bw()+
+  theme(text = element_text(size=25),axis.text.x= element_text(angle=90))+
+  geom_hline(yintercept=0, linetype="dashed", colour="red")+
+  ggtitle("Beaten Tree Taxa")
+
+#dataframe for coeffs and CIs for habitat FS's
+TTHA2 <- TTHPA$Sol[,13:24] # crop to just the columns wanted
+TTHA2.df <- data.frame(treetaxa=c(colnames(TTHA2))) #dataframe with column for beaten tree taxa
+TTHA2.df$coeff <- apply(TTHA2,2, mean) # mean 
+for(i in 1:length(TTHA2.df$treetaxa)) {   # loop for CIs
+  A <- HPDinterval(TTHA2[,i])
+  TTHA2.df$lowci[i] <- A["var1","lower"] 
+  TTHA2.df$upci[i] <- A["var1","upper"] 
+} 
+TTHA2.df$treetaxa <- gsub("_prop.NA.1","", TTHA2.df$treetaxa)
+
+
+#plot for habitat FS's
+plot2 <- ggplot(TTHA2.df, aes(treetaxa, coeff))+
+  geom_point(size=3, alpha=0.5)+
+  geom_errorbar(aes(ymax=upci, ymin=lowci, width=0.5))+
+  theme_bw()+
+  theme(text = element_text(size=25),axis.text.x= element_text(angle=90))+
+  geom_hline(yintercept=0, linetype="dashed", colour="red")+
+  ggtitle("Habitat composition prop")
+
+row1 <- grid.arrange(plot1, ncol = 1, widths = c(1))
+row2 <- grid.arrange(plot2, ncol = 1, widths = c(1))
+TTHAcoeffs <- grid.arrange(row1, row2, nrow = 2, heights = c(1,1))
