@@ -28,10 +28,10 @@ cater$caterpillar.mass2 <- as.numeric(as.character(cater$caterpillar.mass2))
 #mass per caterpillar
 cater$mpc2 <- cater$caterpillar.mass2/cater$caterpillars
 cater$mpc1 <- as.character(cater$caterpillar.mass2)
-cater$mpc1 <- revalue(cater$mpc1, c("0.02"="0.002"))
+cater$mpc1 <- revalue(cater$mpc1, c("0.02"="0.001"))
 cater$mpc1 <- as.numeric(cater$mpc1)
 cater$mpc1 <- cater$mpc1/cater$caterpillars
-cater$mpc1 <- ifelse(cater$mpc1 < 0.002,0.002,cater$mpc1)
+cater$mpc1 <- ifelse(cater$mpc1 < 0.001,0.001,cater$mpc1)
 
 #cater$mpc1 <- round(cater$mpc1, digits=3)
 #cater$mpc1 <- as.character(cater$mpc1)
@@ -85,12 +85,16 @@ hist(cater$logmpc2, breaks=100)
 plot(cater$date, cater$logmpc1)
 points(cater$date, cater$logmpc2, col=2)
 
+# Checking normality using random value between 0.001 and 0.02
+#cater$mass_rand<-cater$mpc1
+#cater$mass_rand[which(cater$mass_rand==0.001)]<-runif(length(cater$mass_rand[which(cater$mass_rand==0.001)]),0.001,0.02)
+#hist(log(cater$mass_rand))
+
 # extra variables
 cater$siteday <- paste(cater$site, cater$date, cater$year)
 cater$treeID <- paste(cater$site, cater$tree)
 cater$siteyear <- paste(cater$site, cater$year)
 cater$datecent <- cater$date - mean(cater$date)
-
 # Model priors
 k<-10000
 prior<-list(R=list(V=1,nu=0.002),
@@ -212,43 +216,23 @@ prior2<-list(R=list(V=1,nu=0.002),
                     G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
                     G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k)))
 
-
+#### Mass4 uses lower interval of 0.002 not 0.001
 #Mass4<- MCMCglmm(cbind(logmpc1, logmpc2)~ datecent, 
 #                 random=~us(1+datecent):tree.species + us(1+datecent):year + us(1+datecent):site + treeID + recorder + siteday, 
 #                 family="cengaussian", data=cater.expanded, prior=prior2, nitt=300000, burnin=30000, pr=TRUE)
 #save(Mass4, file = "~/Documents/Models/Mass4.RData")
 load("~/Documents/Models/Mass4.RData")
-
-TTintercept.cropped <- Mass4$Sol[,3:18] # crop to just the columns wanted
-TTintercept <- data.frame(treetaxa=c(colnames(TTintercept.cropped))) #dataframe with column for yearsite 
-TTintercept$coeff <- apply(TTintercept.cropped,2, mean) # mean 
-for(i in 1:length(TTintercept$treetaxa)) {   # loop for CIs
-  A <- HPDinterval(TTintercept.cropped[,i])
-  TTintercept$lowci[i] <- A["var1","lower"] 
-  TTintercept$upci[i] <- A["var1","upper"] 
-} 
-TTintercept$treetaxa <- gsub("(Intercept).tree.species.","", TTintercept$treetaxa)
-TTintercept$treetaxa <- gsub(".tree.species.","", TTintercept$treetaxa)
-TTintercept$treetaxa <- gsub("(Intercept)","", TTintercept$treetaxa)
-TTintercept$treetaxa <- gsub("()","", TTintercept$treetaxa) # not working
-
-par(mfcol=c(1,1), cex=1.5)
-hist(Mass4$VCV[,"(Intercept):(Intercept).tree.species"], breaks=500, xlim=c(0,0.2))
-abline(v=0, col=2,type="l", lty=2)
+summary(Mass4)
+par(mfcol=c(2,1), cex=1.5)
+hist(Mass4$VCV[,"(Intercept):(Intercept).tree.species"], breaks=500, xlim=c(0,0.2), main="TreeTaxa intercept")
+abline(v=0.001513915, col=2,type="l", lty=2)
+title(ylab="Frequency", outer=TRUE, line = 2)
+title( xlab="Variance", outer=TRUE, line = 0)
+hist(Mass4$VCV[,"datecent:datecent.tree.species"], breaks=500, xlim=c(0,0.002), main="TreeTaxa slope")
+abline(v=5.986041e-05, col=2,type="l", lty=2)
 title(ylab="Frequency", outer=TRUE, line = 2)
 title( xlab="Variance", outer=TRUE, line = 0)
 #legend("topright", legend="B", bty="n") 
-
-par(mfcol=c(1,1), cex=0.5)
-ggplot(TTintercept, aes(treetaxa, coeff))+
-  geom_point(size=3, alpha=0.5)+
-  geom_errorbar(aes(ymax=upci, ymin=lowci, width=0.5))+
-  theme_bw()+
-  theme(axis.text.x= element_text(angle=90))+
-  xlab("Tree Taxa")+
-  geom_hline(yintercept=0, linetype="dashed", color = "red")+
-  labs(tag = "Intercept")+
-  theme(text = element_text(size=10))
 
 TTslope.cropped <- Mass4$Sol[,19:34] # crop to just the columns wanted
 TTslope <- data.frame(treetaxa=c(colnames(TTslope.cropped))) #dataframe with column for yearsite 
@@ -260,14 +244,6 @@ for(i in 1:length(TTslope$treetaxa)) {   # loop for CIs
 } 
 TTslope$treetaxa <- gsub("datecent.tree.species.","", TTslope$treetaxa)
 
-par(mfcol=c(1,1), cex=1.5)
-hist(Mass4$VCV[,"datecent:datecent.tree.species"], breaks=500)
-abline(v=0, col=2,type="l", lty=2)
-title(ylab="Frequency", outer=TRUE, line = 2)
-title( xlab="Variance", outer=TRUE, line = 0)
-#legend("topright", legend="B", bty="n") 
-
-par(mfcol=c(1,1), cex=0.8)
 ggplot(TTslope, aes(treetaxa, coeff))+
   geom_point(size=3, alpha=0.5)+
   geom_errorbar(aes(ymax=upci, ymin=lowci, width=0.5))+
@@ -277,6 +253,27 @@ ggplot(TTslope, aes(treetaxa, coeff))+
   geom_hline(yintercept=0, linetype="dashed", color = "red")+
   labs(tag = "Slope")+
   theme(text = element_text(size=10))
+
+TTintercept.cropped <- Mass4$Sol[,3:18] # crop to just the columns wanted
+TTintercept <- data.frame(treetaxa=c(colnames(TTintercept.cropped))) #dataframe with column for yearsite 
+TTintercept$coeff <- apply(TTintercept.cropped,2, mean) # mean 
+for(i in 1:length(TTintercept$treetaxa)) {   # loop for CIs
+  A <- HPDinterval(TTintercept.cropped[,i])
+  TTintercept$lowci[i] <- A["var1","lower"] 
+  TTintercept$upci[i] <- A["var1","upper"] 
+} 
+TTintercept$treetaxa <- TTslope$treetaxa
+
+ggplot(TTintercept, aes(treetaxa, coeff))+
+  geom_point(size=3, alpha=0.5)+
+  geom_errorbar(aes(ymax=upci, ymin=lowci, width=0.5))+
+  theme_bw()+
+  theme(axis.text.x= element_text(angle=90))+
+  xlab("Tree Taxa")+
+  geom_hline(yintercept=0, linetype="dashed", color = "red")+
+  labs(tag = "Intercept")+
+  theme(text = element_text(size=10))
+
 
 
 ### slope and intercept per tax
@@ -343,3 +340,979 @@ points(predday,exp(rowan), type="l", lwd=2, col=4)
 points(predday,exp(sycamore), type="l", lwd=2, col=4)
 points(predday,exp(willow), type="l", lwd=2, col=4)
 points(predday,exp(meanslope), type="l", lwd=2, col=3)
+
+#### same again with lower bound at 0.001 and date scaled not centred, also with weather
+cater.expanded$datescaled <- cater.expanded$date/max(cater.expanded$date)
+
+k<-10000
+prior2<-list(R=list(V=1,nu=0.002),
+             G=list(G1=list(V=diag(2), nu=2, alpha.mu=c(0,0), alpha.V=diag(2)*k),
+                    G1=list(V=diag(2), nu=2, alpha.mu=c(0,0), alpha.V=diag(2)*k),
+                    G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
+                    G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
+                    G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k)))
+
+
+Mass5<- MCMCglmm(cbind(logmpc1, logmpc2)~ datescaled + weather, 
+                 random=~us(1+datescaled):tree.species + us(1+datescaled):year + us(1+datescaled):site + treeID + recorder + siteday, 
+                 family="cengaussian", data=cater.expanded, prior=prior2, nitt=250000, burnin=25000, pr=TRUE)
+save(Mass5, file = "~/Documents/Models/Mass5.RData")
+load("~/Documents/Models/Mass5.RData")
+
+summary(Mass5)
+par(mfcol=c(2,1), cex=1.5)
+hist(Mass5$VCV[,"(Intercept):(Intercept).tree.species"], breaks=500, xlim=c(0,20), main="TreeTaxa intercept",xlab="Variance")
+abline(v=0.5545415, col=2,type="l", lty=2)
+hist(Mass5$VCV[,"datescaled:datescaled.tree.species"], breaks=500, xlim=c(0,30), main="TreeTaxa slope",xlab="Variance")
+abline(v=1.018952, col=2,type="l", lty=2)
+
+
+TTslope.cropped <- Mass5$Sol[,22:37] # crop to just the columns wanted
+TTslope <- data.frame(treetaxa=c(colnames(TTslope.cropped))) #dataframe with column for yearsite 
+TTslope$coeff <- apply(TTslope.cropped,2, mean) # mean 
+for(i in 1:length(TTslope$treetaxa)) {   # loop for CIs
+  A <- HPDinterval(TTslope.cropped[,i])
+  TTslope$lowci[i] <- A["var1","lower"] 
+  TTslope$upci[i] <- A["var1","upper"] 
+} 
+TTslope$treetaxa <- gsub("datescaled.tree.species.","", TTslope$treetaxa)
+
+ggplot(TTslope, aes(treetaxa, coeff))+
+  geom_point(size=3, alpha=0.5)+
+  geom_errorbar(aes(ymax=upci, ymin=lowci, width=0.5))+
+  theme_bw()+
+  theme(axis.text.x= element_text(angle=90))+
+  xlab("Tree Taxa")+
+  geom_hline(yintercept=0, linetype="dashed", color = "red")+
+  labs(tag = "Slope")+
+  theme(text = element_text(size=10))
+
+TTintercept.cropped <- Mass5$Sol[,6:21] # crop to just the columns wanted
+TTintercept <- data.frame(treetaxa=c(colnames(TTintercept.cropped))) #dataframe with column for yearsite 
+TTintercept$coeff <- apply(TTintercept.cropped,2, mean) # mean 
+for(i in 1:length(TTintercept$treetaxa)) {   # loop for CIs
+  A <- HPDinterval(TTintercept.cropped[,i])
+  TTintercept$lowci[i] <- A["var1","lower"] 
+  TTintercept$upci[i] <- A["var1","upper"] 
+} 
+TTintercept$treetaxa <- TTslope$treetaxa
+
+ggplot(TTintercept, aes(treetaxa, coeff))+
+  geom_point(size=3, alpha=0.5)+
+  geom_errorbar(aes(ymax=upci, ymin=lowci, width=0.5))+
+  theme_bw()+
+  theme(axis.text.x= element_text(angle=90))+
+  xlab("Tree Taxa")+
+  geom_hline(yintercept=0, linetype="dashed", color = "red")+
+  labs(tag = "Intercept")+
+  theme(text = element_text(size=10))
+
+
+
+### slope and intercept per tax
+TaxaCatGrowth <- data.frame(Taxa=TTslope[,1], Intercept= TTintercept[,2], Slope=TTslope[,2])   
+
+preddayscaled <- seq(0.66,1,0.01)
+predday <- preddayscaled*max(cater.expanded$date)
+meanslope <- mean(Mass5$Sol[,1])+mean(Mass5$Sol[,2])*preddayscaled
+points(predday,meanslope, type="l", lwd=2, col=3)
+alder <- mean(Mass5$Sol[,1])+TaxaCatGrowth[1,2]+mean(Mass5$Sol[,2]+TaxaCatGrowth[1,3])*preddayscaled
+ash <- mean(Mass5$Sol[,1])+TaxaCatGrowth[2,2]+mean(Mass5$Sol[,2]+TaxaCatGrowth[2,3])*preddayscaled
+aspen <- mean(Mass5$Sol[,1])+TaxaCatGrowth[3,2]+mean(Mass5$Sol[,2]+TaxaCatGrowth[3,3])*preddayscaled
+beech <- mean(Mass5$Sol[,1])+TaxaCatGrowth[4,2]+mean(Mass5$Sol[,2]+TaxaCatGrowth[4,3])*preddayscaled
+birch <- mean(Mass5$Sol[,1])+TaxaCatGrowth[5,2]+mean(Mass5$Sol[,2]+TaxaCatGrowth[5,3])*preddayscaled
+cherry <- mean(Mass5$Sol[,1])+TaxaCatGrowth[6,2]+mean(Mass5$Sol[,2]+TaxaCatGrowth[6,3])*preddayscaled
+chestnut <- mean(Mass5$Sol[,1])+TaxaCatGrowth[7,2]+mean(Mass5$Sol[,2]+TaxaCatGrowth[7,3])*preddayscaled
+damson <- mean(Mass5$Sol[,1])+TaxaCatGrowth[8,2]+mean(Mass5$Sol[,2]+TaxaCatGrowth[8,3])*preddayscaled
+elm <- mean(Mass5$Sol[,1])+TaxaCatGrowth[9,2]+mean(Mass5$Sol[,2]+TaxaCatGrowth[9,3])*preddayscaled
+fieldmaple <- mean(Mass5$Sol[,1])+TaxaCatGrowth[10,2]+mean(Mass5$Sol[,2]+TaxaCatGrowth[10,3])*preddayscaled
+hazel <- mean(Mass5$Sol[,1])+TaxaCatGrowth[11,2]+mean(Mass5$Sol[,2]+TaxaCatGrowth[11,3])*preddayscaled
+lime <- mean(Mass5$Sol[,1])+TaxaCatGrowth[12,2]+mean(Mass5$Sol[,2]+TaxaCatGrowth[12,3])*preddayscaled
+oak <- mean(Mass5$Sol[,1])+TaxaCatGrowth[13,2]+mean(Mass5$Sol[,2]+TaxaCatGrowth[13,3])*preddayscaled
+rowan <- mean(Mass5$Sol[,1])+TaxaCatGrowth[14,2]+mean(Mass5$Sol[,2]+TaxaCatGrowth[14,3])*preddayscaled
+sycamore <- mean(Mass5$Sol[,1])+TaxaCatGrowth[15,2]+mean(Mass5$Sol[,2]+TaxaCatGrowth[15,3])*preddayscaled
+willow <- mean(Mass5$Sol[,1])+TaxaCatGrowth[16,2]+mean(Mass5$Sol[,2]+TaxaCatGrowth[16,3])*preddayscaled
+
+par(mfcol=c(1,2), cex=1.5)
+plot(cater.expanded$date, cater.expanded$logmpc1, xlab="Date", ylab="log(Mass)", pch=20, col="grey")
+points(cater.expanded$date, cater.expanded$logmpc2, pch=20, col=1)
+points(predday,alder, type="l", lwd=2, col=4)
+points(predday,ash, type="l", lwd=2, col=4)
+points(predday,aspen, type="l", lwd=2, col=4)
+points(predday,beech, type="l", lwd=2, col=4)
+points(predday,birch, type="l", lwd=2, col=4)
+points(predday,cherry, type="l", lwd=2, col=4)
+points(predday,chestnut, type="l", lwd=2, col=4)
+points(predday,damson, type="l", lwd=2, col=4)
+points(predday,elm, type="l", lwd=2, col=4)
+points(predday,fieldmaple, type="l", lwd=2, col=4)
+points(predday,hazel, type="l", lwd=2, col=4)
+points(predday,lime, type="l", lwd=2, col=4)
+points(predday,oak, type="l", lwd=2, col=4)
+points(predday,rowan, type="l", lwd=2, col=4)
+points(predday,sycamore, type="l", lwd=2, col=4)
+points(predday,willow, type="l", lwd=2, col=4)
+points(predday,meanslope, type="l", lwd=3, col="red")
+
+plot(cater.expanded$date, exp(cater.expanded$logmpc1), xlab="Date", ylab="Mass", pch=20, col="grey")
+points(cater.expanded$date, exp(cater.expanded$logmpc2), col=1, pch=20)
+points(predday,exp(alder), type="l", lwd=2, col=4)
+points(predday,exp(ash), type="l", lwd=2, col=4)
+points(predday,exp(aspen), type="l", lwd=2, col=4)
+points(predday,exp(beech), type="l", lwd=2, col=4)
+points(predday,exp(birch), type="l", lwd=2, col=4)
+points(predday,exp(cherry), type="l", lwd=2, col=4)
+points(predday,exp(chestnut), type="l", lwd=2, col=4)
+points(predday,exp(damson), type="l", lwd=2, col=4)
+points(predday,exp(elm), type="l", lwd=2, col=4)
+points(predday,exp(fieldmaple), type="l", lwd=2, col=4)
+points(predday,exp(hazel), type="l", lwd=2, col=4)
+points(predday,exp(lime), type="l", lwd=2, col=4)
+points(predday,exp(oak), type="l", lwd=2, col=4)
+points(predday,exp(rowan), type="l", lwd=2, col=4)
+points(predday,exp(sycamore), type="l", lwd=2, col=4)
+points(predday,exp(willow), type="l", lwd=2, col=4)
+points(predday,exp(meanslope), type="l", lwd=2, col="red")
+
+###########################################
+#### Mass 6: Year in fixed, no weather ####
+
+k<-10000
+prior2<-list(R=list(V=1,nu=0.002),
+             G=list(G1=list(V=diag(2), nu=2, alpha.mu=c(0,0), alpha.V=diag(2)*k),
+                    G1=list(V=diag(2), nu=2, alpha.mu=c(0,0), alpha.V=diag(2)*k),
+                    G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
+                    G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
+                    G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k)))
+
+
+Mass6<- MCMCglmm(cbind(logmpc1, logmpc2)~ datescaled*year, 
+                 random=~us(1+datescaled):tree.species + us(1+datescaled):site + treeID + recorder + siteday, 
+                 family="cengaussian", data=cater.expanded, prior=prior2, nitt=250000, burnin=25000, pr=TRUE)
+save(Mass6, file = "~/Documents/Models/Mass6.RData")
+load("~/Documents/Models/Mass6.RData")
+
+par(mfcol=c(2,2), cex=1.5)
+hist(Mass6$VCV[,"(Intercept):(Intercept).tree.species"], breaks=500, xlim=c(0,20), main="TreeTaxa intercept",xlab="Variance")
+abline(v=0.5235048, col=2, lty=2)
+hist(Mass6$VCV[,"datescaled:datescaled.tree.species"], breaks=500, xlim=c(0,30), main="TreeTaxa slope",xlab="Variance")
+abline(v=1.031537, col=2, lty=2)
+hist(Mass6$VCV[,"(Intercept):(Intercept).site"], breaks=5000, xlim=c(0,0.4), main="Site intercept",xlab="Variance")
+abline(v=4.344364e-10, col=2, lty=2)
+hist(Mass6$VCV[,"datescaled:datescaled.site"], breaks=5000, xlim=c(0,0.6), main="Site slope",xlab="Variance")
+abline(v=2.834175e-10, col=2, lty=2)
+
+
+TTslope.cropped <- Mass6$Sol[,23:38] # crop to just the columns wanted
+TTslope <- data.frame(treetaxa=c(colnames(TTslope.cropped))) #dataframe with column for yearsite 
+TTslope$coeff <- apply(TTslope.cropped,2, mean) # mean 
+for(i in 1:length(TTslope$treetaxa)) {   # loop for CIs
+  A <- HPDinterval(TTslope.cropped[,i])
+  TTslope$lowci[i] <- A["var1","lower"] 
+  TTslope$upci[i] <- A["var1","upper"] 
+} 
+TTslope$treetaxa <- gsub("datescaled.tree.species.","", TTslope$treetaxa)
+
+TTslopecoeff <- ggplot(TTslope, aes(treetaxa, coeff))+
+  geom_point(size=3, alpha=0.5)+
+  geom_errorbar(aes(ymax=upci, ymin=lowci, width=0.5))+
+  theme_bw()+
+  theme(axis.text.x= element_text(angle=90))+
+  xlab("Tree Taxa")+
+  geom_hline(yintercept=0, linetype="dashed", color = "red")+
+  labs(tag = "Slope")+
+  theme(text = element_text(size=10))
+
+TTintercept.cropped <- Mass6$Sol[,7:22] # crop to just the columns wanted
+TTintercept <- data.frame(treetaxa=c(colnames(TTintercept.cropped))) #dataframe with column for yearsite 
+TTintercept$coeff <- apply(TTintercept.cropped,2, mean) # mean 
+for(i in 1:length(TTintercept$treetaxa)) {   # loop for CIs
+  A <- HPDinterval(TTintercept.cropped[,i])
+  TTintercept$lowci[i] <- A["var1","lower"] 
+  TTintercept$upci[i] <- A["var1","upper"] 
+} 
+TTintercept$treetaxa <- TTslope$treetaxa
+
+TTinterceptcoeff <- ggplot(TTintercept, aes(treetaxa, coeff))+
+  geom_point(size=3, alpha=0.5)+
+  geom_errorbar(aes(ymax=upci, ymin=lowci, width=0.5))+
+  theme_bw()+
+  theme(axis.text.x= element_text(angle=90))+
+  xlab("Tree Taxa")+
+  geom_hline(yintercept=0, linetype="dashed", color = "red")+
+  labs(tag = "Intercept")+
+  theme(text = element_text(size=10))
+
+library(gridExtra)
+
+row1 <- grid.arrange(TTinterceptcoeff, ncol = 1, widths = 1)
+row2 <- grid.arrange(TTslopecoeff, ncol = 1, widths = 1)
+TTCoeff <- grid.arrange(row1, row2, nrow = 2, heights = c(1,1))
+
+### slope and intercept per tax
+TaxaCatGrowth <- data.frame(Taxa=TTslope[,1], Intercept= TTintercept[,2], Slope=TTslope[,2])   
+
+preddayscaled <- seq(0.66,1,0.01)
+predday <- preddayscaled*max(cater.expanded$date)
+meanslope <- mean(Mass6$Sol[,1])+mean(Mass6$Sol[,2])*preddayscaled
+points(predday,meanslope, type="l", lwd=2, col=3)
+alder <- mean(Mass6$Sol[,1])+TaxaCatGrowth[1,2]+mean(Mass6$Sol[,2]+TaxaCatGrowth[1,3])*preddayscaled
+ash <- mean(Mass6$Sol[,1])+TaxaCatGrowth[2,2]+mean(Mass6$Sol[,2]+TaxaCatGrowth[2,3])*preddayscaled
+aspen <- mean(Mass6$Sol[,1])+TaxaCatGrowth[3,2]+mean(Mass6$Sol[,2]+TaxaCatGrowth[3,3])*preddayscaled
+beech <- mean(Mass6$Sol[,1])+TaxaCatGrowth[4,2]+mean(Mass6$Sol[,2]+TaxaCatGrowth[4,3])*preddayscaled
+birch <- mean(Mass6$Sol[,1])+TaxaCatGrowth[5,2]+mean(Mass6$Sol[,2]+TaxaCatGrowth[5,3])*preddayscaled
+cherry <- mean(Mass6$Sol[,1])+TaxaCatGrowth[6,2]+mean(Mass6$Sol[,2]+TaxaCatGrowth[6,3])*preddayscaled
+chestnut <- mean(Mass6$Sol[,1])+TaxaCatGrowth[7,2]+mean(Mass6$Sol[,2]+TaxaCatGrowth[7,3])*preddayscaled
+damson <- mean(Mass6$Sol[,1])+TaxaCatGrowth[8,2]+mean(Mass6$Sol[,2]+TaxaCatGrowth[8,3])*preddayscaled
+elm <- mean(Mass6$Sol[,1])+TaxaCatGrowth[9,2]+mean(Mass6$Sol[,2]+TaxaCatGrowth[9,3])*preddayscaled
+fieldmaple <- mean(Mass6$Sol[,1])+TaxaCatGrowth[10,2]+mean(Mass6$Sol[,2]+TaxaCatGrowth[10,3])*preddayscaled
+hazel <- mean(Mass6$Sol[,1])+TaxaCatGrowth[11,2]+mean(Mass6$Sol[,2]+TaxaCatGrowth[11,3])*preddayscaled
+lime <- mean(Mass6$Sol[,1])+TaxaCatGrowth[12,2]+mean(Mass6$Sol[,2]+TaxaCatGrowth[12,3])*preddayscaled
+oak <- mean(Mass6$Sol[,1])+TaxaCatGrowth[13,2]+mean(Mass6$Sol[,2]+TaxaCatGrowth[13,3])*preddayscaled
+rowan <- mean(Mass6$Sol[,1])+TaxaCatGrowth[14,2]+mean(Mass6$Sol[,2]+TaxaCatGrowth[14,3])*preddayscaled
+sycamore <- mean(Mass6$Sol[,1])+TaxaCatGrowth[15,2]+mean(Mass6$Sol[,2]+TaxaCatGrowth[15,3])*preddayscaled
+willow <- mean(Mass6$Sol[,1])+TaxaCatGrowth[16,2]+mean(Mass6$Sol[,2]+TaxaCatGrowth[16,3])*preddayscaled
+
+### barchart of lower interval by date
+intsamples <- subset(cater.expanded, mpc1 == 0.001, 
+                     select=c(date, mpc1))
+hist(intsamples$date, breaks=100)
+
+par(mfcol=c(1,2), cex=1.5)
+plot(cater.expanded$date, cater.expanded$logmpc1, xlab="Date", ylab="log(Mass)", pch=20, col="grey")
+points(cater.expanded$date, cater.expanded$logmpc2, pch=20, col=1)
+points(predday,alder, type="l", lwd=2, col=4)
+points(predday,ash, type="l", lwd=2, col=4)
+points(predday,aspen, type="l", lwd=2, col=4)
+points(predday,beech, type="l", lwd=2, col=4)
+points(predday,birch, type="l", lwd=2, col=4)
+points(predday,cherry, type="l", lwd=2, col=4)
+points(predday,chestnut, type="l", lwd=2, col=4)
+points(predday,damson, type="l", lwd=2, col=4)
+points(predday,elm, type="l", lwd=2, col=4)
+points(predday,fieldmaple, type="l", lwd=2, col=4)
+points(predday,hazel, type="l", lwd=2, col=4)
+points(predday,lime, type="l", lwd=2, col=4)
+points(predday,oak, type="l", lwd=2, col=4)
+points(predday,rowan, type="l", lwd=2, col=4)
+points(predday,sycamore, type="l", lwd=2, col=4)
+points(predday,willow, type="l", lwd=2, col=4)
+points(predday,meanslope, type="l", lwd=3, col="red")
+
+par(mfcol=c(1,2), cex=1.5)
+plot(cater.expanded$date, exp(cater.expanded$logmpc1), log="y", xlab="Date", ylab="Mass", pch=20, col="grey")
+points(cater.expanded$date, exp(cater.expanded$logmpc2), col=1, pch=20)
+points(predday,exp(alder), type="l", lwd=2, col=4)
+points(predday,exp(ash), type="l", lwd=2, col=4)
+points(predday,exp(aspen), type="l", lwd=2, col=4)
+points(predday,exp(beech), type="l", lwd=2, col=4)
+points(predday,exp(birch), type="l", lwd=2, col=4)
+points(predday,exp(cherry), type="l", lwd=2, col=4)
+points(predday,exp(chestnut), type="l", lwd=2, col=4)
+points(predday,exp(damson), type="l", lwd=2, col=4)
+points(predday,exp(elm), type="l", lwd=2, col=4)
+points(predday,exp(fieldmaple), type="l", lwd=2, col=4)
+points(predday,exp(hazel), type="l", lwd=2, col=4)
+points(predday,exp(lime), type="l", lwd=2, col=4)
+points(predday,exp(oak), type="l", lwd=2, col=4)
+points(predday,exp(rowan), type="l", lwd=2, col=4)
+points(predday,exp(sycamore), type="l", lwd=2, col=4)
+points(predday,exp(willow), type="l", lwd=2, col=4)
+points(predday,exp(meanslope), type="l", lwd=2, col="red")
+par(new = T)
+hist(intsamples$date, breaks=100, axes=F, xlab=NA, ylab=NA, ylim=c(0,500), xlim=c(117,175), main="")
+plot(cater.expanded$date, exp(cater.expanded$logmpc1), xlab="Date", ylab="Mass", pch=20, col="grey")
+points(cater.expanded$date, exp(cater.expanded$logmpc2), col=1, pch=20)
+points(predday,exp(alder), type="l", lwd=2, col=4)
+points(predday,exp(ash), type="l", lwd=2, col=4)
+points(predday,exp(aspen), type="l", lwd=2, col=4)
+points(predday,exp(beech), type="l", lwd=2, col=4)
+points(predday,exp(birch), type="l", lwd=2, col=4)
+points(predday,exp(cherry), type="l", lwd=2, col=4)
+points(predday,exp(chestnut), type="l", lwd=2, col=4)
+points(predday,exp(damson), type="l", lwd=2, col=4)
+points(predday,exp(elm), type="l", lwd=2, col=4)
+points(predday,exp(fieldmaple), type="l", lwd=2, col=4)
+points(predday,exp(hazel), type="l", lwd=2, col=4)
+points(predday,exp(lime), type="l", lwd=2, col=4)
+points(predday,exp(oak), type="l", lwd=2, col=4)
+points(predday,exp(rowan), type="l", lwd=2, col=4)
+points(predday,exp(sycamore), type="l", lwd=2, col=4)
+points(predday,exp(willow), type="l", lwd=2, col=4)
+points(predday,exp(meanslope), type="l", lwd=2, col="red")
+
+Siteslope.cropped <- Mass6$Sol[,83:126] # crop to just the columns wanted
+Siteslope <- data.frame(site=c(colnames(Siteslope.cropped))) #dataframe with column for yearsite 
+Siteslope$coeff <- apply(Siteslope.cropped,2, mean) # mean 
+for(i in 1:length(Siteslope$site)) {   # loop for CIs
+  A <- HPDinterval(Siteslope.cropped[,i])
+  Siteslope$lowci[i] <- A["var1","lower"] 
+  Siteslope$upci[i] <- A["var1","upper"] 
+} 
+Siteslope$site <- gsub("datescaled.site.","", Siteslope$site)
+
+Siteslopecoeff <- ggplot(Siteslope, aes(site, coeff))+
+  geom_point(size=3, alpha=0.5)+
+  geom_errorbar(aes(ymax=upci, ymin=lowci, width=0.5))+
+  theme_bw()+
+  theme(axis.text.x= element_text(angle=90))+
+  xlab("Site")+
+  geom_hline(yintercept=0, linetype="dashed", color = "red")+
+  labs(tag = "Slope")+
+  theme(text = element_text(size=10))
+
+Siteintercept.cropped <- Mass6$Sol[,39:82] # crop to just the columns wanted
+Siteintercept <- data.frame(site=c(colnames(Siteintercept.cropped))) #dataframe with column for yearsite 
+Siteintercept$coeff <- apply(Siteintercept.cropped,2, mean) # mean 
+for(i in 1:length(Siteintercept$site)) {   # loop for CIs
+  A <- HPDinterval(Siteintercept.cropped[,i])
+  Siteintercept$lowci[i] <- A["var1","lower"] 
+  Siteintercept$upci[i] <- A["var1","upper"] 
+} 
+Siteintercept$site <- Siteslope$site
+
+Siteinterceptcoeff <- ggplot(Siteintercept, aes(site, coeff))+
+  geom_point(size=3, alpha=0.5)+
+  geom_errorbar(aes(ymax=upci, ymin=lowci, width=0.5))+
+  theme_bw()+
+  theme(axis.text.x= element_text(angle=90))+
+  xlab("Site")+
+  geom_hline(yintercept=0, linetype="dashed", color = "red")+
+  labs(tag = "Intercept")+
+  theme(text = element_text(size=10))
+
+library(gridExtra)
+
+row3 <- grid.arrange(Siteinterceptcoeff, ncol = 1, widths = 1)
+row4 <- grid.arrange(Siteslopecoeff, ncol = 1, widths = 1)
+SiteCoeff <- grid.arrange(row3, row4, nrow = 2, heights = c(1,1))
+    
+###########################################
+#### Mass 6: Year in fixed, no weather, date^2, no 14-16 in data frame, extra random treeday ####
+
+cater.expanded <- subset(cater.expanded, year == "2017"|year=="2018"|year=="2019")
+cater.expanded$treeday <- paste(cater.expanded$treeID, cater.expanded$date, cater.expanded$year)
+k<-1000
+prior2<-list(R=list(V=1,nu=0.002),
+             G=list(G1=list(V=diag(2), nu=2, alpha.mu=c(0,0), alpha.V=diag(2)*k),
+                    G1=list(V=diag(2), nu=2, alpha.mu=c(0,0), alpha.V=diag(2)*k),
+                    G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
+                    G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k)))
+
+
+Mass7<- MCMCglmm(cbind(logmpc1, logmpc2)~ datescaled + I(datescaled^2), 
+                 random=~us(1+datescaled):tree.species + us(1+datescaled):site + treeID + siteday, 
+                 family="cengaussian", data=cater.expanded, prior=prior2, nitt=250000, burnin=25000, pr=TRUE)
+save(Mass7, file = "~/Documents/Models/Mass7.RData")
+load("~/Documents/Models/Mass7.RData")
+
+preddayscaled <- seq(0.66,1,0.01)
+predday <- preddayscaled*max(cater.expanded$date)
+meanslope <- mean(Mass7$Sol[,1])+mean(Mass7$Sol[,2])*preddayscaled+mean(Mass7$Sol[,3])*preddayscaled^2
+
+par(mfcol=c(1,2), cex=1.5)
+plot(cater.expanded$date, exp(cater.expanded$logmpc1), log="y", xlab="Date", ylab="Mass", pch=20, col="grey")
+points(cater.expanded$date, exp(cater.expanded$logmpc2), col=1, pch=20)
+points(predday, exp(meanslope), col=2, type="l")
+#par(new = T)
+#hist(intsamples$date, breaks=100, axes=F, xlab=NA, ylab=NA, ylim=c(0,500), xlim=c(117,175), main="")
+plot(cater.expanded$date, exp(cater.expanded$logmpc1), xlab="Date", ylab="Mass", pch=20, col="grey")
+points(cater.expanded$date, exp(cater.expanded$logmpc2), col=1, pch=20)
+points(predday, exp(meanslope), col=2, type="l")
+
+par(mfcol=c(2,2), cex=1.5)
+hist(Mass7$VCV[,"(Intercept):(Intercept).tree.species"], breaks=500, xlim=c(0,20), main="TreeTaxa intercept",xlab="Variance")
+abline(v=0.5235048, col=2, lty=2)
+hist(Mass7$VCV[,"datescaled:datescaled.tree.species"], breaks=500, xlim=c(0,30), main="TreeTaxa slope",xlab="Variance")
+abline(v=1.031537, col=2, lty=2)
+
+TTslope.cropped <- Mass7$Sol[,20:35] # crop to just the columns wanted
+TTslope <- data.frame(treetaxa=c(colnames(TTslope.cropped))) #dataframe with column for yearsite 
+TTslope$coeff <- apply(TTslope.cropped,2, mean) # mean 
+for(i in 1:length(TTslope$treetaxa)) {   # loop for CIs
+  A <- HPDinterval(TTslope.cropped[,i])
+  TTslope$lowci[i] <- A["var1","lower"] 
+  TTslope$upci[i] <- A["var1","upper"] 
+} 
+TTslope$treetaxa <- gsub("datescaled.tree.species.","", TTslope$treetaxa)
+
+TTslopecoeff <- ggplot(TTslope, aes(treetaxa, coeff))+
+  geom_point(size=3, alpha=0.5)+
+  geom_errorbar(aes(ymax=upci, ymin=lowci, width=0.5))+
+  theme_bw()+
+  theme(axis.text.x= element_text(angle=90))+
+  xlab("Tree Taxa")+
+  geom_hline(yintercept=0, linetype="dashed", color = "red")+
+  labs(tag = "Slope")+
+  theme(text = element_text(size=10))
+
+TTintercept.cropped <- Mass7$Sol[,4:19] # crop to just the columns wanted
+TTintercept <- data.frame(treetaxa=c(colnames(TTintercept.cropped))) #dataframe with column for yearsite 
+TTintercept$coeff <- apply(TTintercept.cropped,2, mean) # mean 
+for(i in 1:length(TTintercept$treetaxa)) {   # loop for CIs
+  A <- HPDinterval(TTintercept.cropped[,i])
+  TTintercept$lowci[i] <- A["var1","lower"] 
+  TTintercept$upci[i] <- A["var1","upper"] 
+} 
+TTintercept$treetaxa <- TTslope$treetaxa
+
+TTinterceptcoeff <- ggplot(TTintercept, aes(treetaxa, coeff))+
+  geom_point(size=3, alpha=0.5)+
+  geom_errorbar(aes(ymax=upci, ymin=lowci, width=0.5))+
+  theme_bw()+
+  theme(axis.text.x= element_text(angle=90))+
+  xlab("Tree Taxa")+
+  geom_hline(yintercept=0, linetype="dashed", color = "red")+
+  labs(tag = "Intercept")+
+  theme(text = element_text(size=10))
+
+library(gridExtra)
+
+row1 <- grid.arrange(TTinterceptcoeff, ncol = 1, widths = 1)
+row2 <- grid.arrange(TTslopecoeff, ncol = 1, widths = 1)
+TTCoeff <- grid.arrange(row1, row2, nrow = 2, heights = c(1,1))
+
+### slope and intercept per tax
+TaxaCatGrowth <- data.frame(Taxa=TTslope[,1], Intercept= TTintercept[,2], Slope=TTslope[,2])   
+
+preddayscaled <- seq(0.66,1,0.01)
+predday <- preddayscaled*max(cater.expanded$date)
+meanslope <- mean(Mass7$Sol[,1])+mean(Mass7$Sol[,2])*preddayscaled+mean(Mass7$Sol[,3])*preddayscaled^2
+points(predday,meanslope, type="l", lwd=2, col=3)
+alder <- mean(Mass7$Sol[,1])+TaxaCatGrowth[1,2]+mean(Mass7$Sol[,2]+TaxaCatGrowth[1,3])*preddayscaled+mean(Mass7$Sol[,3])*preddayscaled^2
+ash <- mean(Mass7$Sol[,1])+TaxaCatGrowth[2,2]+mean(Mass7$Sol[,2]+TaxaCatGrowth[2,3])*preddayscaled+mean(Mass7$Sol[,3])*preddayscaled^2
+aspen <- mean(Mass7$Sol[,1])+TaxaCatGrowth[3,2]+mean(Mass7$Sol[,2]+TaxaCatGrowth[3,3])*preddayscaled+mean(Mass7$Sol[,3])*preddayscaled^2
+beech <- mean(Mass7$Sol[,1])+TaxaCatGrowth[4,2]+mean(Mass7$Sol[,2]+TaxaCatGrowth[4,3])*preddayscaled+mean(Mass7$Sol[,3])*preddayscaled^2
+birch <- mean(Mass7$Sol[,1])+TaxaCatGrowth[5,2]+mean(Mass7$Sol[,2]+TaxaCatGrowth[5,3])*preddayscaled+mean(Mass7$Sol[,3])*preddayscaled^2
+cherry <- mean(Mass7$Sol[,1])+TaxaCatGrowth[6,2]+mean(Mass7$Sol[,2]+TaxaCatGrowth[6,3])*preddayscaled+mean(Mass7$Sol[,3])*preddayscaled^2
+chestnut <- mean(Mass7$Sol[,1])+TaxaCatGrowth[7,2]+mean(Mass7$Sol[,2]+TaxaCatGrowth[7,3])*preddayscaled+mean(Mass7$Sol[,3])*preddayscaled^2
+damson <- mean(Mass7$Sol[,1])+TaxaCatGrowth[8,2]+mean(Mass7$Sol[,2]+TaxaCatGrowth[8,3])*preddayscaled+mean(Mass7$Sol[,3])*preddayscaled^2
+elm <- mean(Mass7$Sol[,1])+TaxaCatGrowth[9,2]+mean(Mass7$Sol[,2]+TaxaCatGrowth[9,3])*preddayscaled+mean(Mass7$Sol[,3])*preddayscaled^2
+fieldmaple <- mean(Mass7$Sol[,1])+TaxaCatGrowth[10,2]+mean(Mass7$Sol[,2]+TaxaCatGrowth[10,3])*preddayscaled+mean(Mass7$Sol[,3])*preddayscaled^2
+hazel <- mean(Mass7$Sol[,1])+TaxaCatGrowth[11,2]+mean(Mass7$Sol[,2]+TaxaCatGrowth[11,3])*preddayscaled+mean(Mass7$Sol[,3])*preddayscaled^2
+lime <- mean(Mass7$Sol[,1])+TaxaCatGrowth[12,2]+mean(Mass7$Sol[,2]+TaxaCatGrowth[12,3])*preddayscaled+mean(Mass7$Sol[,3])*preddayscaled^2
+oak <- mean(Mass7$Sol[,1])+TaxaCatGrowth[13,2]+mean(Mass7$Sol[,2]+TaxaCatGrowth[13,3])*preddayscaled+mean(Mass7$Sol[,3])*preddayscaled^2
+rowan <- mean(Mass7$Sol[,1])+TaxaCatGrowth[14,2]+mean(Mass7$Sol[,2]+TaxaCatGrowth[14,3])*preddayscaled+mean(Mass7$Sol[,3])*preddayscaled^2
+sycamore <- mean(Mass7$Sol[,1])+TaxaCatGrowth[15,2]+mean(Mass7$Sol[,2]+TaxaCatGrowth[15,3])*preddayscaled+mean(Mass7$Sol[,3])*preddayscaled^2
+willow <- mean(Mass7$Sol[,1])+TaxaCatGrowth[16,2]+mean(Mass7$Sol[,2]+TaxaCatGrowth[16,3])*preddayscaled+mean(Mass7$Sol[,3])*preddayscaled^2
+
+### barchart of lower interval by date
+intsamples <- subset(cater.expanded, mpc1 == 0.001, 
+                     select=c(date, mpc1))
+
+par(mfcol=c(1,2), cex=1.5)
+plot(cater.expanded$date, exp(cater.expanded$logmpc1), log="y", xlab="Date", ylab="Mass", pch=20, col="grey")
+points(cater.expanded$date, exp(cater.expanded$logmpc2), col=1, pch=20)
+points(predday,exp(alder), type="l", lwd=2, col=4)
+points(predday,exp(ash), type="l", lwd=2, col=4)
+points(predday,exp(aspen), type="l", lwd=2, col=4)
+points(predday,exp(beech), type="l", lwd=2, col=4)
+points(predday,exp(birch), type="l", lwd=2, col=4)
+points(predday,exp(cherry), type="l", lwd=2, col=4)
+points(predday,exp(chestnut), type="l", lwd=2, col=4)
+points(predday,exp(damson), type="l", lwd=2, col=4)
+points(predday,exp(elm), type="l", lwd=2, col=4)
+points(predday,exp(fieldmaple), type="l", lwd=2, col=4)
+points(predday,exp(hazel), type="l", lwd=2, col=4)
+points(predday,exp(lime), type="l", lwd=2, col=4)
+points(predday,exp(oak), type="l", lwd=2, col=4)
+points(predday,exp(rowan), type="l", lwd=2, col=4)
+points(predday,exp(sycamore), type="l", lwd=2, col=4)
+points(predday,exp(willow), type="l", lwd=2, col=4)
+points(predday,exp(meanslope), type="l", lwd=2, col="red")
+par(new = T)
+hist(intsamples$date, breaks=100, axes=F, xlab=NA, ylab=NA, ylim=c(0,500), xlim=c(117,172), main="")
+plot(cater.expanded$date, exp(cater.expanded$logmpc1), xlab="Date", ylab="Mass", pch=20, col="grey")
+points(cater.expanded$date, exp(cater.expanded$logmpc2), col=1, pch=20)
+points(predday,exp(alder), type="l", lwd=2, col=4)
+points(predday,exp(ash), type="l", lwd=2, col=4)
+points(predday,exp(aspen), type="l", lwd=2, col=4)
+points(predday,exp(beech), type="l", lwd=2, col=4)
+points(predday,exp(birch), type="l", lwd=2, col=4)
+points(predday,exp(cherry), type="l", lwd=2, col=4)
+points(predday,exp(chestnut), type="l", lwd=2, col=4)
+points(predday,exp(damson), type="l", lwd=2, col=4)
+points(predday,exp(elm), type="l", lwd=2, col=4)
+points(predday,exp(fieldmaple), type="l", lwd=2, col=4)
+points(predday,exp(hazel), type="l", lwd=2, col=4)
+points(predday,exp(lime), type="l", lwd=2, col=4)
+points(predday,exp(oak), type="l", lwd=2, col=4)
+points(predday,exp(rowan), type="l", lwd=2, col=4)
+points(predday,exp(sycamore), type="l", lwd=2, col=4)
+points(predday,exp(willow), type="l", lwd=2, col=4)
+points(predday,exp(meanslope), type="l", lwd=2, col="red")
+
+####################################
+#### Mass 7, treespecies.datesquared ####
+k<-10000
+prior2<-list(R=list(V=1,nu=0.002),
+             G=list(G1=list(V=diag(3), nu=3, alpha.mu=c(0,0,0), alpha.V=diag(3)*k),
+                    G1=list(V=diag(2), nu=2, alpha.mu=c(0,0), alpha.V=diag(2)*k),
+                    G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
+                    G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k)))
+
+
+#Mass8<- MCMCglmm(cbind(logmpc1, logmpc2)~ datescaled*year + I(datescaled^2), 
+#                 random=~us(1+datescaled+I(datescaled^2)):tree.species  + us(1+datescaled):site + treeID + siteday, 
+#                 family="cengaussian", data=cater.expanded, prior=prior2, nitt=250000, burnin=25000, pr=TRUE)
+#save(Mass8, file = "~/Documents/Models/Mass8.RData")
+load("~/Documents/Models/Mass8.RData")
+
+preddayscaled <- seq(0.66,1,0.01)
+predday <- preddayscaled*max(cater.expanded$date)
+meanslope <- mean(Mass8$Sol[,1])+mean(Mass8$Sol[,2])*preddayscaled+mean(Mass8$Sol[,5])*preddayscaled^2
+
+par(mfcol=c(1,2), cex=1.5)
+plot(cater.expanded$date, exp(cater.expanded$logmpc1), log="y", xlab="Date", ylab="Mass", pch=20, col="grey")
+points(cater.expanded$date, exp(cater.expanded$logmpc2), col=1, pch=20)
+points(predday, exp(meanslope), col=2, type="l")
+#par(new = T)
+#hist(intsamples$date, breaks=100, axes=F, xlab=NA, ylab=NA, ylim=c(0,500), xlim=c(117,175), main="")
+plot(cater.expanded$date, exp(cater.expanded$logmpc1), xlab="Date", ylab="Mass", pch=20, col="grey")
+points(cater.expanded$date, exp(cater.expanded$logmpc2), col=1, pch=20)
+points(predday, exp(meanslope), col=2, type="l")
+
+TTslope.cropped <- Mass8$Sol[,24:39] # crop to just the columns wanted
+TTslope <- data.frame(treetaxa=c(colnames(TTslope.cropped))) #dataframe with column for yearsite 
+TTslope$coeff <- apply(TTslope.cropped,2, mean) # mean 
+for(i in 1:length(TTslope$treetaxa)) {   # loop for CIs
+  A <- HPDinterval(TTslope.cropped[,i])
+  TTslope$lowci[i] <- A["var1","lower"] 
+  TTslope$upci[i] <- A["var1","upper"] 
+} 
+TTslope$treetaxa <- gsub("datescaled.tree.species.","", TTslope$treetaxa)
+
+TTslopecoeff <- ggplot(TTslope, aes(treetaxa, coeff))+
+  geom_point(size=3, alpha=0.5)+
+  geom_errorbar(aes(ymax=upci, ymin=lowci, width=0.5))+
+  theme_bw()+
+  theme(axis.text.x= element_text(angle=90))+
+  xlab("Tree Taxa")+
+  geom_hline(yintercept=0, linetype="dashed", color = "red")+
+  labs(tag = "Slope")+
+  theme(text = element_text(size=10))
+
+TTintercept.cropped <- Mass8$Sol[,8:23] # crop to just the columns wanted
+TTintercept <- data.frame(treetaxa=c(colnames(TTintercept.cropped))) #dataframe with column for yearsite 
+TTintercept$coeff <- apply(TTintercept.cropped,2, mean) # mean 
+for(i in 1:length(TTintercept$treetaxa)) {   # loop for CIs
+  A <- HPDinterval(TTintercept.cropped[,i])
+  TTintercept$lowci[i] <- A["var1","lower"] 
+  TTintercept$upci[i] <- A["var1","upper"] 
+} 
+TTintercept$treetaxa <- TTslope$treetaxa
+
+TTinterceptcoeff <- ggplot(TTintercept, aes(treetaxa, coeff))+
+  geom_point(size=3, alpha=0.5)+
+  geom_errorbar(aes(ymax=upci, ymin=lowci, width=0.5))+
+  theme_bw()+
+  theme(axis.text.x= element_text(angle=90))+
+  xlab("Tree Taxa")+
+  geom_hline(yintercept=0, linetype="dashed", color = "red")+
+  labs(tag = "Intercept")+
+  theme(text = element_text(size=10))
+
+TTquad.cropped <- Mass8$Sol[,40:55] # crop to just the columns wanted
+TTquad <- data.frame(treetaxa=c(colnames(TTquad.cropped))) #dataframe with column for yearsite 
+TTquad$coeff <- apply(TTquad.cropped,2, mean) # mean 
+for(i in 1:length(TTquad$treetaxa)) {   # loop for CIs
+  A <- HPDinterval(TTquad.cropped[,i])
+  TTquad$lowci[i] <- A["var1","lower"] 
+  TTquad$upci[i] <- A["var1","upper"] 
+} 
+TTquad$treetaxa <- TTslope$treetaxa
+
+TTquadcoeff <- ggplot(TTquad, aes(treetaxa, coeff))+
+  geom_point(size=3, alpha=0.5)+
+  geom_errorbar(aes(ymax=upci, ymin=lowci, width=0.5))+
+  theme_bw()+
+  theme(axis.text.x= element_text(angle=90))+
+  xlab("Tree Taxa")+
+  geom_hline(yintercept=0, linetype="dashed", color = "red")+
+  labs(tag = "Quadratic")+
+  theme(text = element_text(size=10))
+
+library(gridExtra)
+
+row1 <- grid.arrange(TTinterceptcoeff, ncol = 1, widths = 1)
+row2 <- grid.arrange(TTslopecoeff, ncol = 1, widths = 1)
+row3 <- grid.arrange(TTquadcoeff, ncol = 1, widths = 1)
+TTCoeff <- grid.arrange(row1, row2, row3, nrow = 3, heights = c(1,1,1))
+
+### slope and intercept per tax
+TaxaCatGrowth <- data.frame(Taxa=TTslope[,1], Intercept= TTintercept[,2], Slope=TTslope[,2], Quad=TTquad[,2])   
+
+preddayscaled <- seq(0.66,1,0.01)
+predday <- preddayscaled*max(cater.expanded$date)
+meanslope <- mean(Mass8$Sol[,1])+mean(Mass8$Sol[,2])*preddayscaled+mean(Mass8$Sol[,5])*preddayscaled^2
+points(predday,meanslope, type="l", lwd=2, col=3)
+alder <- mean(Mass8$Sol[,1])+TaxaCatGrowth[1,2]+mean(Mass8$Sol[,2]+TaxaCatGrowth[1,3])*preddayscaled+mean(Mass8$Sol[,5]+TaxaCatGrowth[1,4])*preddayscaled^2
+ash <- mean(Mass8$Sol[,1])+TaxaCatGrowth[2,2]+mean(Mass8$Sol[,2]+TaxaCatGrowth[2,3])*preddayscaled+mean(Mass8$Sol[,5]+TaxaCatGrowth[2,4])*preddayscaled^2
+aspen <- mean(Mass8$Sol[,1])+TaxaCatGrowth[3,2]+mean(Mass8$Sol[,2]+TaxaCatGrowth[3,3])*preddayscaled+mean(Mass8$Sol[,5]+TaxaCatGrowth[3,4])*preddayscaled^2
+beech <- mean(Mass8$Sol[,1])+TaxaCatGrowth[4,2]+mean(Mass8$Sol[,2]+TaxaCatGrowth[4,3])*preddayscaled+mean(Mass8$Sol[,5]+TaxaCatGrowth[4,4])*preddayscaled^2
+birch <- mean(Mass8$Sol[,1])+TaxaCatGrowth[5,2]+mean(Mass8$Sol[,2]+TaxaCatGrowth[5,3])*preddayscaled+mean(Mass8$Sol[,5]+TaxaCatGrowth[5,4])*preddayscaled^2
+cherry <- mean(Mass8$Sol[,1])+TaxaCatGrowth[6,2]+mean(Mass8$Sol[,2]+TaxaCatGrowth[6,3])*preddayscaled+mean(Mass8$Sol[,5]+TaxaCatGrowth[6,4])*preddayscaled^2
+chestnut <- mean(Mass8$Sol[,1])+TaxaCatGrowth[7,2]+mean(Mass8$Sol[,2]+TaxaCatGrowth[7,3])*preddayscaled+mean(Mass8$Sol[,5]+TaxaCatGrowth[7,4])*preddayscaled^2
+damson <- mean(Mass8$Sol[,1])+TaxaCatGrowth[8,2]+mean(Mass8$Sol[,2]+TaxaCatGrowth[8,3])*preddayscaled+mean(Mass8$Sol[,5]+TaxaCatGrowth[8,4])*preddayscaled^2
+elm <- mean(Mass8$Sol[,1])+TaxaCatGrowth[9,2]+mean(Mass8$Sol[,2]+TaxaCatGrowth[9,3])*preddayscaled+mean(Mass8$Sol[,5]+TaxaCatGrowth[9,4])*preddayscaled^2
+fieldmaple <- mean(Mass8$Sol[,1])+TaxaCatGrowth[10,2]+mean(Mass8$Sol[,2]+TaxaCatGrowth[10,3])*preddayscaled+mean(Mass8$Sol[,5]+TaxaCatGrowth[10,4])*preddayscaled^2
+hazel <- mean(Mass8$Sol[,1])+TaxaCatGrowth[11,2]+mean(Mass8$Sol[,2]+TaxaCatGrowth[11,3])*preddayscaled+mean(Mass8$Sol[,5]+TaxaCatGrowth[11,4])*preddayscaled^2
+lime <- mean(Mass8$Sol[,1])+TaxaCatGrowth[12,2]+mean(Mass8$Sol[,2]+TaxaCatGrowth[12,3])*preddayscaled+mean(Mass8$Sol[,5]+TaxaCatGrowth[12,4])*preddayscaled^2
+oak <- mean(Mass8$Sol[,1])+TaxaCatGrowth[13,2]+mean(Mass8$Sol[,2]+TaxaCatGrowth[13,3])*preddayscaled+mean(Mass8$Sol[,5]+TaxaCatGrowth[13,4])*preddayscaled^2
+rowan <- mean(Mass8$Sol[,1])+TaxaCatGrowth[14,2]+mean(Mass8$Sol[,2]+TaxaCatGrowth[14,3])*preddayscaled+mean(Mass8$Sol[,5]+TaxaCatGrowth[14,4])*preddayscaled^2
+sycamore <- mean(Mass8$Sol[,1])+TaxaCatGrowth[15,2]+mean(Mass8$Sol[,2]+TaxaCatGrowth[15,3])*preddayscaled+mean(Mass8$Sol[,5]+TaxaCatGrowth[15,4])*preddayscaled^2
+willow <- mean(Mass8$Sol[,1])+TaxaCatGrowth[16,2]+mean(Mass8$Sol[,2]+TaxaCatGrowth[16,3])*preddayscaled+mean(Mass8$Sol[,5]+TaxaCatGrowth[16,4])*preddayscaled^2
+
+### barchart of lower interval by date
+intsamples <- subset(cater.expanded, mpc1 == 0.001, 
+                     select=c(date, mpc1))
+
+par(mfcol=c(1,2), cex=1.5)
+plot(cater.expanded$date, exp(cater.expanded$logmpc1), log="y", xlab="Date", ylab="Mass", pch=20, col="grey")
+points(cater.expanded$date, exp(cater.expanded$logmpc2), col=1, pch=20)
+points(predday,exp(alder), type="l", lwd=2, col=4)
+points(predday,exp(ash), type="l", lwd=2, col=4)
+points(predday,exp(aspen), type="l", lwd=2, col=4)
+points(predday,exp(beech), type="l", lwd=2, col=4)
+points(predday,exp(birch), type="l", lwd=2, col=4)
+points(predday,exp(cherry), type="l", lwd=2, col=4)
+points(predday,exp(chestnut), type="l", lwd=2, col=4)
+points(predday,exp(damson), type="l", lwd=2, col=4)
+points(predday,exp(elm), type="l", lwd=2, col=4)
+points(predday,exp(fieldmaple), type="l", lwd=2, col=4)
+points(predday,exp(hazel), type="l", lwd=2, col=4)
+points(predday,exp(lime), type="l", lwd=2, col=4)
+points(predday,exp(oak), type="l", lwd=2, col=4)
+points(predday,exp(rowan), type="l", lwd=2, col=4)
+points(predday,exp(sycamore), type="l", lwd=2, col=4)
+points(predday,exp(willow), type="l", lwd=2, col=4)
+points(predday,exp(meanslope), type="l", lwd=2, col="red")
+par(new = T)
+hist(intsamples$date, breaks=100, axes=F, xlab=NA, ylab=NA, ylim=c(0,500), xlim=c(117,172), main="")
+plot(cater.expanded$date, exp(cater.expanded$logmpc1), xlab="Date", ylab="Mass", pch=20, col="grey")
+points(cater.expanded$date, exp(cater.expanded$logmpc2), col=1, pch=20)
+points(predday,exp(alder), type="l", lwd=2, col=4)
+points(predday,exp(ash), type="l", lwd=2, col=4)
+points(predday,exp(aspen), type="l", lwd=2, col=4)
+points(predday,exp(beech), type="l", lwd=2, col=4)
+points(predday,exp(birch), type="l", lwd=2, col=4)
+points(predday,exp(cherry), type="l", lwd=2, col=4)
+points(predday,exp(chestnut), type="l", lwd=2, col=4)
+points(predday,exp(damson), type="l", lwd=2, col=4)
+points(predday,exp(elm), type="l", lwd=2, col=4)
+points(predday,exp(fieldmaple), type="l", lwd=2, col=4)
+points(predday,exp(hazel), type="l", lwd=2, col=4)
+points(predday,exp(lime), type="l", lwd=2, col=4)
+points(predday,exp(oak), type="l", lwd=2, col=4)
+points(predday,exp(rowan), type="l", lwd=2, col=4)
+points(predday,exp(sycamore), type="l", lwd=2, col=4)
+points(predday,exp(willow), type="l", lwd=2, col=4)
+points(predday,exp(meanslope), type="l", lwd=2, col="red")
+
+# mass on 165
+TTmass <- data.frame(mean=(exp(Mass8$Sol[,1]+Mass8$Sol[,2]*0.9+Mass8$Sol[,5]*0.9^2)))
+colnames(TTmass)[colnames(TTmass)=="var1"] <- "mean"
+TTmass$alder <-    (exp(Mass8$Sol[,1]+Mass8$Sol[,8]+(Mass8$Sol[,2]+Mass8$Sol[,24])*0.9+(Mass8$Sol[,5]+Mass8$Sol[,40])*0.9^2))-TTmass$mean
+TTmass$ash <-      (exp(Mass8$Sol[,1]+Mass8$Sol[,9]+(Mass8$Sol[,2]+Mass8$Sol[,25])*0.9+(Mass8$Sol[,5]+Mass8$Sol[,41])*0.9^2))-TTmass$mean
+TTmass$aspen <-    (exp(Mass8$Sol[,1]+Mass8$Sol[,10]+(Mass8$Sol[,2]+Mass8$Sol[,26])*0.9+(Mass8$Sol[,5]+Mass8$Sol[,42])*0.9^2))-TTmass$mean
+TTmass$beech <-    (exp(Mass8$Sol[,1]+Mass8$Sol[,11]+(Mass8$Sol[,2]+Mass8$Sol[,27])*0.9+(Mass8$Sol[,5]+Mass8$Sol[,43])*0.9^2))-TTmass$mean
+TTmass$birch <-    (exp(Mass8$Sol[,1]+Mass8$Sol[,12]+(Mass8$Sol[,2]+Mass8$Sol[,28])*0.9+(Mass8$Sol[,5]+Mass8$Sol[,44])*0.9^2))-TTmass$mean
+TTmass$cherry <-   (exp(Mass8$Sol[,1]+Mass8$Sol[,13]+(Mass8$Sol[,2]+Mass8$Sol[,29])*0.9+(Mass8$Sol[,5]+Mass8$Sol[,45])*0.9^2))-TTmass$mean
+TTmass$chestnut <- (exp(Mass8$Sol[,1]+Mass8$Sol[,14]+(Mass8$Sol[,2]+Mass8$Sol[,30])*0.9+(Mass8$Sol[,5]+Mass8$Sol[,46])*0.9^2))-TTmass$mean
+TTmass$damson <-   (exp(Mass8$Sol[,1]+Mass8$Sol[,15]+(Mass8$Sol[,2]+Mass8$Sol[,31])*0.9+(Mass8$Sol[,5]+Mass8$Sol[,47])*0.9^2))-TTmass$mean
+TTmass$elm <-      (exp(Mass8$Sol[,1]+Mass8$Sol[,16]+(Mass8$Sol[,2]+Mass8$Sol[,32])*0.9+(Mass8$Sol[,5]+Mass8$Sol[,48])*0.9^2))-TTmass$mean
+TTmass$fieldmaple<-(exp(Mass8$Sol[,1]+Mass8$Sol[,17]+(Mass8$Sol[,2]+Mass8$Sol[,33])*0.9+(Mass8$Sol[,5]+Mass8$Sol[,49])*0.9^2))-TTmass$mean
+TTmass$hazel <-    (exp(Mass8$Sol[,1]+Mass8$Sol[,18]+(Mass8$Sol[,2]+Mass8$Sol[,34])*0.9+(Mass8$Sol[,5]+Mass8$Sol[,50])*0.9^2))-TTmass$mean
+TTmass$lime <-     (exp(Mass8$Sol[,1]+Mass8$Sol[,19]+(Mass8$Sol[,2]+Mass8$Sol[,35])*0.9+(Mass8$Sol[,5]+Mass8$Sol[,51])*0.9^2))-TTmass$mean
+TTmass$oak <-      (exp(Mass8$Sol[,1]+Mass8$Sol[,20]+(Mass8$Sol[,2]+Mass8$Sol[,36])*0.9+(Mass8$Sol[,5]+Mass8$Sol[,52])*0.9^2))-TTmass$mean
+TTmass$rowan <-    (exp(Mass8$Sol[,1]+Mass8$Sol[,21]+(Mass8$Sol[,2]+Mass8$Sol[,37])*0.9+(Mass8$Sol[,5]+Mass8$Sol[,53])*0.9^2))-TTmass$mean
+TTmass$sycamore <- (exp(Mass8$Sol[,1]+Mass8$Sol[,22]+(Mass8$Sol[,2]+Mass8$Sol[,38])*0.9+(Mass8$Sol[,5]+Mass8$Sol[,54])*0.9^2))-TTmass$mean
+TTmass$willow <-   (exp(Mass8$Sol[,1]+Mass8$Sol[,23]+(Mass8$Sol[,2]+Mass8$Sol[,39])*0.9+(Mass8$Sol[,5]+Mass8$Sol[,55])*0.9^2))-TTmass$mean
+
+TTmass.cropped <- TTmass[,2:17] # crop to just the columns wanted
+TTmass2 <- data.frame(treetaxa=c(colnames(TTmass.cropped))) #dataframe with column for yearsite 
+TTmass2$coeff <- apply(TTmass.cropped,2, mean) # mean 
+for(i in 1:length(TTmass2$treetaxa)) {   # loop for CIs
+  A <- HPDinterval(TTmass.cropped[,i])
+  TTmass2$lowci[i] <- A["var1","lower"] 
+  TTmass2$upci[i] <- A["var1","upper"] 
+}
+
+ggplot(TTmass2, aes(treetaxa, coeff))+
+  geom_point(size=3, alpha=0.5)+
+  geom_errorbar(aes(ymax=upci, ymin=lowci, width=0.5))+
+  theme_bw()+
+  theme(axis.text.x= element_text(angle=90))+
+  xlab("Tree Taxa")+
+  ylab("Difference from mean mass")+
+  ylim(-0.05,0.15)+
+  geom_hline(yintercept=0, linetype="dashed", color = "red")+
+  labs(tag = "Day165")+
+  theme(text = element_text(size=15))
+
+# mass on 170
+TTmass <- data.frame(mean=(exp(Mass8$Sol[,1]+Mass8$Sol[,2]*1+Mass8$Sol[,5]*1^2)))
+colnames(TTmass)[colnames(TTmass)=="var1"] <- "mean"
+TTmass$alder <-    (exp(Mass8$Sol[,1]+Mass8$Sol[,8]+(Mass8$Sol[,2]+Mass8$Sol[,24])*1+(Mass8$Sol[,5]+Mass8$Sol[,40])*1^2))-TTmass$mean
+TTmass$ash <-      (exp(Mass8$Sol[,1]+Mass8$Sol[,9]+(Mass8$Sol[,2]+Mass8$Sol[,25])*1+(Mass8$Sol[,5]+Mass8$Sol[,41])*1^2))-TTmass$mean
+TTmass$aspen <-    (exp(Mass8$Sol[,1]+Mass8$Sol[,10]+(Mass8$Sol[,2]+Mass8$Sol[,26])*1+(Mass8$Sol[,5]+Mass8$Sol[,42])*1^2))-TTmass$mean
+TTmass$beech <-    (exp(Mass8$Sol[,1]+Mass8$Sol[,11]+(Mass8$Sol[,2]+Mass8$Sol[,27])*1+(Mass8$Sol[,5]+Mass8$Sol[,43])*1^2))-TTmass$mean
+TTmass$birch <-    (exp(Mass8$Sol[,1]+Mass8$Sol[,12]+(Mass8$Sol[,2]+Mass8$Sol[,28])*1+(Mass8$Sol[,5]+Mass8$Sol[,44])*1^2))-TTmass$mean
+TTmass$cherry <-   (exp(Mass8$Sol[,1]+Mass8$Sol[,13]+(Mass8$Sol[,2]+Mass8$Sol[,29])*1+(Mass8$Sol[,5]+Mass8$Sol[,45])*1^2))-TTmass$mean
+TTmass$chestnut <- (exp(Mass8$Sol[,1]+Mass8$Sol[,14]+(Mass8$Sol[,2]+Mass8$Sol[,30])*1+(Mass8$Sol[,5]+Mass8$Sol[,46])*1^2))-TTmass$mean
+TTmass$damson <-   (exp(Mass8$Sol[,1]+Mass8$Sol[,15]+(Mass8$Sol[,2]+Mass8$Sol[,31])*1+(Mass8$Sol[,5]+Mass8$Sol[,47])*1^2))-TTmass$mean
+TTmass$elm <-      (exp(Mass8$Sol[,1]+Mass8$Sol[,16]+(Mass8$Sol[,2]+Mass8$Sol[,32])*1+(Mass8$Sol[,5]+Mass8$Sol[,48])*1^2))-TTmass$mean
+TTmass$fieldmaple<-(exp(Mass8$Sol[,1]+Mass8$Sol[,17]+(Mass8$Sol[,2]+Mass8$Sol[,33])*1+(Mass8$Sol[,5]+Mass8$Sol[,49])*1^2))-TTmass$mean
+TTmass$hazel <-    (exp(Mass8$Sol[,1]+Mass8$Sol[,18]+(Mass8$Sol[,2]+Mass8$Sol[,34])*1+(Mass8$Sol[,5]+Mass8$Sol[,50])*1^2))-TTmass$mean
+TTmass$lime <-     (exp(Mass8$Sol[,1]+Mass8$Sol[,19]+(Mass8$Sol[,2]+Mass8$Sol[,35])*1+(Mass8$Sol[,5]+Mass8$Sol[,51])*1^2))-TTmass$mean
+TTmass$oak <-      (exp(Mass8$Sol[,1]+Mass8$Sol[,20]+(Mass8$Sol[,2]+Mass8$Sol[,36])*1+(Mass8$Sol[,5]+Mass8$Sol[,52])*1^2))-TTmass$mean
+TTmass$rowan <-    (exp(Mass8$Sol[,1]+Mass8$Sol[,21]+(Mass8$Sol[,2]+Mass8$Sol[,37])*1+(Mass8$Sol[,5]+Mass8$Sol[,53])*1^2))-TTmass$mean
+TTmass$sycamore <- (exp(Mass8$Sol[,1]+Mass8$Sol[,22]+(Mass8$Sol[,2]+Mass8$Sol[,38])*1+(Mass8$Sol[,5]+Mass8$Sol[,54])*1^2))-TTmass$mean
+TTmass$willow <-   (exp(Mass8$Sol[,1]+Mass8$Sol[,23]+(Mass8$Sol[,2]+Mass8$Sol[,39])*1+(Mass8$Sol[,5]+Mass8$Sol[,55])*1^2))-TTmass$mean
+
+TTmass.cropped <- TTmass[,2:17] # crop to just the columns wanted
+TTmass2 <- data.frame(treetaxa=c(colnames(TTmass.cropped))) #dataframe with column for yearsite 
+TTmass2$coeff <- apply(TTmass.cropped,2, mean) # mean 
+for(i in 1:length(TTmass2$treetaxa)) {   # loop for CIs
+  A <- HPDinterval(TTmass.cropped[,i])
+  TTmass2$lowci[i] <- A["var1","lower"] 
+  TTmass2$upci[i] <- A["var1","upper"] 
+}
+
+ggplot(TTmass2, aes(treetaxa, coeff))+
+  geom_point(size=3, alpha=0.5)+
+  geom_errorbar(aes(ymax=upci, ymin=lowci, width=0.5))+
+  theme_bw()+
+  theme(axis.text.x= element_text(angle=90))+
+  xlab("Tree Taxa")+
+  ylab("Difference from mean mass")+
+  ylim(-0.05,0.15)+
+  geom_hline(yintercept=0, linetype="dashed", color = "red")+
+  labs(tag = "Day170")+
+  theme(text = element_text(size=15))
+
+
+###################
+#### Weighting ####
+###################
+
+# use HabitatTreeTaxaCategories script
+k<-10000
+prior3<-list(R=list(V=1,nu=0.002),
+             G=list(G1=list(V=diag(3), nu=3, alpha.mu=c(0,0,0), alpha.V=diag(3)*k),
+                    G1=list(V=diag(3), nu=3, alpha.mu=c(0,0,0), alpha.V=diag(3)*k),
+                    G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
+                    G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
+                    G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
+                    G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
+                    G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k)))
+
+#MassWeighted<- MCMCglmm(cbind(logmpc1, logmpc2)~ datescaled + I(datescaled^2), 
+#                 random=~us(1+datescaled+I(datescaled^2)):tree.species + us(1+datescaled+I(datescaled^2)):site + year + treeID + siteday + recorder + us(1/sqrt(caterpillars)):units, 
+#                 family="cengaussian", data=cater_habitat, prior=prior3, nitt=250000, burnin=25000, pr=TRUE, thin=100)
+#save(MassWeighted, file = "~/Documents/Models/MassWeighted.RData")
+load("~/Documents/Models/MassWeighted.RData")
+
+#### Plotting growth curves ####
+preddayscaled <- seq(0.66,1,0.01)
+predday <- preddayscaled*max(cater_habitat$date)
+meanslope <- mean(MassWeighted$Sol[,1])+mean(MassWeighted$Sol[,2])*preddayscaled+mean(MassWeighted$Sol[,3])*preddayscaled^2
+
+par(mfcol=c(1,2), cex=1.5)
+plot(cater_habitat$date, exp(cater_habitat$logmpc1), log="y", xlab="Date", ylab="Mass", pch=20, col="grey")
+points(cater_habitat$date, exp(cater_habitat$logmpc2), col=1, pch=20)
+points(predday, exp(meanslope), col=2, type="l")
+#par(new = T)
+#hist(intsamples$date, breaks=100, axes=F, xlab=NA, ylab=NA, ylim=c(0,500), xlim=c(117,175), main="")
+plot(cater_habitat$date, exp(cater_habitat$logmpc1), xlab="Date", ylab="Mass", pch=20, col="grey")
+points(cater_habitat$date, exp(cater_habitat$logmpc2), col=1, pch=20)
+points(predday, exp(meanslope), col=2, type="l")
+
+TTslope.cropped <- MassWeighted$Sol[,14:23] # crop to just the columns wanted
+TTslope <- data.frame(treetaxa=c(colnames(TTslope.cropped))) #dataframe with column for yearsite 
+TTslope$coeff <- apply(TTslope.cropped,2, mean) # mean 
+for(i in 1:length(TTslope$treetaxa)) {   # loop for CIs
+  A <- HPDinterval(TTslope.cropped[,i])
+  TTslope$lowci[i] <- A["var1","lower"] 
+  TTslope$upci[i] <- A["var1","upper"] 
+} 
+TTslope$treetaxa <- gsub("datescaled.tree.species.","", TTslope$treetaxa)
+
+TTslopecoeff <- ggplot(TTslope, aes(treetaxa, coeff))+
+  geom_point(size=3, alpha=0.5)+
+  geom_errorbar(aes(ymax=upci, ymin=lowci, width=0.5))+
+  theme_bw()+
+  theme(axis.text.x= element_text(angle=90))+
+  xlab("Tree Taxa")+
+  geom_hline(yintercept=0, linetype="dashed", color = "red")+
+  labs(tag = "Slope")+
+  theme(text = element_text(size=10))
+
+TTintercept.cropped <- MassWeighted$Sol[,4:13] # crop to just the columns wanted
+TTintercept <- data.frame(treetaxa=c(colnames(TTintercept.cropped))) #dataframe with column for yearsite 
+TTintercept$coeff <- apply(TTintercept.cropped,2, mean) # mean 
+for(i in 1:length(TTintercept$treetaxa)) {   # loop for CIs
+  A <- HPDinterval(TTintercept.cropped[,i])
+  TTintercept$lowci[i] <- A["var1","lower"] 
+  TTintercept$upci[i] <- A["var1","upper"] 
+} 
+TTintercept$treetaxa <- TTslope$treetaxa
+
+TTinterceptcoeff <- ggplot(TTintercept, aes(treetaxa, coeff))+
+  geom_point(size=3, alpha=0.5)+
+  geom_errorbar(aes(ymax=upci, ymin=lowci, width=0.5))+
+  theme_bw()+
+  theme(axis.text.x= element_text(angle=90))+
+  xlab("Tree Taxa")+
+  geom_hline(yintercept=0, linetype="dashed", color = "red")+
+  labs(tag = "Intercept")+
+  theme(text = element_text(size=10))
+
+TTquad.cropped <- MassWeighted$Sol[,24:33] # crop to just the columns wanted
+TTquad <- data.frame(treetaxa=c(colnames(TTquad.cropped))) #dataframe with column for yearsite 
+TTquad$coeff <- apply(TTquad.cropped,2, mean) # mean 
+for(i in 1:length(TTquad$treetaxa)) {   # loop for CIs
+  A <- HPDinterval(TTquad.cropped[,i])
+  TTquad$lowci[i] <- A["var1","lower"] 
+  TTquad$upci[i] <- A["var1","upper"] 
+} 
+TTquad$treetaxa <- TTslope$treetaxa
+
+TTquadcoeff <- ggplot(TTquad, aes(treetaxa, coeff))+
+  geom_point(size=3, alpha=0.5)+
+  geom_errorbar(aes(ymax=upci, ymin=lowci, width=0.5))+
+  theme_bw()+
+  theme(axis.text.x= element_text(angle=90))+
+  xlab("Tree Taxa")+
+  geom_hline(yintercept=0, linetype="dashed", color = "red")+
+  labs(tag = "Quadratic")+
+  theme(text = element_text(size=10))
+
+library(gridExtra)
+
+row1 <- grid.arrange(TTinterceptcoeff, ncol = 1, widths = 1)
+row2 <- grid.arrange(TTslopecoeff, ncol = 1, widths = 1)
+row3 <- grid.arrange(TTquadcoeff, ncol = 1, widths = 1)
+TTCoeff <- grid.arrange(row1, row2, row3, nrow = 3, heights = c(1,1,1))
+
+### slope and intercept per tax
+TaxaCatGrowth <- data.frame(Taxa=TTslope[,1], Intercept= TTintercept[,2], Slope=TTslope[,2], Quad=TTquad[,2])   
+
+preddayscaled <- seq(0.66,1,0.01)
+predday <- preddayscaled*max(cater_habitat$date)
+meanslope <- mean(MassWeighted$Sol[,1])+mean(MassWeighted$Sol[,2])*preddayscaled+mean(MassWeighted$Sol[,3])*preddayscaled^2
+points(predday,meanslope, type="l", lwd=2, col=3)
+alder <- mean(MassWeighted$Sol[,1])+TaxaCatGrowth[1,2]+mean(MassWeighted$Sol[,2]+TaxaCatGrowth[1,3])*preddayscaled+mean(MassWeighted$Sol[,3]+TaxaCatGrowth[1,4])*preddayscaled^2
+ash <- mean(MassWeighted$Sol[,1])+TaxaCatGrowth[2,2]+mean(MassWeighted$Sol[,2]+TaxaCatGrowth[2,3])*preddayscaled+mean(MassWeighted$Sol[,3]+TaxaCatGrowth[2,4])*preddayscaled^2
+beech <- mean(MassWeighted$Sol[,1])+TaxaCatGrowth[3,2]+mean(MassWeighted$Sol[,2]+TaxaCatGrowth[3,3])*preddayscaled+mean(MassWeighted$Sol[,3]+TaxaCatGrowth[3,4])*preddayscaled^2
+birch <- mean(MassWeighted$Sol[,1])+TaxaCatGrowth[4,2]+mean(MassWeighted$Sol[,2]+TaxaCatGrowth[4,3])*preddayscaled+mean(MassWeighted$Sol[,3]+TaxaCatGrowth[4,4])*preddayscaled^2
+elm <- mean(MassWeighted$Sol[,1])+TaxaCatGrowth[5,2]+mean(MassWeighted$Sol[,2]+TaxaCatGrowth[5,3])*preddayscaled+mean(MassWeighted$Sol[,3]+TaxaCatGrowth[5,4])*preddayscaled^2
+hazel <- mean(MassWeighted$Sol[,1])+TaxaCatGrowth[6,2]+mean(MassWeighted$Sol[,2]+TaxaCatGrowth[6,3])*preddayscaled+mean(MassWeighted$Sol[,3]+TaxaCatGrowth[6,4])*preddayscaled^2
+oak <- mean(MassWeighted$Sol[,1])+TaxaCatGrowth[7,2]+mean(MassWeighted$Sol[,2]+TaxaCatGrowth[7,3])*preddayscaled+mean(MassWeighted$Sol[,3]+TaxaCatGrowth[7,4])*preddayscaled^2
+rowan <- mean(MassWeighted$Sol[,1])+TaxaCatGrowth[8,2]+mean(MassWeighted$Sol[,2]+TaxaCatGrowth[8,3])*preddayscaled+mean(MassWeighted$Sol[,3]+TaxaCatGrowth[8,4])*preddayscaled^2
+sycamore <- mean(MassWeighted$Sol[,1])+TaxaCatGrowth[9,2]+mean(MassWeighted$Sol[,2]+TaxaCatGrowth[9,3])*preddayscaled+mean(MassWeighted$Sol[,3]+TaxaCatGrowth[9,4])*preddayscaled^2
+willow <- mean(MassWeighted$Sol[,1])+TaxaCatGrowth[10,2]+mean(MassWeighted$Sol[,2]+TaxaCatGrowth[10,3])*preddayscaled+mean(MassWeighted$Sol[,3]+TaxaCatGrowth[10,4])*preddayscaled^2
+
+### barchart of lower interval by date
+intsamples <- subset(cater_habitat, mpc1 == 0.001, 
+                     select=c(date, mpc1))
+
+par(mfcol=c(1,2), cex=1.5)
+plot(cater_habitat$date, exp(cater_habitat$logmpc1), log="y", xlab="Date", ylab="Mass", pch=20, col="grey")
+points(cater_habitat$date, exp(cater_habitat$logmpc2), col=1, pch=20)
+points(predday,exp(alder), type="l", lwd=2, col=4)
+points(predday,exp(ash), type="l", lwd=2, col=4)
+points(predday,exp(beech), type="l", lwd=2, col=4)
+points(predday,exp(birch), type="l", lwd=2, col=4)
+points(predday,exp(elm), type="l", lwd=2, col=4)
+points(predday,exp(hazel), type="l", lwd=2, col=4)
+points(predday,exp(oak), type="l", lwd=2, col=4)
+points(predday,exp(rowan), type="l", lwd=2, col=4)
+points(predday,exp(sycamore), type="l", lwd=2, col=4)
+points(predday,exp(willow), type="l", lwd=2, col=4)
+points(predday,exp(meanslope), type="l", lwd=2, col="red")
+par(new = T)
+hist(intsamples$date, breaks=100, axes=F, xlab=NA, ylab=NA, ylim=c(0,500), xlim=c(117,172), main="")
+plot(cater_habitat$date, exp(cater_habitat$logmpc1), xlab="Date", ylab="Mass", pch=20, col="grey")
+points(cater_habitat$date, exp(cater_habitat$logmpc2), col=1, pch=20)
+points(predday,exp(alder), type="l", lwd=2, col=4)
+points(predday,exp(ash), type="l", lwd=2, col=4)
+points(predday,exp(beech), type="l", lwd=2, col=4)
+points(predday,exp(birch), type="l", lwd=2, col=4)
+points(predday,exp(elm), type="l", lwd=2, col=4)
+points(predday,exp(hazel), type="l", lwd=2, col=4)
+points(predday,exp(oak), type="l", lwd=2, col=4)
+points(predday,exp(rowan), type="l", lwd=2, col=4)
+points(predday,exp(sycamore), type="l", lwd=2, col=4)
+points(predday,exp(willow), type="l", lwd=2, col=4)
+points(predday,exp(meanslope), type="l", lwd=2, col="red")
+
+# mass on 165
+TTmass <- data.frame(mean=(exp(MassWeighted$Sol[,1]+MassWeighted$Sol[,2]*0.9+MassWeighted$Sol[,3]*0.9^2)))
+colnames(TTmass)[colnames(TTmass)=="var1"] <- "mean"
+TTmass$alder <-    (exp(MassWeighted$Sol[,1]+MassWeighted$Sol[,4]+(MassWeighted$Sol[,2]+MassWeighted$Sol[,14])*0.9+(MassWeighted$Sol[,3]+MassWeighted$Sol[,24])*0.9^2))-TTmass$mean
+TTmass$ash <-      (exp(MassWeighted$Sol[,1]+MassWeighted$Sol[,5]+(MassWeighted$Sol[,2]+MassWeighted$Sol[,15])*0.9+(MassWeighted$Sol[,3]+MassWeighted$Sol[,25])*0.9^2))-TTmass$mean
+TTmass$beech <-    (exp(MassWeighted$Sol[,1]+MassWeighted$Sol[,6]+(MassWeighted$Sol[,2]+MassWeighted$Sol[,16])*0.9+(MassWeighted$Sol[,3]+MassWeighted$Sol[,25])*0.9^2))-TTmass$mean
+TTmass$birch <-    (exp(MassWeighted$Sol[,1]+MassWeighted$Sol[,7]+(MassWeighted$Sol[,2]+MassWeighted$Sol[,17])*0.9+(MassWeighted$Sol[,3]+MassWeighted$Sol[,26])*0.9^2))-TTmass$mean
+TTmass$elm <-      (exp(MassWeighted$Sol[,1]+MassWeighted$Sol[,8]+(MassWeighted$Sol[,2]+MassWeighted$Sol[,18])*0.9+(MassWeighted$Sol[,3]+MassWeighted$Sol[,27])*0.9^2))-TTmass$mean
+TTmass$hazel <-    (exp(MassWeighted$Sol[,1]+MassWeighted$Sol[,9]+(MassWeighted$Sol[,2]+MassWeighted$Sol[,19])*0.9+(MassWeighted$Sol[,3]+MassWeighted$Sol[,28])*0.9^2))-TTmass$mean
+TTmass$oak <-      (exp(MassWeighted$Sol[,1]+MassWeighted$Sol[,10]+(MassWeighted$Sol[,2]+MassWeighted$Sol[,20])*0.9+(MassWeighted$Sol[,3]+MassWeighted$Sol[,29])*0.9^2))-TTmass$mean
+TTmass$rowan <-    (exp(MassWeighted$Sol[,1]+MassWeighted$Sol[,11]+(MassWeighted$Sol[,2]+MassWeighted$Sol[,21])*0.9+(MassWeighted$Sol[,3]+MassWeighted$Sol[,30])*0.9^2))-TTmass$mean
+TTmass$sycamore <- (exp(MassWeighted$Sol[,1]+MassWeighted$Sol[,12]+(MassWeighted$Sol[,2]+MassWeighted$Sol[,22])*0.9+(MassWeighted$Sol[,3]+MassWeighted$Sol[,31])*0.9^2))-TTmass$mean
+TTmass$willow <-   (exp(MassWeighted$Sol[,1]+MassWeighted$Sol[,13]+(MassWeighted$Sol[,2]+MassWeighted$Sol[,23])*0.9+(MassWeighted$Sol[,3]+MassWeighted$Sol[,32])*0.9^2))-TTmass$mean
+
+TTmass.cropped <- TTmass[,2:11] # crop to just the columns wanted
+TTmass2 <- data.frame(treetaxa=c(colnames(TTmass.cropped))) #dataframe with column for yearsite 
+TTmass2$coeff <- apply(TTmass.cropped,2, mean) # mean 
+for(i in 1:length(TTmass2$treetaxa)) {   # loop for CIs
+  A <- HPDinterval(TTmass.cropped[,i])
+  TTmass2$lowci[i] <- A["var1","lower"] 
+  TTmass2$upci[i] <- A["var1","upper"] 
+}
+
+ggplot(TTmass2, aes(treetaxa, coeff))+
+  geom_point(size=3, alpha=0.5)+
+  geom_errorbar(aes(ymax=upci, ymin=lowci, width=0.5))+
+  theme_bw()+
+  theme(axis.text.x= element_text(angle=90))+
+  xlab("Tree Taxa")+
+  ylab("Difference from mean mass")+
+  ylim(-0.03,0.09)+
+  geom_hline(yintercept=0, linetype="dashed", color = "red")+
+  labs(tag = "Day165")+
+  theme(text = element_text(size=15))
+
+# mass on 170
+TTmass <- data.frame(mean=(exp(MassWeighted$Sol[,1]+MassWeighted$Sol[,2]*1+MassWeighted$Sol[,3]*1^2)))
+colnames(TTmass)[colnames(TTmass)=="var1"] <- "mean"
+TTmass$alder <-    (exp(MassWeighted$Sol[,1]+MassWeighted$Sol[,4]+(MassWeighted$Sol[,2]+MassWeighted$Sol[,14])*1+(MassWeighted$Sol[,3]+MassWeighted$Sol[,24])*1^2))-TTmass$mean
+TTmass$ash <-      (exp(MassWeighted$Sol[,1]+MassWeighted$Sol[,5]+(MassWeighted$Sol[,2]+MassWeighted$Sol[,15])*1+(MassWeighted$Sol[,3]+MassWeighted$Sol[,25])*1^2))-TTmass$mean
+TTmass$beech <-    (exp(MassWeighted$Sol[,1]+MassWeighted$Sol[,6]+(MassWeighted$Sol[,2]+MassWeighted$Sol[,16])*1+(MassWeighted$Sol[,3]+MassWeighted$Sol[,26])*1^2))-TTmass$mean
+TTmass$birch <-    (exp(MassWeighted$Sol[,1]+MassWeighted$Sol[,7]+(MassWeighted$Sol[,2]+MassWeighted$Sol[,17])*1+(MassWeighted$Sol[,3]+MassWeighted$Sol[,27])*1^2))-TTmass$mean
+TTmass$elm <-      (exp(MassWeighted$Sol[,1]+MassWeighted$Sol[,8]+(MassWeighted$Sol[,2]+MassWeighted$Sol[,18])*1+(MassWeighted$Sol[,3]+MassWeighted$Sol[,28])*1^2))-TTmass$mean
+TTmass$hazel <-    (exp(MassWeighted$Sol[,1]+MassWeighted$Sol[,9]+(MassWeighted$Sol[,2]+MassWeighted$Sol[,19])*1+(MassWeighted$Sol[,3]+MassWeighted$Sol[,29])*1^2))-TTmass$mean
+TTmass$oak <-      (exp(MassWeighted$Sol[,1]+MassWeighted$Sol[,10]+(MassWeighted$Sol[,2]+MassWeighted$Sol[,20])*1+(MassWeighted$Sol[,3]+MassWeighted$Sol[,30])*1^2))-TTmass$mean
+TTmass$rowan <-    (exp(MassWeighted$Sol[,1]+MassWeighted$Sol[,11]+(MassWeighted$Sol[,2]+MassWeighted$Sol[,21])*1+(MassWeighted$Sol[,3]+MassWeighted$Sol[,31])*1^2))-TTmass$mean
+TTmass$sycamore <- (exp(MassWeighted$Sol[,1]+MassWeighted$Sol[,12]+(MassWeighted$Sol[,2]+MassWeighted$Sol[,22])*1+(MassWeighted$Sol[,3]+MassWeighted$Sol[,32])*1^2))-TTmass$mean
+TTmass$willow <-   (exp(MassWeighted$Sol[,1]+MassWeighted$Sol[,13]+(MassWeighted$Sol[,2]+MassWeighted$Sol[,23])*1+(MassWeighted$Sol[,3]+MassWeighted$Sol[,33])*1^2))-TTmass$mean
+
+TTmass.cropped <- TTmass[,2:11] # crop to just the columns wanted
+TTmass2 <- data.frame(treetaxa=c(colnames(TTmass.cropped))) #dataframe with column for yearsite 
+TTmass2$coeff <- apply(TTmass.cropped,2, mean) # mean 
+for(i in 1:length(TTmass2$treetaxa)) {   # loop for CIs
+  A <- HPDinterval(TTmass.cropped[,i])
+  TTmass2$lowci[i] <- A["var1","lower"] 
+  TTmass2$upci[i] <- A["var1","upper"] 
+}
+
+ggplot(TTmass2, aes(treetaxa, coeff))+
+  geom_point(size=3, alpha=0.5)+
+  geom_errorbar(aes(ymax=upci, ymin=lowci, width=0.5))+
+  theme_bw()+
+  theme(axis.text.x= element_text(angle=90))+
+  xlab("Tree Taxa")+
+  ylab("Difference from mean mass")+
+  ylim(-0.03,0.09)+
+  geom_hline(yintercept=0, linetype="dashed", color = "red")+
+  labs(tag = "Day170")+
+  theme(text = element_text(size=15))
