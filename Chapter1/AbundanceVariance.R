@@ -206,10 +206,10 @@ abline(v=propzero(cater_habitat$caterpillars), col="red")
 
 mean(AbundVar$VCV[,1]/rowSums(AbundVar$VCV))
 
-VarProp.df <- data.frame(Term=c(colnames(AbundVar4$VCV))) #dataframe with column for random term 
+VarProp.df <- data.frame(Term=c(colnames(AbundVarFinal$VCV))) #dataframe with column for random term 
 
 for(i in 1:length(VarProp.df$Term)) {   # loop for CIs
-  VarProp.df$Proportion[i] <- mean(AbundVar4$VCV[,i]/rowSums(AbundVar4$VCV))
+  VarProp.df$Proportion[i] <- mean(AbundVarFinal$VCV[,i]/rowSums(AbundVarFinal$VCV))
   } 
 VarProp.df$Term <- gsub("recorder","Recorder", VarProp.df$Term)
 VarProp.df$Term <- gsub("siteyear","SiteYear", VarProp.df$Term)
@@ -298,3 +298,163 @@ plot(rp, plot_area = 0.95, yscale=0.05, nodewidth = 4)
 library("colorspace")
 pal <- choose_palette()
 bluegreen <- sequential_hcl(15, h=c(250,120), c.= c(65,85), l=c(20,75), power=c(1.5,1.5))
+
+###############################################
+#### Model using HabitatTreeTaxaCategories ####
+###############################################
+
+# Model priors
+k<-10000
+prior<-list(R=list(V=1,nu=0.002),
+            G=list(G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
+                   G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
+                   G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
+                   G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
+                   G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
+                   G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
+                   G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k)))
+
+# Model
+AbundVarFinal1<- MCMCglmm(caterpillars~1, 
+                     random=~recorder+year+siteyear+siteday+site+treeID+tree.species, 
+                     family="poisson", data=cater_habitat, prior=prior, nitt=2000000, burnin=50000)
+save(AbundVarFinal1, file = "~/Documents/Models/AbundVarFinal1.RData")
+load("~/Documents/Models/AbundVarFinal1.RData")
+
+#check if model generates sensible results
+AbundVarFinal1.Sim<-simulate(AbundVarFinal1,nsim=500)
+#sum(cater_habitat$caterpillars)
+#par(mfcol=c(1,1))
+hist(apply(AbundVarFinal1.Sim,2,sum), breaks=100000)
+abline(v=sum(cater_habitat$caterpillars),col=2)
+
+propzero <- function(x){return(length(which(x==0))/length(x))}
+hist(apply(AbundVarFinal1.Sim,2,propzero), breaks=50)
+abline(v=propzero(cater_habitat$caterpillars), col="red")
+
+# Variance breakdown
+VarProp.df <- data.frame(Term=c(colnames(AbundVarFinal1$VCV))) #dataframe with column for random term 
+
+for(i in 1:length(VarProp.df$Term)) {   # loop for CIs
+  VarProp.df$Proportion[i] <- mean(AbundVarFinal1$VCV[,i]/rowSums(AbundVarFinal1$VCV))
+} 
+
+VarProp.df$Term <- gsub("recorder","Recorder", VarProp.df$Term)
+VarProp.df$Term <- gsub("siteyear","SiteYear", VarProp.df$Term)
+VarProp.df$Term <- gsub("siteday","SiteDay", VarProp.df$Term)
+VarProp.df$Term <- gsub("site","Site", VarProp.df$Term)
+VarProp.df$Term <- gsub("year","Year", VarProp.df$Term)
+VarProp.df$Term <- gsub("treeID","TreeID", VarProp.df$Term)
+VarProp.df$Term <- gsub("tree.species","TreeTaxa", VarProp.df$Term)
+VarProp.df$Term <- gsub("units","Residual", VarProp.df$Term)
+VarProp.df$Percentage <- VarProp.df$Proportion*100
+VarProp.df$Percentage <- round(VarProp.df$Percentage, digits=2)
+VarProp.df$Data <- "Variance"
+
+#### Riverplot package Sankey ####
+library(riverplot)
+?riverplot
+
+edges <- data.frame(
+  N1=c("Total Variance ", "Total Variance", "Total Variance", "Spatial", "Spatial", "Spatial", "Temporal", "Temporal", "Temporal", "Other", "Other"),
+  N2=c("Spatial", "Temporal", "Other", "Site", "Tree ID", "Tree Taxa", " Site Day", " Site Year", " Year", "Recorder", "Residual"),
+  Value=c(sum(VarProp.df[5:7,3]), sum(VarProp.df[2:4,3]), VarProp.df[1,3]+VarProp.df[8,3], VarProp.df[5,3], VarProp.df[6,3], VarProp.df[7,3], VarProp.df[4,3], VarProp.df[3,3], VarProp.df[2,3], VarProp.df[1,3], VarProp.df[8,3])
+)
+
+edges$N2<-paste(edges$N2, '\n',  paste0(edges$Value, '%')) 
+edges$N1<-c(rep('Total Variance', 3),
+            rep(edges$N2[1], 3),
+            rep(edges$N2[2], 3), 
+            rep(edges$N2[3], 2)   
+)
+
+
+nodes <- data.frame(
+  ID=c(as.character(edges$N1), 
+       as.character(edges$N2)) %>% unique()
+)
+
+nodes$x=as.integer(c(1,2,2,2,3,3,3,3,3,3,3,3))
+nodes$y=as.numeric(c(5.1,2.3,6.5,10,0.2,1.7,3.4,5.5,7.4,9.0,10.7,12.5))
+rownames(nodes) = nodes$ID
+
+library(RColorBrewer)
+library("colorspace")
+palette = paste0(rainbow_hcl(18))#, "70")
+styles = lapply(nodes$y, function(n) {list(col = palette[n+1], lty = 0, textcol = "black")})
+names(styles) = nodes$ID
+
+rp <- list(nodes = nodes, edges = edges, styles = styles)
+class(rp) <- c(class(rp), "riverplot")
+plot(rp, plot_area = 0.95, yscale=0.06, nodewidth = 3)
+
+
+############################
+#### Model output table ####
+############################
+
+#for random terms use posterior mode and fixed terms mean
+library(MCMCglmm)
+
+####fixed
+fixed<-rbind(
+  c("Intercept",paste(round(mean(AbundVarFinal1$Sol[,1]),3)," (",
+                      round(HPDinterval(AbundVarFinal1$Sol[,1])[1],3)," - ",
+                      round(HPDinterval(AbundVarFinal1$Sol[,1])[2],3),")",sep=""),round(effectiveSize(AbundVarFinal1$Sol[,1]))))
+
+####random 
+column<-1
+recorder<-c("Recorder",paste(round(posterior.mode(AbundVarFinal1$VCV[, column]),3)," (",
+                                 round(HPDinterval(AbundVarFinal1$VCV[, column])[1],3)," - ",
+                                 round(HPDinterval(AbundVarFinal1$VCV[, column])[2],3),")",sep=""),
+                                 round(effectiveSize(AbundVarFinal1$VCV[, column])))
+
+column<-2
+year<-c("Year",paste(round(posterior.mode(AbundVarFinal1$VCV[, column]),3)," (",
+                             round(HPDinterval(AbundVarFinal1$VCV[, column])[1],3)," - ",
+                             round(HPDinterval(AbundVarFinal1$VCV[, column])[2],3),")",sep=""),
+                             round(effectiveSize(AbundVarFinal1$VCV[, column])))
+
+column<-3
+siteyear<-c("Site Year",paste(round(posterior.mode(AbundVarFinal1$VCV[, column]),3)," (",
+                             round(HPDinterval(AbundVarFinal1$VCV[, column])[1],3)," - ",
+                             round(HPDinterval(AbundVarFinal1$VCV[, column])[2],3),")",sep=""),
+                             round(effectiveSize(AbundVarFinal1$VCV[, column])))
+
+column<-4
+siteday<-c("Site Day",paste(round(posterior.mode(AbundVarFinal1$VCV[, column]),3)," (",
+                             round(HPDinterval(AbundVarFinal1$VCV[, column])[1],3)," - ",
+                             round(HPDinterval(AbundVarFinal1$VCV[, column])[2],3),")",sep=""),
+                             round(effectiveSize(AbundVarFinal1$VCV[, column])))
+
+column<-5
+site<-c("Site",paste(round(posterior.mode(AbundVarFinal1$VCV[, column]),3)," (",
+                             round(HPDinterval(AbundVarFinal1$VCV[, column])[1],3)," - ",
+                             round(HPDinterval(AbundVarFinal1$VCV[, column])[2],3),")",sep=""),
+                             round(effectiveSize(AbundVarFinal1$VCV[, column])))
+
+column<-6
+treeID<-c("Tree ID",paste(round(posterior.mode(AbundVarFinal1$VCV[, column]),3)," (",
+                             round(HPDinterval(AbundVarFinal1$VCV[, column])[1],3)," - ",
+                             round(HPDinterval(AbundVarFinal1$VCV[, column])[2],3),")",sep=""),
+                             round(effectiveSize(AbundVarFinal1$VCV[, column])))
+
+column<-7
+treetaxa<-c("Tree Taxa",paste(round(posterior.mode(AbundVarFinal1$VCV[, column]),3)," (",
+                             round(HPDinterval(AbundVarFinal1$VCV[, column])[1],3)," - ",
+                             round(HPDinterval(AbundVarFinal1$VCV[, column])[2],3),")",sep=""),
+                             round(effectiveSize(AbundVarFinal1$VCV[, column])))
+
+column<-8
+residual<-c("Residual",paste(round(posterior.mode(AbundVarFinal1$VCV[, column]),3)," (",
+                             round(HPDinterval(AbundVarFinal1$VCV[, column])[1],3)," - ",
+                             round(HPDinterval(AbundVarFinal1$VCV[, column])[2],3),")",sep=""),
+                             round(effectiveSize(AbundVarFinal1$VCV[, column])))
+
+
+
+
+random<-rbind(site,treeID,treetaxa,siteday,siteyear,year,recorder,residual)
+
+
+write.table(rbind(c("Fixed Terms","",""),fixed,c("Random Terms","",""),random),"~/Documents/Models/Tables/TableAbundVarFinal1.txt",sep="\t",col.names=c("","Coefficient/Variance (Mean/mode and CI)","Effective sample size"),row.names=F)
