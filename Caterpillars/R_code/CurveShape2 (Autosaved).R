@@ -349,3 +349,110 @@ prior<-list(R=list(V=diag(1), nu=0.002),
 DateCubedSY3<- MCMCglmm(caterpillars~datescaled+I(datescaled^2)+I(datescaled^3), random=~us(1+datescaled+I(datescaled^2)):siteyear+recorder+siteday+treeID, family="poisson", data=cater, prior=prior, nitt=300000, burnin=30000, pr=TRUE, thin=50)
 save(DateCubedSY3, file = "~/Documents/Models/DateCubedSY3.RData")
 load("~/Documents/Models/DateCubedSY3.RData")
+
+#### Plot curves
+# colour: 
+mycol <- rgb(0, 153, 0, max = 250, alpha = 10, names = "greentrans")
+
+dayscal <- seq(0.67,1,0.001)
+curve <- mean(DateCubedSY3$Sol[,1])+mean(DateCubedSY3$Sol[,2])*dayscal+mean(DateCubedSY3$Sol[,3])*dayscal^2+mean(DateCubedSY3$Sol[,4])*dayscal^3
+days <- dayscal*max(cater$date)
+quart <- data.frame(qd=seq(mean(cdf$root1),mean(cdf$root2),0.01))
+quart$qh <- mean(exp(cdf$ph)/4)
+
+par(mfcol=c(1,1),mar=c(3.9, 3.8, 1, 1), cex=1.4, las=1)
+plot(days,exp(curve), type="l", ylim=c(0,0.11), xlab="Date", ylab="Abundance")
+
+for(i in 1:5400){
+A <- DateCubedSY3$Sol[i,1]+DateCubedSY3$Sol[i,2]*dayscal+DateCubedSY3$Sol[i,3]*dayscal^2+DateCubedSY3$Sol[i,4]*dayscal^3
+points(days, exp(A), type="l", col=mycol, lwd=0.5)
+}
+points(days, exp(curve), type="l")
+points(quart$qd, quart$qh, type="l", lty="dashed", lwd=0.7)
+abline(v=(mean(cdf$pd)*max(cater$date)), lwd=0.8, lty="dashed")
+text(145, 0.01, "54.9%", cex=0.9)
+text(162, 0.01, "45.1%", cex=0.9)
+#### Calculate peak date
+# (-b +/- sqrt(b^2-4*a*c))/(2*a)
+cdf <- data.frame(DateCubedSY3$Sol[,1:4])
+cdf$a <- 3*DateCubedSY3$Sol[,4]
+cdf$b <- 2*DateCubedSY3$Sol[,3]
+cdf$c <- DateCubedSY3$Sol[,2]
+#abline(v=((-b - sqrt(b^2-4*a*c))/(2*a))*max(cater$date), col=1, lty="dashed")
+
+
+# Not reverted to day of the year for height calcs
+cdf$pd <- ((-cdf$b - sqrt(cdf$b^2-4*cdf$a*cdf$c))/(2*cdf$a))
+
+#### Calculate peak height
+
+cdf$ph <- DateCubedSY3$Sol[,1]+DateCubedSY3$Sol[,2]*cdf$pd+DateCubedSY3$Sol[,3]*cdf$pd^2+DateCubedSY3$Sol[,4]*cdf$pd^3
+
+
+#### Calculate width either side at 50% peak height
+for(i in 1:5400){
+  A <- polyroot(c((cdf$X.Intercept.[i]-(log(exp(cdf$ph[i])/2))),cdf$datescaled[i],cdf$I.datescaled.2.[i],cdf$I.datescaled.3.[i]))
+  cdf$r1[i] <- A[1]
+  cdf$r2[i] <- A[2]
+  cdf$r3[i] <- A[3]
+}
+
+cdf$r1 <- Re(cdf$r1)[abs(Im(cdf$r1)) < 1e-6]
+cdf$r2 <- Re(cdf$r2)[abs(Im(cdf$r1)) < 1e-6]
+cdf$r3 <- Re(cdf$r3)[abs(Im(cdf$r1)) < 1e-6]
+
+cdf$r1 <- ifelse(cdf$r1<min(cater$datescaled),NA,cdf$r1)
+cdf$r2 <- ifelse(cdf$r2<min(cater$datescaled),NA,cdf$r2)
+cdf$r3 <- ifelse(cdf$r3<min(cater$datescaled),NA,cdf$r3)
+
+
+roots <- data.frame(r1=cdf$r1,r2=cdf$r2,r3=cdf$r3)
+cdf$root1 <- (apply(roots, 1, min, na.rm=TRUE))*max(cater$date)   
+cdf$root2 <- (apply(roots, 1, max, na.rm=TRUE))*max(cater$date)  
+
+cdf$left <- (cdf$pd*max(cater$date))-cdf$root1
+cdf$right <- cdf$root2-(cdf$pd*max(cater$date))
+cdf$width <- cdf$left+cdf$right
+cdf$propleft <- cdf$left/cdf$width
+cdf$propright <- cdf$right/cdf$width
+
+mean(cdf$propleft) # 0.5333786
+HPDinterval(cdf$propleft) # 0.5204923 0.5453406
+mean(cdf$propright) # 0.4666214
+HPDinterval(cdf$propright) # 0.4546594 0.4795077
+mean(cdf$width) # 24.75582
+HPDinterval(cdf$width) # 23.05019 26.54367
+
+#### Calculate width either side at 25% peak height
+for(i in 1:5400){
+  A <- polyroot(c((cdf$X.Intercept.[i]-(log(exp(cdf$ph[i])/4))),cdf$datescaled[i],cdf$I.datescaled.2.[i],cdf$I.datescaled.3.[i]))
+  cdf$r1[i] <- A[1]
+  cdf$r2[i] <- A[2]
+  cdf$r3[i] <- A[3]
+}
+
+cdf$r1 <- Re(cdf$r1)[abs(Im(cdf$r1)) < 1e-6]
+cdf$r2 <- Re(cdf$r2)[abs(Im(cdf$r1)) < 1e-6]
+cdf$r3 <- Re(cdf$r3)[abs(Im(cdf$r1)) < 1e-6]
+
+cdf$r1 <- ifelse(cdf$r1<min(cater$datescaled),NA,cdf$r1)
+cdf$r2 <- ifelse(cdf$r2<min(cater$datescaled),NA,cdf$r2)
+cdf$r3 <- ifelse(cdf$r3<min(cater$datescaled),NA,cdf$r3)
+
+
+roots <- data.frame(r1=cdf$r1,r2=cdf$r2,r3=cdf$r3)
+cdf$root1 <- (apply(roots, 1, min, na.rm=TRUE))*max(cater$date)   
+cdf$root2 <- (apply(roots, 1, max, na.rm=TRUE))*max(cater$date)  
+
+cdf$left <- (cdf$pd*max(cater$date))-cdf$root1
+cdf$right <- cdf$root2-(cdf$pd*max(cater$date))
+cdf$width <- cdf$left+cdf$right
+cdf$propleft <- cdf$left/cdf$width
+cdf$propright <- cdf$right/cdf$width
+
+mean(cdf$propleft) # 0.5486706
+HPDinterval(cdf$propleft) # 0.5287043 0.5670475
+mean(cdf$propright) # 0.4513294
+HPDinterval(cdf$propright) # 0.4329525 0.4712957
+mean(cdf$width) # 35.46679
+HPDinterval(cdf$width) # 33.10513 38.0448
