@@ -239,9 +239,17 @@ load("~/Documents/Models/AbundTTCurves.RData")
 
 #AbundTTCurves1<- MCMCglmm(caterpillars~ datescaled + I(datescaled^2), 
 #                         random=~us(1+datescaled+I(datescaled^2)):tree.species + us(1+datescaled+I(datescaled^2)):siteyear + treeID + siteday + recorder, 
-#                         family="poisson", data=cater_habitat, prior=prior3, nitt=750000, burnin=50000, pr=TRUE)
+#                         family="poisson", data=cater_habitat, prior=prior3, nitt=750000, burnin=50000, pr=TRUE, thin=50)
 #save(AbundTTCurves1, file = "~/Documents/Models/AbundTTCurves1.RData")
 load("~/Documents/Models/AbundTTCurves1.RData")
+
+# was 1million, needs a bit longer
+AbundTTCurves2<- MCMCglmm(caterpillars~ datescaled + I(datescaled^2), 
+                         random=~us(1+datescaled+I(datescaled^2)):tree.species + us(1+datescaled+I(datescaled^2)):siteyear + treeID + siteday + recorder, 
+                         family="poisson", data=cater_habitat, prior=prior3, nitt=1100000, burnin=50000, pr=TRUE, thin=30)
+save(AbundTTCurves2, file = "~/Documents/Models/AbundTTCurves2.RData")
+rm(list=ls())
+load("~/Documents/Models/AbundTTCurves2.RData")
 
 AlderCurve <- data.frame(int=AbundTTCurves$Sol[,1], TTint=AbundTTCurves$Sol[,4],date=AbundTTCurves$Sol[,2], TTdate=AbundTTCurves$Sol[,14], date2=AbundTTCurves$Sol[,3], TTdate2=AbundTTCurves$Sol[,24])
 AshCurve <- data.frame(int=AbundTTCurves$Sol[,1], TTint=AbundTTCurves$Sol[,5],date=AbundTTCurves$Sol[,2], TTdate=AbundTTCurves$Sol[,15], date2=AbundTTCurves$Sol[,3], TTdate2=AbundTTCurves$Sol[,25])
@@ -616,8 +624,61 @@ TTcurves <- data.frame(TT=c("Alder", "Ash", "Beech", "Birch", "Elm", "Hazel", "O
                        PWUCI=c(HPDinterval(AlderPW2-AlderPW1)[2], HPDinterval(AshPW2-AshPW1)[2], HPDinterval(BeechPW2-BeechPW1)[2], HPDinterval(BirchPW2-BirchPW1)[2], HPDinterval(ElmPW2-ElmPW1)[2], HPDinterval(HazelPW2-HazelPW1)[2], HPDinterval(OakPW2-OakPW1)[2], HPDinterval(RowanPW2-RowanPW1)[2], HPDinterval(SycamorePW2-SycamorePW1)[2], HPDinterval(WillowPW2-WillowPW1)[2]),
                        PWdiff=c(mean(AlderPW2dif-AlderPW1dif,na.rm=TRUE), mean(AshPW2dif-AshPW1dif,na.rm=TRUE), mean(BeechPW2dif-BeechPW1dif,na.rm=TRUE), mean(BirchPW2dif-BirchPW1dif,na.rm=TRUE), mean(ElmPW2dif-ElmPW1dif,na.rm=TRUE), mean(HazelPW2dif-HazelPW1dif,na.rm=TRUE), mean(OakPW2dif-OakPW1dif,na.rm=TRUE), mean(RowanPW2dif-RowanPW1dif,na.rm=TRUE), mean(SycamorePW2dif-SycamorePW1dif,na.rm=TRUE), mean(WillowPW2dif-WillowPW1dif,na.rm=TRUE)),
                        PWdiffLCI=c(HPDinterval(AlderPW2dif-AlderPW1dif)[1], HPDinterval(AshPW2dif-AshPW1dif)[1], HPDinterval(BeechPW2dif-BeechPW1dif)[1], HPDinterval(BirchPW2dif-BirchPW1dif)[1], HPDinterval(ElmPW2dif-ElmPW1dif)[1], HPDinterval(HazelPW2dif-HazelPW1dif)[1], HPDinterval(OakPW2dif-OakPW1dif)[1], HPDinterval(RowanPW2dif-RowanPW1dif)[1], HPDinterval(SycamorePW2dif-SycamorePW1dif)[1], HPDinterval(WillowPW2dif-WillowPW1dif)[1]),
-                       PWdiffUCI=c(HPDinterval(AlderPW2dif-AlderPW1dif)[2], HPDinterval(AshPW2dif-AshPW1dif)[2], HPDinterval(BeechPW2dif-BeechPW1dif)[2], HPDinterval(BirchPW2dif-BirchPW1dif)[2], HPDinterval(ElmPW2dif-ElmPW1dif)[2], HPDinterval(HazelPW2dif-HazelPW1dif)[2], HPDinterval(OakPW2dif-OakPW1dif)[2], HPDinterval(RowanPW2dif-RowanPW1dif)[2], HPDinterval(SycamorePW2dif-SycamorePW1dif)[2], HPDinterval(WillowPW2dif-WillowPW1dif)[2]))
+                       PWdiffUCI=c(HPDinterval(AlderPW2dif-AlderPW1dif)[2], HPDinterval(AshPW2dif-AshPW1dif)[2], HPDinterval(BeechPW2dif-BeechPW1dif)[2], HPDinterval(BirchPW2dif-BirchPW1dif)[2], HPDinterval(ElmPW2dif-ElmPW1dif)[2], HPDinterval(HazelPW2dif-HazelPW1dif)[2], HPDinterval(OakPW2dif-OakPW1dif)[2], HPDinterval(RowanPW2dif-RowanPW1dif)[2], HPDinterval(SycamorePW2dif-SycamorePW1dif)[2], HPDinterval(WillowPW2dif-WillowPW1dif)[2]),
+                       PWdiff2=c(mean((AlderPW2-AlderPW1)-(MeanPW2-MeanPW1),na.rm=TRUE), mean((AshPW2-AshPW1)-(MeanPW2-MeanPW1),na.rm=TRUE), mean((BeechPW2-BeechPW1)-(MeanPW2-MeanPW1),na.rm=TRUE), mean((BirchPW2-BirchPW1)-(MeanPW2-MeanPW1),na.rm=TRUE), mean((ElmPW2-ElmPW1)-(MeanPW2-MeanPW1),na.rm=TRUE), mean((HazelPW2-HazelPW1)-(MeanPW2-MeanPW1),na.rm=TRUE), mean((OakPW2-OakPW1)-(MeanPW2-MeanPW1),na.rm=TRUE), mean((RowanPW2-RowanPW1)-(MeanPW2-MeanPW1),na.rm=TRUE), mean((SycamorePW2-SycamorePW1)-(MeanPW2-MeanPW1),na.rm=TRUE), mean((WillowPW2-WillowPW1)-(MeanPW2-MeanPW1),na.rm=TRUE)))
 
+
+#### Peak Width at 0.5 height ####
+
+AlderPW1.5    <- (-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,14])+sqrt((AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,14])^2-4*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,24])*((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,4])-log(exp(AlderCurve$ph)/2))))/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,24]))
+AlderPW2.5    <- (-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,14])-sqrt((AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,14])^2-4*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,24])*((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,4])-log(exp(AlderCurve$ph)/2))))/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,24]))
+AshPW1.5      <- (-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,15])+sqrt((AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,15])^2-4*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,25])*((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,5])-log(exp(AshCurve$ph)/2))))/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,25]))
+AshPW2.5      <- (-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,15])-sqrt((AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,15])^2-4*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,25])*((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,5])-log(exp(AshCurve$ph)/2))))/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,25]))
+BeechPW1.5    <- (-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,16])+sqrt((AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,16])^2-4*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,26])*((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,6])-log(exp(BeechCurve$ph)/2))))/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,26]))
+BeechPW2.5    <- (-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,16])-sqrt((AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,16])^2-4*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,26])*((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,6])-log(exp(BeechCurve$ph)/2))))/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,26]))
+BirchPW1.5    <- (-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,17])+sqrt((AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,17])^2-4*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,27])*((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,7])-log(exp(BirchCurve$ph)/2))))/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,27]))
+BirchPW2.5    <- (-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,17])-sqrt((AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,17])^2-4*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,27])*((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,7])-log(exp(BirchCurve$ph)/2))))/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,27]))
+ElmPW1.5      <- (-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,18])+sqrt((AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,18])^2-4*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,28])*((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,8])-log(exp(ElmCurve$ph)/2))))/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,28]))
+ElmPW2.5      <- (-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,18])-sqrt((AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,18])^2-4*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,28])*((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,8])-log(exp(ElmCurve$ph)/2))))/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,28]))
+HazelPW1.5    <- (-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,19])+sqrt((AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,19])^2-4*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,29])*((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,9])-log(exp(HazelCurve$ph)/2))))/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,29]))
+HazelPW2.5    <- (-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,19])-sqrt((AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,19])^2-4*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,29])*((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,9])-log(exp(HazelCurve$ph)/2))))/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,29]))
+OakPW1.5      <- (-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,20])+sqrt((AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,20])^2-4*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,30])*((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,10])-log(exp(OakCurve$ph)/2))))/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,30]))
+OakPW2.5      <- (-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,20])-sqrt((AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,20])^2-4*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,30])*((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,10])-log(exp(OakCurve$ph)/2))))/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,30]))
+RowanPW1.5    <- (-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,21])+sqrt((AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,21])^2-4*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,31])*((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,11])-log(exp(RowanCurve$ph)/2))))/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,31]))
+RowanPW2.5    <- (-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,21])-sqrt((AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,21])^2-4*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,31])*((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,11])-log(exp(RowanCurve$ph)/2))))/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,31]))
+SycamorePW1.5 <- (-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,22])+sqrt((AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,22])^2-4*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,32])*((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,12])-log(exp(SycamoreCurve$ph)/2))))/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,32]))
+SycamorePW2.5 <- (-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,22])-sqrt((AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,22])^2-4*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,32])*((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,12])-log(exp(SycamoreCurve$ph)/2))))/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,32]))
+WillowPW1.5   <- (-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,23])+sqrt((AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,23])^2-4*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,33])*((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,13])-log(exp(WillowCurve$ph)/2))))/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,33]))
+WillowPW2.5   <- (-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,23])-sqrt((AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,23])^2-4*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,33])*((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,13])-log(exp(WillowCurve$ph)/2))))/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,33]))
+
+MeanPW1.5    <- (-(AbundTTCurves$Sol[,2])+sqrt((AbundTTCurves$Sol[,2])^2-4*(AbundTTCurves$Sol[,3])*((AbundTTCurves$Sol[,1])-log(exp(meanPH)/2))))/(2*(AbundTTCurves$Sol[,3]))
+MeanPW2.5    <- (-(AbundTTCurves$Sol[,2])-sqrt((AbundTTCurves$Sol[,2])^2-4*(AbundTTCurves$Sol[,3])*((AbundTTCurves$Sol[,1])-log(exp(meanPH)/2))))/(2*(AbundTTCurves$Sol[,3]))
+
+TTcurves2 <- data.frame(TT=c("Alder", "Ash", "Beech", "Birch", "Elm", "Hazel", "Oak", "Rowan", "Sycamore", "Willow"), 
+                       PD=c(mean(AlderCurve$pd),mean(AshCurve$pd),mean(BeechCurve$pd),mean(BirchCurve$pd),mean(ElmCurve$pd),mean(HazelCurve$pd),mean(OakCurve$pd),mean(RowanCurve$pd),mean(SycamoreCurve$pd),mean(WillowCurve$pd)),
+                       PDLCI=c(AlderPDCI[1], AshPDCI[1], BeechPDCI[1], BirchPDCI[1], ElmPDCI[1], HazelPDCI[1], OakPDCI[1], RowanPDCI[1], SycamorePDCI[1], WillowPDCI[1]),
+                       PDUCI=c(AlderPDCI[2], AshPDCI[2], BeechPDCI[2], BirchPDCI[2], ElmPDCI[2], HazelPDCI[2], OakPDCI[2], RowanPDCI[2], SycamorePDCI[2], WillowPDCI[2]),
+                       PDdiff=c(mean(AlderCurve$pddiff),mean(AshCurve$pddiff),mean(BeechCurve$pddiff),mean(BirchCurve$pddiff),mean(ElmCurve$pddiff),mean(HazelCurve$pddiff),mean(OakCurve$pddiff),mean(RowanCurve$pddiff),mean(SycamoreCurve$pddiff),mean(WillowCurve$pddiff)),
+                       PDdiffLCI=c(AlderPDdifCI[1], AshPDdifCI[1], BeechPDdifCI[1], BirchPDdifCI[1], ElmPDdifCI[1], HazelPDdifCI[1], OakPDdifCI[1], RowanPDdifCI[1], SycamorePDdifCI[1], WillowPDdifCI[1]),
+                       PDdiffUCI=c(AlderPDdifCI[2], AshPDdifCI[2], BeechPDdifCI[2], BirchPDdifCI[2], ElmPDdifCI[2], HazelPDdifCI[2], OakPDdifCI[2], RowanPDdifCI[2], SycamorePDdifCI[2], WillowPDdifCI[2]),
+                       PH=c(mean(AlderCurve$ph),mean(AshCurve$ph),mean(BeechCurve$ph),mean(BirchCurve$ph),mean(ElmCurve$ph),mean(HazelCurve$ph),mean(OakCurve$ph),mean(RowanCurve$ph),mean(SycamoreCurve$ph),mean(WillowCurve$ph)),
+                       PHLCI=c(AlderPHCI[1], AshPHCI[1], BeechPHCI[1], BirchPHCI[1], ElmPHCI[1], HazelPHCI[1], OakPHCI[1], RowanPHCI[1], SycamorePHCI[1], WillowPHCI[1]),
+                       PHUCI=c(AlderPHCI[2], AshPHCI[2], BeechPHCI[2], BirchPHCI[2], ElmPHCI[2], HazelPHCI[2], OakPHCI[2], RowanPHCI[2], SycamorePHCI[2], WillowPHCI[2]),
+                       PHdiff=c(mean(AlderCurve$phdif),mean(AshCurve$phdif),mean(BeechCurve$phdif),mean(BirchCurve$phdif),mean(ElmCurve$phdif),mean(HazelCurve$phdif),mean(OakCurve$phdif),mean(RowanCurve$phdif),mean(SycamoreCurve$phdif),mean(WillowCurve$phdif)),
+                       PHdiffLCI=c(AlderPHdifCI[1], AshPHdifCI[1], BeechPHdifCI[1], BirchPHdifCI[1], ElmPHdifCI[1], HazelPHdifCI[1], OakPHdifCI[1], RowanPHdifCI[1], SycamorePHdifCI[1], WillowPHdifCI[1]),
+                       PHdiffUCI=c(AlderPHdifCI[2], AshPHdifCI[2], BeechPHdifCI[2], BirchPHdifCI[2], ElmPHdifCI[2], HazelPHdifCI[2], OakPHdifCI[2], RowanPHdifCI[2], SycamorePHdifCI[2], WillowPHdifCI[2]),
+                       PW=c(mean(AlderPW2-AlderPW1), mean(AshPW2-AshPW1,na.rm=TRUE), mean(BeechPW2-BeechPW1), mean(BirchPW2-BirchPW1), mean(ElmPW2-ElmPW1), mean(HazelPW2-HazelPW1), mean(OakPW2-OakPW1), mean(RowanPW2-RowanPW1), mean(SycamorePW2-SycamorePW1), mean(WillowPW2-WillowPW1)),
+                       PWLCI=c(HPDinterval(AlderPW2-AlderPW1)[1], HPDinterval(AshPW2-AshPW1)[1], HPDinterval(BeechPW2-BeechPW1)[1], HPDinterval(BirchPW2-BirchPW1)[1], HPDinterval(ElmPW2-ElmPW1)[1], HPDinterval(HazelPW2-HazelPW1)[1], HPDinterval(OakPW2-OakPW1)[1], HPDinterval(RowanPW2-RowanPW1)[1], HPDinterval(SycamorePW2-SycamorePW1)[1], HPDinterval(WillowPW2-WillowPW1)[1]),
+                       PWUCI=c(HPDinterval(AlderPW2-AlderPW1)[2], HPDinterval(AshPW2-AshPW1)[2], HPDinterval(BeechPW2-BeechPW1)[2], HPDinterval(BirchPW2-BirchPW1)[2], HPDinterval(ElmPW2-ElmPW1)[2], HPDinterval(HazelPW2-HazelPW1)[2], HPDinterval(OakPW2-OakPW1)[2], HPDinterval(RowanPW2-RowanPW1)[2], HPDinterval(SycamorePW2-SycamorePW1)[2], HPDinterval(WillowPW2-WillowPW1)[2]),
+                       PWdiff=c(mean(AlderPW2dif-AlderPW1dif,na.rm=TRUE), mean(AshPW2dif-AshPW1dif,na.rm=TRUE), mean(BeechPW2dif-BeechPW1dif,na.rm=TRUE), mean(BirchPW2dif-BirchPW1dif,na.rm=TRUE), mean(ElmPW2dif-ElmPW1dif,na.rm=TRUE), mean(HazelPW2dif-HazelPW1dif,na.rm=TRUE), mean(OakPW2dif-OakPW1dif,na.rm=TRUE), mean(RowanPW2dif-RowanPW1dif,na.rm=TRUE), mean(SycamorePW2dif-SycamorePW1dif,na.rm=TRUE), mean(WillowPW2dif-WillowPW1dif,na.rm=TRUE)),
+                       PWdiffLCI=c(HPDinterval(AlderPW2dif-AlderPW1dif)[1], HPDinterval(AshPW2dif-AshPW1dif)[1], HPDinterval(BeechPW2dif-BeechPW1dif)[1], HPDinterval(BirchPW2dif-BirchPW1dif)[1], HPDinterval(ElmPW2dif-ElmPW1dif)[1], HPDinterval(HazelPW2dif-HazelPW1dif)[1], HPDinterval(OakPW2dif-OakPW1dif)[1], HPDinterval(RowanPW2dif-RowanPW1dif)[1], HPDinterval(SycamorePW2dif-SycamorePW1dif)[1], HPDinterval(WillowPW2dif-WillowPW1dif)[1]),
+                       PWdiffUCI=c(HPDinterval(AlderPW2dif-AlderPW1dif)[2], HPDinterval(AshPW2dif-AshPW1dif)[2], HPDinterval(BeechPW2dif-BeechPW1dif)[2], HPDinterval(BirchPW2dif-BirchPW1dif)[2], HPDinterval(ElmPW2dif-ElmPW1dif)[2], HPDinterval(HazelPW2dif-HazelPW1dif)[2], HPDinterval(OakPW2dif-OakPW1dif)[2], HPDinterval(RowanPW2dif-RowanPW1dif)[2], HPDinterval(SycamorePW2dif-SycamorePW1dif)[2], HPDinterval(WillowPW2dif-WillowPW1dif)[2]),
+                       PW.5=c(mean(AlderPW2.5-AlderPW1.5), mean(AshPW2.5-AshPW1.5,na.rm=TRUE), mean(BeechPW2.5-BeechPW1.5), mean(BirchPW2.5-BirchPW1.5), mean(ElmPW2.5-ElmPW1.5), mean(HazelPW2.5-HazelPW1.5), mean(OakPW2.5-OakPW1.5), mean(RowanPW2.5-RowanPW1.5), mean(SycamorePW2.5-SycamorePW1.5), mean(WillowPW2.5-WillowPW1.5)),
+                       PWLCI.5=c(HPDinterval(AlderPW2.5-AlderPW1.5)[1], HPDinterval(AshPW2.5-AshPW1.5)[1], HPDinterval(BeechPW2.5-BeechPW1.5)[1], HPDinterval(BirchPW2.5-BirchPW1.5)[1], HPDinterval(ElmPW2.5-ElmPW1.5)[1], HPDinterval(HazelPW2.5-HazelPW1.5)[1], HPDinterval(OakPW2.5-OakPW1.5)[1], HPDinterval(RowanPW2.5-RowanPW1.5)[1], HPDinterval(SycamorePW2.5-SycamorePW1.5)[1], HPDinterval(WillowPW2.5-WillowPW1.5)[1]),
+                       PWUCI.5=c(HPDinterval(AlderPW2.5-AlderPW1.5)[2], HPDinterval(AshPW2.5-AshPW1.5)[2], HPDinterval(BeechPW2.5-BeechPW1.5)[2], HPDinterval(BirchPW2.5-BirchPW1.5)[2], HPDinterval(ElmPW2.5-ElmPW1.5)[2], HPDinterval(HazelPW2.5-HazelPW1.5)[2], HPDinterval(OakPW2.5-OakPW1.5)[2], HPDinterval(RowanPW2.5-RowanPW1.5)[2], HPDinterval(SycamorePW2.5-SycamorePW1.5)[2], HPDinterval(WillowPW2.5-WillowPW1.5)[2]),
+                       PWdiff.5=c(mean((AlderPW2.5-AlderPW1.5)-(MeanPW2.5-MeanPW1.5),na.rm=TRUE), mean((AshPW2.5-AshPW1.5)-(MeanPW2.5-MeanPW1.5),na.rm=TRUE), mean((BeechPW2.5-BeechPW1.5)-(MeanPW2.5-MeanPW1.5),na.rm=TRUE), mean((BirchPW2.5-BirchPW1.5)-(MeanPW2.5-MeanPW1.5),na.rm=TRUE), mean((ElmPW2.5-ElmPW1.5)-(MeanPW2.5-MeanPW1.5),na.rm=TRUE), mean((HazelPW2.5-HazelPW1.5)-(MeanPW2.5-MeanPW1.5),na.rm=TRUE), mean((OakPW2.5-OakPW1.5)-(MeanPW2.5-MeanPW1.5),na.rm=TRUE), mean((RowanPW2.5-RowanPW1.5)-(MeanPW2.5-MeanPW1.5),na.rm=TRUE), mean((SycamorePW2.5-SycamorePW1.5)-(MeanPW2.5-MeanPW1.5),na.rm=TRUE), mean((WillowPW2.5-WillowPW1.5)-(MeanPW2.5-MeanPW1.5),na.rm=TRUE)),
+                       PWdiffLCI.5=c(HPDinterval((AlderPW2.5-AlderPW1.5)-(MeanPW2.5-MeanPW1.5),na.rm=TRUE)[1], HPDinterval((AshPW2.5-AshPW1.5)-(MeanPW2.5-MeanPW1.5),na.rm=TRUE)[1], HPDinterval((BeechPW2.5-BeechPW1.5)-(MeanPW2.5-MeanPW1.5),na.rm=TRUE)[1], HPDinterval((BirchPW2.5-BirchPW1.5)-(MeanPW2.5-MeanPW1.5),na.rm=TRUE)[1], HPDinterval((ElmPW2.5-ElmPW1.5)-(MeanPW2.5-MeanPW1.5),na.rm=TRUE)[1], HPDinterval((HazelPW2.5-HazelPW1.5)-(MeanPW2.5-MeanPW1.5),na.rm=TRUE)[1], HPDinterval((OakPW2.5-OakPW1.5)-(MeanPW2.5-MeanPW1.5),na.rm=TRUE)[1], HPDinterval((RowanPW2.5-RowanPW1.5)-(MeanPW2.5-MeanPW1.5),na.rm=TRUE)[1], HPDinterval((SycamorePW2.5-SycamorePW1.5)-(MeanPW2.5-MeanPW1.5),na.rm=TRUE)[1], HPDinterval((WillowPW2.5-WillowPW1.5)-(MeanPW2.5-MeanPW1.5),na.rm=TRUE)[1]),
+                       PWdiffUCI.5=c(HPDinterval((AlderPW2.5-AlderPW1.5)-(MeanPW2.5-MeanPW1.5),na.rm=TRUE)[2], HPDinterval((AshPW2.5-AshPW1.5)-(MeanPW2.5-MeanPW1.5),na.rm=TRUE)[2], HPDinterval((BeechPW2.5-BeechPW1.5)-(MeanPW2.5-MeanPW1.5),na.rm=TRUE)[2], HPDinterval((BirchPW2.5-BirchPW1.5)-(MeanPW2.5-MeanPW1.5),na.rm=TRUE)[2], HPDinterval((ElmPW2.5-ElmPW1.5)-(MeanPW2.5-MeanPW1.5),na.rm=TRUE)[2], HPDinterval((HazelPW2.5-HazelPW1.5)-(MeanPW2.5-MeanPW1.5),na.rm=TRUE)[2], HPDinterval((OakPW2.5-OakPW1.5)-(MeanPW2.5-MeanPW1.5),na.rm=TRUE)[2], HPDinterval((RowanPW2.5-RowanPW1.5)-(MeanPW2.5-MeanPW1.5),na.rm=TRUE)[2], HPDinterval((SycamorePW2.5-SycamorePW1.5)-(MeanPW2.5-MeanPW1.5),na.rm=TRUE)[2], HPDinterval((WillowPW2.5-WillowPW1.5)-(MeanPW2.5-MeanPW1.5),na.rm=TRUE)[2]))
 
 ##########################
 #### Curves in ggplot ####
@@ -646,14 +707,20 @@ TTlineslong$Abund <- exp(TTlineslong$logAbund)
 #### Figures ####
 #################
 
+# Colour palette
+AllTaxaCols <- c("darkred", "firebrick3", "chocolate2", "goldenrod", "olivedrab4", "darkgreen", "deepskyblue3", "royalblue4", "slateblue2", "orchid")
+NoOakCols <- c("darkred", "firebrick3", "chocolate2", "goldenrod", "olivedrab4", "darkgreen", "royalblue4", "slateblue2", "orchid")
+
+
 # Tree taxa curves plotted
 Curvesplot <- ggplot(TTlineslong, aes(days, Abund, col=TreeTaxa))+
-  geom_line()+
+  geom_line(size=0.7)+
   theme_bw()+
   xlab("Date")+
   ylab("Abundance")+
   theme(text = element_text(size=20))+
-  guides(color = "none")
+  guides(color = "none")+
+  scale_colour_manual(values=AllTaxaCols)
 
 # Peak Date
 PDplot <- ggplot(TTcurves, aes(TT, (PD*175), colour=TT))+
@@ -664,7 +731,8 @@ PDplot <- ggplot(TTcurves, aes(TT, (PD*175), colour=TT))+
   ylab("Peak Date")+
   coord_flip()+
   theme(text = element_text(size=20))+
-  guides(color = "none")
+  guides(color = "none")+
+  scale_colour_manual(values=AllTaxaCols)
 
 # Peak Date difference from mean
 PDdifplot <- ggplot(TTcurves, aes(TT, (PDdiff*175), colour=TT))+
@@ -676,7 +744,8 @@ PDdifplot <- ggplot(TTcurves, aes(TT, (PDdiff*175), colour=TT))+
   coord_flip()+
   geom_hline(yintercept=0, linetype="dashed", color = "red")+
   theme(text = element_text(size=20))+
-  guides(color = "none")
+  guides(color = "none")+
+  scale_colour_manual(values=AllTaxaCols)
 
 # Peak Height
 PHplot <- ggplot(TTcurves, aes(TT, exp(PH), colour=TT))+
@@ -687,7 +756,8 @@ PHplot <- ggplot(TTcurves, aes(TT, exp(PH), colour=TT))+
   ylab("Peak Height")+
   theme(text = element_text(size=20))+
   guides(color = "none")+
-  coord_flip()
+  coord_flip()+
+  scale_colour_manual(values=AllTaxaCols)
 
 # Peak Height difference form mean
 PHdifplot <- ggplot(TTcurves, aes(TT, PHdiff, colour=TT))+
@@ -699,7 +769,8 @@ PHdifplot <- ggplot(TTcurves, aes(TT, PHdiff, colour=TT))+
   geom_hline(yintercept=0, linetype="dashed", color = "red")+
   theme(text = element_text(size=20))+
   guides(color = "none")+
-  coord_flip()
+  coord_flip()+
+  scale_colour_manual(values=AllTaxaCols)
 
 # Peak date and Peak height
 PHPDplot <- ggplot(TTcurves, aes((PD*175), exp(PH), colour=TT))+
@@ -710,7 +781,8 @@ PHPDplot <- ggplot(TTcurves, aes((PD*175), exp(PH), colour=TT))+
   theme(axis.text.x= element_text(angle=90))+
   xlab("Peak Date")+
   ylab("Peak Height")+
-  theme(text = element_text(size=20))
+  theme(text = element_text(size=20))+
+  scale_colour_manual(values=AllTaxaCols)
 
 # Peak Width 
 PWplot <- ggplot(TTcurves, aes(TT, (PW*175), colour=TT))+
@@ -721,7 +793,8 @@ PWplot <- ggplot(TTcurves, aes(TT, (PW*175), colour=TT))+
   ylab("Peak Width")+
   coord_flip()+
   theme(text = element_text(size=20))+
-  guides(color = "none")
+  guides(color = "none")+
+  scale_colour_manual(values=AllTaxaCols)
 
 # Peak Width difference from mean
 PWdifplot <- ggplot(TTcurves, aes(TT, (PWdiff*175), colour=TT))+
@@ -733,7 +806,33 @@ PWdifplot <- ggplot(TTcurves, aes(TT, (PWdiff*175), colour=TT))+
   coord_flip()+
   geom_hline(yintercept=0, linetype="dashed", color = "red")+
   theme(text = element_text(size=20))+
-  guides(color = "none")
+  guides(color = "none")+
+  scale_colour_manual(values=AllTaxaCols)
+
+# Peak Width at half height
+PW.5plot <- ggplot(TTcurves2, aes(TT, (PW.5*175), colour=TT))+
+  geom_point(size=3, alpha=0.5)+
+  geom_errorbar(aes(ymax=(PWUCI.5*175), ymin=(PWLCI.5*175), width=0.5))+
+  theme_bw()+
+  xlab("")+
+  ylab("Peak Width (0.5 height)")+
+  coord_flip()+
+  theme(text = element_text(size=20))+
+  guides(color = "none")+
+  scale_colour_manual(values=AllTaxaCols)
+
+# Peak Width at half height difference from mean 
+PW.5difplot <- ggplot(TTcurves2, aes(TT, (PWdiff.5*175), colour=TT))+
+  geom_point(size=3, alpha=0.5)+
+  geom_errorbar(aes(ymax=(PWdiffUCI.5*175), ymin=(PWdiffLCI.5*175), width=0.5))+
+  theme_bw()+
+  xlab("")+
+  ylab("Peak width difference (0.5 height)")+
+  coord_flip()+
+  geom_hline(yintercept=0, linetype="dashed", color = "red")+
+  theme(text = element_text(size=20))+
+  guides(color = "none")+
+  scale_colour_manual(values=AllTaxaCols)
 
 library(gridExtra)
 
@@ -741,7 +840,8 @@ col1 <- grid.arrange(Curvesplot, nrow = 1, widths = 1)
 col2 <- grid.arrange(PDplot, PDdifplot, nrow = 2, heights = c(1,1))
 col3 <- grid.arrange(PHplot, PHdifplot, nrow = 2, heights = c(1,1))
 col4 <- grid.arrange(PWplot, PWdifplot, nrow = 2, heights = c(1,1))
-AbundCurvesFig <- grid.arrange(col1, col2, col3, col4, ncol = 4, widths = c(2,1,1,1))
+col5 <- grid.arrange(PW.5plot, PW.5difplot, nrow = 2, heights = c(1,1))
+AbundCurvesFig <- grid.arrange(col1, col2, col3, col4, col5, ncol = 5, widths = c(2,1,1,1,1))
 
 
 #############################
@@ -827,7 +927,7 @@ AshpwOD <- (AshPW2-AshPW1)-(OakPW2-OakPW1)
 BeechpwOD <- (BeechPW2-BeechPW1)-(OakPW2-OakPW1)
 BirchpwOD <- (BirchPW2-BirchPW1)-(OakPW2-OakPW1)
 ElmpwOD <- (ElmPW2-ElmPW1)-(OakPW2-OakPW1)
-HazelpwOD <- (HazelPW2-HazePW1)-(OakPW2-OakPW1)
+HazelpwOD <- (HazelPW2-HazelPW1)-(OakPW2-OakPW1)
 RowanpwOD <- (RowanPW2-RowanPW1)-(OakPW2-OakPW1)
 SycamorepwOD <- (SycamorePW2-SycamorePW1)-(OakPW2-OakPW1)
 WillowpwOD <- (WillowPW2-WillowPW1)-(OakPW2-OakPW1)
@@ -844,6 +944,28 @@ TTcurvesOD <- data.frame(TT=c("Alder", "Ash", "Beech", "Birch", "Elm", "Hazel", 
                        PWLCI=c(HPDinterval(mcmc(AlderpwOD))[1], HPDinterval(mcmc(AshpwOD))[1], HPDinterval(mcmc(BeechpwOD))[1], HPDinterval(mcmc(BirchpwOD))[1], HPDinterval(mcmc(ElmpwOD))[1], HPDinterval(mcmc(HazelpwOD))[1],  HPDinterval(mcmc(RowanpwOD))[1], HPDinterval(mcmc(SycamorepwOD))[1], HPDinterval(mcmc(WillowpwOD))[1]),
                        PWUCI=c(HPDinterval(mcmc(AlderpwOD))[2], HPDinterval(mcmc(AshpwOD))[2], HPDinterval(mcmc(BeechpwOD))[2], HPDinterval(mcmc(BirchpwOD))[2], HPDinterval(mcmc(ElmpwOD))[2], HPDinterval(mcmc(HazelpwOD))[2],  HPDinterval(mcmc(RowanpwOD))[2], HPDinterval(mcmc(SycamorepwOD))[2], HPDinterval(mcmc(WillowpwOD))[2]))
                        
+AlderpwOD.5 <- (AlderPW2.5-AlderPW1.5)-(OakPW2.5-OakPW1.5)
+AshpwOD.5 <- (AshPW2.5-AshPW1.5)-(OakPW2.5-OakPW1.5)
+BeechpwOD.5 <- (BeechPW2.5-BeechPW1.5)-(OakPW2.5-OakPW1.5)
+BirchpwOD.5 <- (BirchPW2.5-BirchPW1.5)-(OakPW2.5-OakPW1.5)
+ElmpwOD.5 <- (ElmPW2.5-ElmPW1.5)-(OakPW2.5-OakPW1.5)
+HazelpwOD.5 <- (HazelPW2.5-HazelPW1.5)-(OakPW2.5-OakPW1.5)
+RowanpwOD.5 <- (RowanPW2.5-RowanPW1.5)-(OakPW2.5-OakPW1.5)
+SycamorepwOD.5 <- (SycamorePW2.5-SycamorePW1.5)-(OakPW2.5-OakPW1.5)
+WillowpwOD.5 <- (WillowPW2.5-WillowPW1.5)-(OakPW2.5-OakPW1.5)
+
+
+TTcurvesOD.5 <- data.frame(TT=c("Alder", "Ash", "Beech", "Birch", "Elm", "Hazel", "Rowan", "Sycamore", "Willow"), 
+                         PD=c(mean(AlderpdOD),mean(AshpdOD),mean(BeechpdOD),mean(BirchpdOD),mean(ElmpdOD),mean(HazelpdOD),mean(RowanpdOD),mean(SycamorepdOD),mean(WillowpdOD)),
+                         PDLCI=c(HPDinterval(mcmc(AlderpdOD))[1], HPDinterval(mcmc(AshpdOD))[1], HPDinterval(mcmc(BeechpdOD))[1], HPDinterval(mcmc(BirchpdOD))[1], HPDinterval(mcmc(ElmpdOD))[1], HPDinterval(mcmc(HazelpdOD))[1],  HPDinterval(mcmc(RowanpdOD))[1], HPDinterval(mcmc(SycamorepdOD))[1], HPDinterval(mcmc(WillowpdOD))[1]),
+                         PDUCI=c(HPDinterval(mcmc(AlderpdOD))[2], HPDinterval(mcmc(AshpdOD))[2], HPDinterval(mcmc(BeechpdOD))[2], HPDinterval(mcmc(BirchpdOD))[2], HPDinterval(mcmc(ElmpdOD))[2], HPDinterval(mcmc(HazelpdOD))[2],  HPDinterval(mcmc(RowanpdOD))[2], HPDinterval(mcmc(SycamorepdOD))[2], HPDinterval(mcmc(WillowpdOD))[2]),
+                         PH=c(mean(AlderphOD),mean(AshphOD),mean(BeechphOD),mean(BirchphOD),mean(ElmphOD),mean(HazelphOD),mean(RowanphOD),mean(SycamorephOD),mean(WillowphOD)),
+                         PHLCI=c(HPDinterval(mcmc(AlderphOD))[1], HPDinterval(mcmc(AshphOD))[1], HPDinterval(mcmc(BeechphOD))[1], HPDinterval(mcmc(BirchphOD))[1], HPDinterval(mcmc(ElmphOD))[1], HPDinterval(mcmc(HazelphOD))[1],  HPDinterval(mcmc(RowanphOD))[1], HPDinterval(mcmc(SycamorephOD))[1], HPDinterval(mcmc(WillowphOD))[1]),
+                         PHUCI=c(HPDinterval(mcmc(AlderphOD))[2], HPDinterval(mcmc(AshphOD))[2], HPDinterval(mcmc(BeechphOD))[2], HPDinterval(mcmc(BirchphOD))[2], HPDinterval(mcmc(ElmphOD))[2], HPDinterval(mcmc(HazelphOD))[2],  HPDinterval(mcmc(RowanphOD))[2], HPDinterval(mcmc(SycamorephOD))[2], HPDinterval(mcmc(WillowphOD))[2]),
+                         PW.5=c(mean(AlderpwOD.5),mean(AshpwOD.5, na.rm=TRUE),mean(BeechpwOD.5),mean(BirchpwOD.5),mean(ElmpwOD.5),mean(HazelpwOD.5),mean(RowanpwOD.5),mean(SycamorepwOD.5),mean(WillowpwOD.5)),
+                         PWLCI.5=c(HPDinterval(mcmc(AlderpwOD.5))[1], HPDinterval(mcmc(AshpwOD.5))[1], HPDinterval(mcmc(BeechpwOD.5))[1], HPDinterval(mcmc(BirchpwOD.5))[1], HPDinterval(mcmc(ElmpwOD.5))[1], HPDinterval(mcmc(HazelpwOD.5))[1],  HPDinterval(mcmc(RowanpwOD.5))[1], HPDinterval(mcmc(SycamorepwOD.5))[1], HPDinterval(mcmc(WillowpwOD.5))[1]),
+                         PWUCI.5=c(HPDinterval(mcmc(AlderpwOD.5))[2], HPDinterval(mcmc(AshpwOD.5))[2], HPDinterval(mcmc(BeechpwOD.5))[2], HPDinterval(mcmc(BirchpwOD.5))[2], HPDinterval(mcmc(ElmpwOD.5))[2], HPDinterval(mcmc(HazelpwOD.5))[2],  HPDinterval(mcmc(RowanpwOD.5))[2], HPDinterval(mcmc(SycamorepwOD.5))[2], HPDinterval(mcmc(WillowpwOD.5))[2]))
+
 
 PDODplot <- ggplot(TTcurvesOD, aes(TT, (PD*175), colour=TT))+
   geom_point(size=3, alpha=0.5)+
@@ -854,7 +976,8 @@ PDODplot <- ggplot(TTcurvesOD, aes(TT, (PD*175), colour=TT))+
   coord_flip()+
   geom_hline(yintercept=0, linetype="dashed", color = "red")+
   theme(text = element_text(size=20))+
-  guides(color = "none")
+  guides(color = "none")+
+  scale_colour_manual(values=NoOakCols)
 
 PHODplot <- ggplot(TTcurvesOD, aes(TT, PH, colour=TT))+
   geom_point(size=3, alpha=0.5)+
@@ -865,7 +988,8 @@ PHODplot <- ggplot(TTcurvesOD, aes(TT, PH, colour=TT))+
   coord_flip()+
   geom_hline(yintercept=0, linetype="dashed", color = "red")+
   theme(text = element_text(size=20))+
-  guides(color = "none")
+  guides(color = "none")+
+  scale_colour_manual(values=NoOakCols)
 
 PWODplot <- ggplot(TTcurvesOD, aes(TT, (PW*175), colour=TT))+
   geom_point(size=3, alpha=0.5)+
@@ -876,13 +1000,26 @@ PWODplot <- ggplot(TTcurvesOD, aes(TT, (PW*175), colour=TT))+
   coord_flip()+
   geom_hline(yintercept=0, linetype="dashed", color = "red")+
   theme(text = element_text(size=20))+
-  guides(color = "none")
+  guides(color = "none")+
+  scale_colour_manual(values=NoOakCols)
 
-col5 <- grid.arrange(PDODplot, nrow = 1, heights = 1)
-col6 <- grid.arrange(PHODplot, nrow = 1, heights = 1)
-col7 <- grid.arrange(PWODplot, nrow = 1, heights = 1)
+PWOD.5plot <- ggplot(TTcurvesOD.5, aes(TT, (PW.5*175), colour=TT))+
+  geom_point(size=3, alpha=0.5)+
+  geom_errorbar(aes(ymax=(PWUCI.5*175), ymin=(PWLCI.5*175), width=0.5))+
+  theme_bw()+
+  xlab("")+
+  ylab("Peak width (0.5 height) difference")+
+  coord_flip()+
+  geom_hline(yintercept=0, linetype="dashed", color = "red")+
+  theme(text = element_text(size=20))+
+  guides(color = "none")+
+  scale_colour_manual(values=NoOakCols)
 
-AbundCurvesODFig <- grid.arrange(col5, col6, col7, ncol = 3, widths = c(1,1,1))
+col6 <- grid.arrange(PDODplot, nrow = 1, heights = 1)
+col7 <- grid.arrange(PHODplot, nrow = 1, heights = 1)
+col8 <- grid.arrange(PWODplot, nrow = 1, heights = 1)
+col9 <- grid.arrange(PWOD.5plot, nrow = 1, heights = 1)
+AbundCurvesODFig <- grid.arrange(col6, col7, col8, col9, ncol = 4, widths = c(1,1,1,1))
 
 
 ############################
