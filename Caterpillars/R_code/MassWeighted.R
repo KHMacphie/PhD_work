@@ -310,19 +310,20 @@ prior3<-list(R=list(V=1,nu=0.002),
                     G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
                     G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k)))
 
-system.time(MWSY<- MCMCglmm(cbind(logmpc1, logmpc2)~ datescaled + I(datescaled^2), 
-                            random=~us(1+datescaled):tree.species + us(1+datescaled):siteyear + treeID + siteday + recorder + us(sqrt(1/weight)):units, 
-                            family="cengaussian", data=cater_habitat_1719, prior=prior3, nitt=1000000, burnin=50000, pr=TRUE, thin=250))
-save(MWSY, file = "~/Documents/Models/MWSY.RData")
+#system.time(MWSY<- MCMCglmm(cbind(logmpc1, logmpc2)~ datescaled + I(datescaled^2), 
+#                            random=~us(1+datescaled):tree.species + us(1+datescaled):siteyear + treeID + siteday + recorder + us(sqrt(1/weight)):units, 
+#                            family="cengaussian", data=cater_habitat_1719, prior=prior3, nitt=1000000, burnin=50000, pr=TRUE, thin=250))
+#save(MWSY, file = "~/Documents/Models/MWSY.RData")
 load("~/Documents/Models/MWSY.RData")
 
 system.time(MWSY1<- MCMCglmm(cbind(logmpc1, logmpc2)~ datescaled + I(datescaled^2), 
                             random=~us(1+datescaled):tree.species + us(1+datescaled):siteyear + treeID + siteday + recorder + us(sqrt(1/weight)):units, 
-                            family="cengaussian", data=cater_habitat_1719, prior=prior3, nitt=1500000, burnin=50000, pr=TRUE, thin=100))
+                            family="cengaussian", data=cater_habitat_1719, prior=prior3, nitt=1750000, burnin=50000, pr=TRUE, thin=100))
 save(MWSY1, file = "~/Documents/Models/MWSY1.RData")
+rm(list=ls())
 load("~/Documents/Models/MWSY1.RData")
 
-############################
+ ############################
 #### Model output table ####   !!!!! NEEDS NEW MODEL NAME FOR EFFECTIVE SAMPLE SIZE
 ############################
 
