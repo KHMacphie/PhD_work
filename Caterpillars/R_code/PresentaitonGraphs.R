@@ -88,6 +88,7 @@ mean_temps$yearsite <- paste(mean_temps$site, mean_temps$year)
 pmatch(mean_temps$yearsite, temp$yearsite)
 mean_temps <- mean_temps %>% arrange(site) #arrange by site to match means order
 
+# for april
 Means <- data.frame(site=mean_temps$site, year=mean_temps$year, yearsite=mean_temps$yearsite, MeanTemp=tapply(apply(temp[, 1059:1778],1, mean), temp$yearsite, mean))
 View(Means)
 pmatch(Means$site, site$site)
@@ -107,3 +108,28 @@ plot(temp_lat_elev_wide$latitude, temp_lat_elev_wide$`2018`, col=2, type="l", ax
 axis(side = 4, cex.axis=1.5)
 mtext(side = 4, line = 3, expression("Mean Temperature (°C)"), cex=1.5)
 legend("topright", legend=c("Elevation","Temperature"), lty=c(1,1), pch=c(NA, NA), col=c("black", "red3"), cex=1.2)
+
+#### Bar chart of site lat, elev and 2019 apr temp ####
+temp_lat_elev_wide$site <- factor(temp_lat_elev_wide$site, levels = temp_lat_elev_wide$site[order(temp_lat_elev_wide$latitude)])
+temp_lat_elev_wide$temp <- temp_lat_elev_wide$'2019'
+
+ggplot(temp_lat_elev_wide, aes(site, elevation))+
+  geom_bar(aes(fill=temp),stat = "identity")+
+  theme_bw()+
+  ylab("Elevation (m)")+
+  xlab("Site by Latitude")+
+  theme(text = element_text(size=20),axis.text.x= element_text(angle=90))+
+  scale_fill_gradient(name = "Temperature (°C)", 
+                        low = "gold", high = "red3") # saves as 7"x13"
+
+
+transectAD <- subset(temp_lat_elev_wide, latitude < 56.9)
+par(mfrow=c(2,2))
+hist(temp_lat_elev_wide$elevation, breaks=100, xlim=c(10, 433), xlab=("Elevation (m)"), main="")
+text(370, 2.8, "Full Transect", cex=1, col=1)
+hist(transectAD$elevation, breaks=100, xlim=c(10, 433), ylim=c(0,3), xlab=("Elevation (m)"), main="")
+text(370, 2.8, "Half Transect", cex=1, col=1)
+hist(temp_lat_elev_wide$temp, breaks=200, xlim=c(6.6, 9.5), xlab=("Temperature (°C)"), main="")
+text(9.1, 2.8, "Full Transect", cex=1, col=1)
+hist(transectAD$temp, breaks=100, xlim=c(6.6, 9.5), ylim=c(0,3), xlab=("Temperature (°C)"), main="")
+text(9.1, 2.8, "Half Transect", cex=1, col=1) # saved as 7"x8"
