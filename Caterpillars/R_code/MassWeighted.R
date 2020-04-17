@@ -214,7 +214,10 @@ cater_habitat<- merge(cater, Habitat_Site, by="site", duplicates.ok=TRUE)
 cater_habitat$treeID <- paste(cater_habitat$tree, cater_habitat$site)
 cater_habitat$siteday <- paste(cater_habitat$site, cater_habitat$date, cater_habitat$year)
 cater_habitat$siteyear <- paste(cater_habitat$site, cater_habitat$year)
-cater_habitat$datescaled <- cater_habitat$date/max(cater_habitat$date)
+#cater_habitat$datescaled <- cater_habitat$date/max(cater_habitat$date) ## WRONG
+cater_habitat$datescaled <- scale(cater_habitat$date) #unscale(x, center= 146.4095, scale=14.19835)   now from -2.071330 to 2.013653
+mean(cater_habitat$date) # 146.4095
+sd(cater_habitat$date) # 14.19835
 
 #!!!!!!!!!!! if removing OthDecid !!!!!!!!!!!!
 cater_habitat<- subset(cater_habitat, tree.species!="OthDecid")
@@ -226,105 +229,178 @@ cater_habitat<- subset(cater_habitat, tree.species!="OthDecid")
 # changing caterpillars to 1 so no infinity values in weighting equation: us(sqrt(1/caterpillars)):units
 cater_habitat$weight <- as.numeric(revalue(as.character(cater_habitat$caterpillars), c("0"="1")))
 
-# reordering so year 2017 is first
-cater_habitat$year <- relevel(cater_habitat$year, ref="2017")
+# reordering so year 2019 is first
+cater_habitat$year <- relevel(cater_habitat$year, ref="2019")
 
 # Model with full data set
-k<-10000
-prior3<-list(R=list(V=1,nu=0.002),
-             G=list(G1=list(V=diag(2), nu=2, alpha.mu=c(0,0), alpha.V=diag(2)*k),
-                    G1=list(V=diag(2), nu=2, alpha.mu=c(0,0), alpha.V=diag(2)*k),
-                    G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
-                    G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
-                    G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
-                    G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k)))
+#k<-10000
+#prior3<-list(R=list(V=1,nu=0.002),
+#             G=list(G1=list(V=diag(2), nu=2, alpha.mu=c(0,0), alpha.V=diag(2)*k),
+#                    G1=list(V=diag(2), nu=2, alpha.mu=c(0,0), alpha.V=diag(2)*k),
+#                    G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
+#                    G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
+#                    G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
+#                    G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k)))
 
-system.time(MassWeightedFull<- MCMCglmm(cbind(logmpc1, logmpc2)~ year + datescaled + I(datescaled^2), 
-                 random=~us(1+datescaled):tree.species + us(1+datescaled):site + treeID + siteday + recorder + us(sqrt(1/weight)):units, 
-                 family="cengaussian", data=cater_habitat, prior=prior3, nitt=1000000, burnin=50000, pr=TRUE, thin=500))
-save(MassWeightedFull, file = "~/Documents/Models/MassWeightedFull.RData")
-load("~/Documents/Models/MassWeightedFull.RData")
+#system.time(MassWeightedFull<- MCMCglmm(cbind(logmpc1, logmpc2)~ year + datescaled + I(datescaled^2), 
+#                 random=~us(1+datescaled):tree.species + us(1+datescaled):site + treeID + siteday + recorder + us(sqrt(1/weight)):units, 
+#                 family="cengaussian", data=cater_habitat, prior=prior3, nitt=1000000, burnin=50000, pr=TRUE, thin=500))
+#save(MassWeightedFull, file = "~/Documents/Models/MassWeightedFull.RData")
+#load("~/Documents/Models/MassWeightedFull.RData")
 
 # Model with just 2017-19
 cater_habitat_1719 <- subset(cater_habitat, year!="2014")
 cater_habitat_1719 <- subset(cater_habitat_1719, year!="2015")
 cater_habitat_1719 <- subset(cater_habitat_1719, year!="2016")
 
-k<-10000
-prior3<-list(R=list(V=1,nu=0.002),
-             G=list(G1=list(V=diag(2), nu=2, alpha.mu=c(0,0), alpha.V=diag(2)*k),
-                    G1=list(V=diag(2), nu=2, alpha.mu=c(0,0), alpha.V=diag(2)*k),
-                    G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
-                    G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
-                    G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
-                    G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k)))
+#k<-10000
+#prior3<-list(R=list(V=1,nu=0.002),
+#             G=list(G1=list(V=diag(2), nu=2, alpha.mu=c(0,0), alpha.V=diag(2)*k),
+#                    G1=list(V=diag(2), nu=2, alpha.mu=c(0,0), alpha.V=diag(2)*k),
+#                    G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
+#                    G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
+#                    G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
+#                    G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k)))
 
-system.time(MassWeighted1719<- MCMCglmm(cbind(logmpc1, logmpc2)~ year + datescaled + I(datescaled^2), 
-                 random=~us(1+datescaled):tree.species + us(1+datescaled):site + treeID + siteday + recorder + us(sqrt(1/weight)):units, 
-                 family="cengaussian", data=cater_habitat_1719, prior=prior3, nitt=1000000, burnin=50000, pr=TRUE, thin=500))
-save(MassWeighted1719, file = "~/Documents/Models/MassWeighted1719.RData")
-load("~/Documents/Models/MassWeighted1719.RData")
+#system.time(MassWeighted1719<- MCMCglmm(cbind(logmpc1, logmpc2)~ year + datescaled + I(datescaled^2), 
+#                 random=~us(1+datescaled):tree.species + us(1+datescaled):site + treeID + siteday + recorder + us(sqrt(1/weight)):units, 
+#                 family="cengaussian", data=cater_habitat_1719, prior=prior3, nitt=1000000, burnin=50000, pr=TRUE, thin=500))
+#save(MassWeighted1719, file = "~/Documents/Models/MassWeighted1719.RData")
+#load("~/Documents/Models/MassWeighted1719.RData")
 
 # With interaction with date squared
-k<-10000
-prior3<-list(R=list(V=1,nu=0.002),
-             G=list(G1=list(V=diag(3), nu=3, alpha.mu=c(0,0,0), alpha.V=diag(3)*k),
-                    G1=list(V=diag(3), nu=3, alpha.mu=c(0,0,0), alpha.V=diag(3)*k),
-                    G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
-                    G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
-                    G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
-                    G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k)))
+#k<-10000
+#prior3<-list(R=list(V=1,nu=0.002),
+#             G=list(G1=list(V=diag(3), nu=3, alpha.mu=c(0,0,0), alpha.V=diag(3)*k),
+#                    G1=list(V=diag(3), nu=3, alpha.mu=c(0,0,0), alpha.V=diag(3)*k),
+#                    G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
+#                    G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
+#                    G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
+#                    G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k)))
 
-system.time(MWd2int<- MCMCglmm(cbind(logmpc1, logmpc2)~ year + datescaled + I(datescaled^2), 
-                                        random=~us(1+datescaled+I(datescaled^2)):tree.species + us(1+datescaled+I(datescaled^2)):site + treeID + siteday + recorder + us(sqrt(1/weight)):units, 
-                                        family="cengaussian", data=cater_habitat_1719, prior=prior3, nitt=1000000, burnin=50000, pr=TRUE, thin=250))
-save(MWd2int, file = "~/Documents/Models/MWd2int.RData")
-load("~/Documents/Models/MWd2int.RData")
+#system.time(MWd2int<- MCMCglmm(cbind(logmpc1, logmpc2)~ year + datescaled + I(datescaled^2), 
+#                                        random=~us(1+datescaled+I(datescaled^2)):tree.species + us(1+datescaled+I(datescaled^2)):site + treeID + siteday + recorder + us(sqrt(1/weight)):units, 
+#                                        family="cengaussian", data=cater_habitat_1719, prior=prior3, nitt=1000000, burnin=50000, pr=TRUE, thin=250))
+#save(MWd2int, file = "~/Documents/Models/MWd2int.RData")
+#load("~/Documents/Models/MWd2int.RData")
 
 #MWd2intAll : MWd2int with all tree taxa categories
 #MWd2intOth : MWd2int with other deciduous kept in
-load("~/Documents/Models/MWd2intAll.RData")
-load("~/Documents/Models/MWd2intOth.RData")
+#load("~/Documents/Models/MWd2intAll.RData")
+#load("~/Documents/Models/MWd2intOth.RData")
 
-k<-10000
-prior3<-list(R=list(V=1,nu=0.002),
-             G=list(G1=list(V=diag(3), nu=3, alpha.mu=c(0,0,0), alpha.V=diag(3)*k),
-                    G1=list(V=diag(3), nu=3, alpha.mu=c(0,0,0), alpha.V=diag(3)*k),
-                    G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
-                    G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
-                    G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
-                    G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k)))
+#k<-10000
+#prior3<-list(R=list(V=1,nu=0.002),
+#             G=list(G1=list(V=diag(3), nu=3, alpha.mu=c(0,0,0), alpha.V=diag(3)*k),
+#                    G1=list(V=diag(3), nu=3, alpha.mu=c(0,0,0), alpha.V=diag(3)*k),
+#                    G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
+#                    G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
+#                    G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
+#                    G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k)))
 
-system.time(MWd2intSY<- MCMCglmm(cbind(logmpc1, logmpc2)~ datescaled + I(datescaled^2), 
-                               random=~us(1+datescaled+I(datescaled^2)):tree.species + us(1+datescaled+I(datescaled^2)):siteyear + treeID + siteday + recorder + us(sqrt(1/weight)):units, 
-                               family="cengaussian", data=cater_habitat_1719, prior=prior3, nitt=1000000, burnin=50000, pr=TRUE, thin=250))
-save(MWd2intSY, file = "~/Documents/Models/MWd2intSY.RData")
-load("~/Documents/Models/MWd2intSY.RData")
+#system.time(MWd2intSY<- MCMCglmm(cbind(logmpc1, logmpc2)~ datescaled + I(datescaled^2), 
+#                               random=~us(1+datescaled+I(datescaled^2)):tree.species + us(1+datescaled+I(datescaled^2)):siteyear + treeID + siteday + recorder + us(sqrt(1/weight)):units, 
+#                               family="cengaussian", data=cater_habitat_1719, prior=prior3, nitt=1000000, burnin=50000, pr=TRUE, thin=250))
+#save(MWd2intSY, file = "~/Documents/Models/MWd2intSY.RData")
+#load("~/Documents/Models/MWd2intSY.RData")
 
-k<-10000
-prior3<-list(R=list(V=1,nu=0.002),
-             G=list(G1=list(V=diag(2), nu=2, alpha.mu=c(0,0), alpha.V=diag(2)*k),
-                    G1=list(V=diag(2), nu=2, alpha.mu=c(0,0), alpha.V=diag(2)*k),
-                    G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
-                    G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
-                    G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
-                    G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k)))
+#k<-10000
+#prior3<-list(R=list(V=1,nu=0.002),
+#             G=list(G1=list(V=diag(2), nu=2, alpha.mu=c(0,0), alpha.V=diag(2)*k),
+#                    G1=list(V=diag(2), nu=2, alpha.mu=c(0,0), alpha.V=diag(2)*k),
+#                    G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
+#                    G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
+#                    G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
+#                    G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k)))
 
 #system.time(MWSY<- MCMCglmm(cbind(logmpc1, logmpc2)~ datescaled + I(datescaled^2), 
 #                            random=~us(1+datescaled):tree.species + us(1+datescaled):siteyear + treeID + siteday + recorder + us(sqrt(1/weight)):units, 
 #                            family="cengaussian", data=cater_habitat_1719, prior=prior3, nitt=1000000, burnin=50000, pr=TRUE, thin=250))
 #save(MWSY, file = "~/Documents/Models/MWSY.RData")
-load("~/Documents/Models/MWSY.RData")
+#load("~/Documents/Models/MWSY.RData")
 
-system.time(MWSY1<- MCMCglmm(cbind(logmpc1, logmpc2)~ datescaled + I(datescaled^2), 
-                            random=~us(1+datescaled):tree.species + us(1+datescaled):siteyear + treeID + siteday + recorder + us(sqrt(1/weight)):units, 
-                            family="cengaussian", data=cater_habitat_1719, prior=prior3, nitt=1750000, burnin=50000, pr=TRUE, thin=100))
-save(MWSY1, file = "~/Documents/Models/MWSY1.RData")
-rm(list=ls())
-load("~/Documents/Models/MWSY1.RData")
+#system.time(MWSY1<- MCMCglmm(cbind(logmpc1, logmpc2)~ datescaled + I(datescaled^2), 
+#                            random=~us(1+datescaled):tree.species + us(1+datescaled):siteyear + treeID + siteday + recorder + us(sqrt(1/weight)):units, 
+#                            family="cengaussian", data=cater_habitat_1719, prior=prior3, nitt=1500000, burnin=50000, pr=TRUE, thin=150))
+#save(MWSY1, file = "~/Documents/Models/MWSY1.RData")
+#load("~/Documents/Models/MWSY1.RData")
 
- ############################
-#### Model output table ####   !!!!! NEEDS NEW MODEL NAME FOR EFFECTIVE SAMPLE SIZE
+#system.time(MWSY2<- MCMCglmm(cbind(logmpc1, logmpc2)~ datescaled + I(datescaled^2), 
+#                             random=~us(1+datescaled):tree.species + us(1+datescaled):siteyear + treeID + siteday + recorder + us(sqrt(1/weight)):units, 
+#                             family="cengaussian", data=cater_habitat_1719, prior=prior3, nitt=1600000, burnin=50000, pr=TRUE, thin=70))
+#save(MWSY2, file = "~/Documents/Models/MWSY2.RData")
+#load("~/Documents/Models/MWSY2.RData") # residual was only at 200
+
+#system.time(MWSY3<- MCMCglmm(cbind(logmpc1, logmpc2)~ datescaled + I(datescaled^2), 
+#                             random=~us(1+datescaled):tree.species + us(1+datescaled):siteyear + treeID + siteday + recorder + us(sqrt(1/weight)):units, 
+#                             family="cengaussian", data=cater_habitat_1719, prior=prior3, nitt=4000000, burnin=50000, pr=TRUE, thin=200))
+#save(MWSY3, file = "~/Documents/Models/MWSY3.RData")
+#load("~/Documents/Models/MWSY3.RData") 
+
+#k<-10000
+#prior3<-list(R=list(V=1,nu=0.002),
+#             G=list(G1=list(V=diag(2), nu=2, alpha.mu=c(0,0), alpha.V=diag(2)*k),
+#                    G1=list(V=diag(2), nu=2, alpha.mu=c(0,0), alpha.V=diag(2)*k),
+#                    G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
+#                    G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
+#                    G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
+#                    G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
+#                    G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k)))
+
+#Mass_scaled_mini<- MCMCglmm(cbind(logmpc1, logmpc2)~ datescaled + I(datescaled^2), 
+#                             random=~us(1+datescaled):tree.species + us(1+datescaled):site + us(1+datescaled):siteyear + treeID + siteday + recorder + us(sqrt(1/weight)):units, 
+#                             family="cengaussian", data=cater_habitat_1719, prior=prior3, pr=TRUE)
+#save(Mass_scaled_mini, file = "~/Documents/Models/Mass_scaled_mini.RData")
+#load("~/Documents/Models/Mass_scaled_mini.RData") 
+
+#Mass_scaled<- MCMCglmm(cbind(logmpc1, logmpc2)~ year + datescaled + I(datescaled^2), 
+#                       random=~us(1+datescaled):tree.species + us(1+datescaled):site + us(1+datescaled):siteyear + treeID + siteday + recorder + us(sqrt(1/weight)):units, 
+#                       family="cengaussian", data=cater_habitat_1719, prior=prior3, nitt=3000000, burnin=50000, pr=TRUE, thin=295)
+#save(Mass_scaled, file = "~/Documents/Models/Mass_scaled.RData")
+#load("~/Documents/Models/Mass_scaled.RData") #  not converging correctly (traceplots emailed to ally)- need to simplify
+
+# Mass_scaled2 had a few things not high enough ESS, was nitt=3.5mill burnin=50k thin=250
+# Mass_scaled3 nitt=4250000, burnin=100000, pr=TRUE, thin=300 tree date still only 785
+#Mass_scaled4<- MCMCglmm(cbind(logmpc1, logmpc2)~ year + datescaled + I(datescaled^2), 
+#                       random=~us(1+datescaled):tree.species + us(1+datescaled):site + siteyear + treeID + siteday + recorder + us(sqrt(1/weight)):units, 
+#                       family="cengaussian", data=cater_habitat_1719, prior=prior3, nitt=5500000, burnin=100000, pr=TRUE, thin=350)
+#save(Mass_scaled4, file = "~/Documents/Models/Mass_scaled4.RData")
+#load("~/Documents/Models/Mass_scaled4.RData") # ESS good!
+
+#k<-10000
+#prior4<-list(R=list(V=1,nu=0.002),
+#             G=list(G1=list(V=diag(2), nu=2, alpha.mu=c(0,0), alpha.V=diag(2)*k),
+#                    G1=list(V=diag(2), nu=2, alpha.mu=c(0,0), alpha.V=diag(2)*k),
+#                    G1=list(V=diag(2), nu=2, alpha.mu=c(0,0), alpha.V=diag(2)*1000),
+#                    G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
+#                    G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
+#                    G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
+#                    G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
+#                    G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k)))
+
+#Mass_yearint_ran<- MCMCglmm(cbind(logmpc1, logmpc2)~ datescaled + I(datescaled^2), 
+#                       random=~us(1+datescaled):tree.species + us(1+datescaled):site + us(1+datescaled):year + siteyear + treeID + siteday + recorder + us(sqrt(1/weight)):units, 
+#                       family="cengaussian", data=cater_habitat_1719, prior=prior4, pr=TRUE,nitt=5500000, burnin=100000, thin=350)
+#save(Mass_yearint_ran, file = "~/Documents/Models/Mass_yearint_ran.RData")
+#load("~/Documents/Models/Mass_yearint_ran.RData")
+
+k<-10000
+prior3<-list(R=list(V=1,nu=0.002),
+             G=list(G1=list(V=diag(2), nu=2, alpha.mu=c(0,0), alpha.V=diag(2)*k),
+                    G1=list(V=diag(2), nu=2, alpha.mu=c(0,0), alpha.V=diag(2)*k),
+                    G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
+                    G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
+                    G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
+                    G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
+                    G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k)))
+
+#Mass_yearint_fix<- MCMCglmm(cbind(logmpc1, logmpc2)~ datescaled*year + I(datescaled^2)*year, 
+#                        random=~us(1+datescaled):tree.species + us(1+datescaled):site + siteyear + treeID + siteday + recorder + us(sqrt(1/weight)):units, 
+#                        family="cengaussian", data=cater_habitat_1719, prior=prior3, pr=TRUE,nitt=5500000, burnin=100000, thin=350)
+#save(Mass_yearint_fix, file = "~/Documents/Models/Mass_yearint_fix.RData")
+load("~/Documents/Models/Mass_yearint_fix.RData")
+############################
+#### Model output table ####   
 ############################
 
 #for random terms use posterior mode and fixed terms mean
@@ -332,96 +408,126 @@ library(MCMCglmm)
 
 ####fixed
 fixed<-rbind(
-  c("Intercept",paste(round(mean(MWSY$Sol[,1]),3)," (",
-                      round(HPDinterval(MWSY$Sol[,1])[1],3)," - ",
-                      round(HPDinterval(MWSY$Sol[,1])[2],3),")",sep=""),
-    round(effectiveSize(MWSY$Sol[,1]))),
-  c("Date (scaled)",paste(round(mean(MWSY$Sol[,2]),3)," (",
-                          round(HPDinterval(MWSY$Sol[,2])[1],3)," - ",
-                          round(HPDinterval(MWSY$Sol[,2])[2],3),")",sep=""),
-    round(effectiveSize(MWSY$Sol[,2]))),
-  c("Date² (scaled)",paste(round(mean(MWSY$Sol[,3]),3)," (",
-                           round(HPDinterval(MWSY$Sol[,3])[1],3)," - ",
-                           round(HPDinterval(MWSY$Sol[,3])[2],3),")",sep=""),
-    round(effectiveSize(MWSY$Sol[,3]))))
+  c("Intercept (Year 2019)",paste(round(mean(Mass_yearint_fix$Sol[,1]),3)," (",
+                      round(HPDinterval(Mass_yearint_fix$Sol[,1])[1],3)," - ",
+                      round(HPDinterval(Mass_yearint_fix$Sol[,1])[2],3),")",sep=""),
+                      round(effectiveSize(Mass_yearint_fix$Sol[,1]))),
+  c("Year 2017",paste(round(mean(Mass_yearint_fix$Sol[,3]),3)," (",
+                      round(HPDinterval(Mass_yearint_fix$Sol[,3])[1],3)," - ",
+                      round(HPDinterval(Mass_yearint_fix$Sol[,3])[2],3),")",sep=""),
+                      round(effectiveSize(Mass_yearint_fix$Sol[,3]))),
+  c("Year 2018",paste(round(mean(Mass_yearint_fix$Sol[,4]),3)," (",
+                      round(HPDinterval(Mass_yearint_fix$Sol[,4])[1],3)," - ",
+                      round(HPDinterval(Mass_yearint_fix$Sol[,4])[2],3),")",sep=""),
+                      round(effectiveSize(Mass_yearint_fix$Sol[,4]))),
+  c("Date scaled (Year 2019)",paste(round(mean(Mass_yearint_fix$Sol[,2]),3)," (",
+                      round(HPDinterval(Mass_yearint_fix$Sol[,2])[1],3)," - ",
+                      round(HPDinterval(Mass_yearint_fix$Sol[,2])[2],3),")",sep=""),
+                      round(effectiveSize(Mass_yearint_fix$Sol[,2]))),
+  c("Date scaled:Year 2017",paste(round(mean(Mass_yearint_fix$Sol[,6]),3)," (",
+                      round(HPDinterval(Mass_yearint_fix$Sol[,6])[1],3)," - ",
+                      round(HPDinterval(Mass_yearint_fix$Sol[,6])[2],3),")",sep=""),
+                      round(effectiveSize(Mass_yearint_fix$Sol[,6]))),
+  c("Date scaled:Year 2018",paste(round(mean(Mass_yearint_fix$Sol[,7]),3)," (",
+                      round(HPDinterval(Mass_yearint_fix$Sol[,7])[1],3)," - ",
+                      round(HPDinterval(Mass_yearint_fix$Sol[,7])[2],3),")",sep=""),
+                      round(effectiveSize(Mass_yearint_fix$Sol[,7]))),
+  c("Date² scaled (Year 2019)",paste(round(mean(Mass_yearint_fix$Sol[,5]),3)," (",
+                      round(HPDinterval(Mass_yearint_fix$Sol[,5])[1],3)," - ",
+                      round(HPDinterval(Mass_yearint_fix$Sol[,5])[2],3),")",sep=""),
+                      round(effectiveSize(Mass_yearint_fix$Sol[,5]))),
+  c("Date² scaled:Year 2017",paste(round(mean(Mass_yearint_fix$Sol[,8]),3)," (",
+                      round(HPDinterval(Mass_yearint_fix$Sol[,8])[1],3)," - ",
+                      round(HPDinterval(Mass_yearint_fix$Sol[,8])[2],3),")",sep=""),
+                      round(effectiveSize(Mass_yearint_fix$Sol[,8]))),
+  c("Date² scaled:Year 2018",paste(round(mean(Mass_yearint_fix$Sol[,9]),3)," (",
+                      round(HPDinterval(Mass_yearint_fix$Sol[,9])[1],3)," - ",
+                      round(HPDinterval(Mass_yearint_fix$Sol[,9])[2],3),")",sep=""),
+                      round(effectiveSize(Mass_yearint_fix$Sol[,9]))))
 
 ####random 
 column<-1
-treetaxa1<-c("TreeTaxa- Intercept var",paste(round(posterior.mode(MWSY$VCV[, column]),3)," (",
-                                             round(HPDinterval(MWSY$VCV[, column])[1],3)," - ",
-                                             round(HPDinterval(MWSY$VCV[, column])[2],3),")",sep=""),
-             round(effectiveSize(MWSY$VCV[, column])))
+treetaxa1<-c("TreeTaxa- Intercept var",paste(round(posterior.mode(Mass_yearint_fix$VCV[, column]),3)," (",
+                                             round(HPDinterval(Mass_yearint_fix$VCV[, column])[1],3)," - ",
+                                             round(HPDinterval(Mass_yearint_fix$VCV[, column])[2],3),")",sep=""),
+             round(effectiveSize(Mass_yearint_fix$VCV[, column])))
 
 column<-2
-treetaxa2<-c("TreeTaxa- Intercept:Date slope covar",paste(round(posterior.mode(MWSY$VCV[, column]),3)," (",
-                                                          round(HPDinterval(MWSY$VCV[, column])[1],3)," - ",
-                                                          round(HPDinterval(MWSY$VCV[, column])[2],3),")",sep=""),
-             round(effectiveSize(MWSY$VCV[, column])))
+treetaxa2<-c("TreeTaxa- Intercept:Date slope covar",paste(round(posterior.mode(Mass_yearint_fix$VCV[, column]),3)," (",
+                                                          round(HPDinterval(Mass_yearint_fix$VCV[, column])[1],3)," - ",
+                                                          round(HPDinterval(Mass_yearint_fix$VCV[, column])[2],3),")",sep=""),
+             round(effectiveSize(Mass_yearint_fix$VCV[, column])))
 
 
 column<-4
-treetaxa4<-c("TreeTaxa- Date slope var",paste(round(posterior.mode(MWSY$VCV[, column]),3)," (",
-                                              round(HPDinterval(MWSY$VCV[, column])[1],3)," - ",
-                                              round(HPDinterval(MWSY$VCV[, column])[2],3),")",sep=""),
-             round(effectiveSize(MWSY$VCV[, column])))
+treetaxa4<-c("TreeTaxa- Date slope var",paste(round(posterior.mode(Mass_yearint_fix$VCV[, column]),3)," (",
+                                              round(HPDinterval(Mass_yearint_fix$VCV[, column])[1],3)," - ",
+                                              round(HPDinterval(Mass_yearint_fix$VCV[, column])[2],3),")",sep=""),
+             round(effectiveSize(Mass_yearint_fix$VCV[, column])))
 
 
 column<-5
-siteyear5<-c("SiteYear- Intercept var",paste(round(posterior.mode(MWSY$VCV[, column]),3)," (",
-                                              round(HPDinterval(MWSY$VCV[, column])[1],3)," - ",
-                                              round(HPDinterval(MWSY$VCV[, column])[2],3),")",sep=""),
-              round(effectiveSize(MWSY$VCV[, column])))
+site5<-c("Site- Intercept var",paste(round(posterior.mode(Mass_yearint_fix$VCV[, column]),3)," (",
+                                              round(HPDinterval(Mass_yearint_fix$VCV[, column])[1],3)," - ",
+                                              round(HPDinterval(Mass_yearint_fix$VCV[, column])[2],3),")",sep=""),
+              round(effectiveSize(Mass_yearint_fix$VCV[, column])))
 
 column<-6
-siteyear6<-c("SiteYear- Intercept:Date slope covar",paste(round(posterior.mode(MWSY$VCV[, column]),3)," (",
-                                                           round(HPDinterval(MWSY$VCV[, column])[1],3)," - ",
-                                                           round(HPDinterval(MWSY$VCV[, column])[2],3),")",sep=""),
-              round(effectiveSize(MWSY$VCV[, column])))
+site6<-c("Site- Intercept:Date slope covar",paste(round(posterior.mode(Mass_yearint_fix$VCV[, column]),3)," (",
+                                                           round(HPDinterval(Mass_yearint_fix$VCV[, column])[1],3)," - ",
+                                                           round(HPDinterval(Mass_yearint_fix$VCV[, column])[2],3),")",sep=""),
+              round(effectiveSize(Mass_yearint_fix$VCV[, column])))
 
 
 column<-8
-siteyear8<-c("SiteYear- Date slope var",paste(round(posterior.mode(MWSY$VCV[, column]),3)," (",
-                                               round(HPDinterval(MWSY$VCV[, column])[1],3)," - ",
-                                               round(HPDinterval(MWSY$VCV[, column])[2],3),")",sep=""),
-              round(effectiveSize(MWSY$VCV[, column])))
+site8<-c("Site- Date slope var",paste(round(posterior.mode(Mass_yearint_fix$VCV[, column]),3)," (",
+                                               round(HPDinterval(Mass_yearint_fix$VCV[, column])[1],3)," - ",
+                                               round(HPDinterval(Mass_yearint_fix$VCV[, column])[2],3),")",sep=""),
+              round(effectiveSize(Mass_yearint_fix$VCV[, column])))
+
+column<-9
+siteyear<-c("Site-Year",paste(round(posterior.mode(Mass_yearint_fix$VCV[, column]),3)," (",
+                                             round(HPDinterval(Mass_yearint_fix$VCV[, column])[1],3)," - ",
+                                             round(HPDinterval(Mass_yearint_fix$VCV[, column])[2],3),")",sep=""),
+             round(effectiveSize(Mass_yearint_fix$VCV[, column])))
+
+
+column<-12
+recorder<-c("Recorder",paste(round(posterior.mode(Mass_yearint_fix$VCV[, column]),3)," (",
+                             round(HPDinterval(Mass_yearint_fix$VCV[, column])[1],3)," - ",
+                             round(HPDinterval(Mass_yearint_fix$VCV[, column])[2],3),")",sep=""),
+            round(effectiveSize(Mass_yearint_fix$VCV[, column])))
 
 
 column<-11
-recorder<-c("Recorder",paste(round(posterior.mode(MWSY$VCV[, column]),3)," (",
-                             round(HPDinterval(MWSY$VCV[, column])[1],3)," - ",
-                             round(HPDinterval(MWSY$VCV[, column])[2],3),")",sep=""),
-            round(effectiveSize(MWSY$VCV[, column])))
+siteday<-c("Site-Day",paste(round(posterior.mode(Mass_yearint_fix$VCV[, column]),3)," (",
+                            round(HPDinterval(Mass_yearint_fix$VCV[, column])[1],3)," - ",
+                            round(HPDinterval(Mass_yearint_fix$VCV[, column])[2],3),")",sep=""),
+           round(effectiveSize(Mass_yearint_fix$VCV[, column])))
 
 
 column<-10
-siteday<-c("Site Day",paste(round(posterior.mode(MWSY$VCV[, column]),3)," (",
-                            round(HPDinterval(MWSY$VCV[, column])[1],3)," - ",
-                            round(HPDinterval(MWSY$VCV[, column])[2],3),")",sep=""),
-           round(effectiveSize(MWSY$VCV[, column])))
-
-
-column<-9
-treeID<-c("Tree ID",paste(round(posterior.mode(MWSY$VCV[, column]),3)," (",
-                          round(HPDinterval(MWSY$VCV[, column])[1],3)," - ",
-                          round(HPDinterval(MWSY$VCV[, column])[2],3),")",sep=""),
-          round(effectiveSize(MWSY$VCV[, column])))
-
-column<-12
-weight<-c("Weighting",paste(round(posterior.mode(MWSY$VCV[, column]),3)," (",
-                          round(HPDinterval(MWSY$VCV[, column])[1],3)," - ",
-                          round(HPDinterval(MWSY$VCV[, column])[2],3),")",sep=""),
-          round(effectiveSize(MWSY$VCV[, column])))
+treeID<-c("Tree ID",paste(round(posterior.mode(Mass_yearint_fix$VCV[, column]),3)," (",
+                          round(HPDinterval(Mass_yearint_fix$VCV[, column])[1],3)," - ",
+                          round(HPDinterval(Mass_yearint_fix$VCV[, column])[2],3),")",sep=""),
+          round(effectiveSize(Mass_yearint_fix$VCV[, column])))
 
 column<-13
-residual<-c("Residual",paste(round(posterior.mode(MWSY$VCV[, column]),3)," (",
-                             round(HPDinterval(MWSY$VCV[, column])[1],3)," - ",
-                             round(HPDinterval(MWSY$VCV[, column])[2],3),")",sep=""),
-            round(effectiveSize(MWSY$VCV[, column])))
+weight<-c("Weighting",paste(round(posterior.mode(Mass_yearint_fix$VCV[, column]),3)," (",
+                          round(HPDinterval(Mass_yearint_fix$VCV[, column])[1],3)," - ",
+                          round(HPDinterval(Mass_yearint_fix$VCV[, column])[2],3),")",sep=""),
+          round(effectiveSize(Mass_yearint_fix$VCV[, column])))
+
+column<-14
+residual<-c("Residual",paste(round(posterior.mode(Mass_yearint_fix$VCV[, column]),3)," (",
+                             round(HPDinterval(Mass_yearint_fix$VCV[, column])[1],3)," - ",
+                             round(HPDinterval(Mass_yearint_fix$VCV[, column])[2],3),")",sep=""),
+            round(effectiveSize(Mass_yearint_fix$VCV[, column])))
 
 
 
 
-random<-rbind(treetaxa1,treetaxa2,treetaxa4,siteyear5,siteyear6,siteyear8, recorder, siteday, treeID, weight, residual)
+random<-rbind(treetaxa1,treetaxa2,treetaxa4,site5,site6,site8,siteyear, recorder, siteday, treeID, weight, residual)
 
 
-write.table(rbind(c("Fixed Terms","",""),fixed,c("Random Terms","",""),random),"~/Documents/Models/Tables/TableMWSY.txt",sep="\t",col.names=c("","Coefficient/Variance (Mean/mode and CI)","Effective sample size"),row.names=F)
+write.table(rbind(c("Fixed Terms","",""),fixed,c("Random Terms","",""),random),"~/Documents/Models/Tables/TableMass_yearint_fix.txt",sep="\t",col.names=c("","Coefficient/Variance (Mean/mode and CI)","Effective sample size"),row.names=F)
