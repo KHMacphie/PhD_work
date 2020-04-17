@@ -241,46 +241,52 @@ cater_habitat<- subset(cater_habitat, tree.species!="OthDecid")
 #### Model: Habitat and TreeTaxa Abundance model ####
 #####################################################
 
-k<-10000
-prior<-list(R=list(V=1,nu=0.002),
-            G=list(G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
-                   G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
-                   G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
-                   G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
-                   G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
-                   G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
-                   G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
-                   G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k)))
+#k<-10000
+#prior<-list(R=list(V=1,nu=0.002),
+#            G=list(G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
+#                   G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
+#                   G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
+#                   G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
+#                   G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
+#                   G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
+#                   G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
+#                   G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k)))
 
 
 #TTHA_final1<- MCMCglmm(caterpillars~1, 
 #                     random=~tree.species+idv(~Alder_Scld+Ash_Scld+Beech_Scld+Birch_Scld+Elm_Scld+Hazel_Scld+Oak_Scld+Rowan_Scld+Sycamore_Scld+Willow_Scld+Conifer_Scld+OthDecid_Scld)+site+year+siteyear+treeID+siteday+recorder, 
 #                     family="poisson", data=cater_habitat, prior=prior, nitt=3000000, burnin=30000, pr=TRUE, thin=50)
 #save(TTHA_final1, file = "~/Documents/Models/TTHA_final1.RData")
-load("~/Documents/Models/TTHA_final1.RData")
+#load("~/Documents/Models/TTHA_final1.RData")
 
-TTHA_cent1<- MCMCglmm(caterpillars~Total_cent, 
-                     random=~tree.species+idv(~Alder_cent+Ash_cent+Beech_cent+Birch_cent+Elm_cent+Hazel_cent+Oak_cent+Rowan_cent+Sycamore_cent+Willow_cent+Conifer_cent+OthDecid_cent)+site+year+siteyear+treeID+siteday+recorder, 
-                     family="poisson", data=cater_habitat, prior=prior, nitt=3000000, burnin=50000, pr=TRUE, thin=40)
-save(TTHA_cent1, file = "~/Documents/Models/TTHA_cent1.RData")
-rm(list=ls())
-load("~/Documents/Models/TTHA_cent1.RData")
+#TTHA_cent1<- MCMCglmm(caterpillars~Total_cent, 
+#                     random=~tree.species+idv(~Alder_cent+Ash_cent+Beech_cent+Birch_cent+Elm_cent+Hazel_cent+Oak_cent+Rowan_cent+Sycamore_cent+Willow_cent+Conifer_cent+OthDecid_cent)+site+year+siteyear+treeID+siteday+recorder, 
+#                     family="poisson", data=cater_habitat, prior=prior, nitt=3000000, burnin=50000, pr=TRUE, thin=40)
+#save(TTHA_cent1, file = "~/Documents/Models/TTHA_cent1.RData")
+#rm(list=ls())
+#load("~/Documents/Models/TTHA_cent1.RData")
 
+#TTHA_cent2<- MCMCglmm(caterpillars~Total_cent, 
+#                      random=~tree.species+idv(~Alder_cent+Ash_cent+Beech_cent+Birch_cent+Elm_cent+Hazel_cent+Oak_cent+Rowan_cent+Sycamore_cent+Willow_cent+Conifer_cent+OthDecid_cent)+site+year+siteyear+treeID+siteday+recorder, 
+#                      family="poisson", data=cater_habitat, prior=prior, nitt=4000000, burnin=50000, pr=TRUE, thin=50)
+#save(TTHA_cent2, file = "~/Documents/Models/TTHA_cent2.RData")
+#rm(list=ls())
+load("~/Documents/Models/TTHA_cent2.RData")
 
-TTHA_cent.Sim<-simulate(TTHA_cent,nsim=100)
+TTHA_cent2.Sim<-simulate(TTHA_cent2,nsim=100)
 par(mfcol=c(1,1))
-hist(apply(TTHA_cent.Sim,2,sum), breaks=100)
+hist(apply(TTHA_cent2.Sim,2,sum), breaks=100)
 abline(v=sum(cater_habitat$caterpillars),col=2)
 
 propzero <- function(x){return(length(which(x==0))/length(x))}
-hist(apply(TTHA_cent.Sim,2,propzero), breaks=100)
+hist(apply(TTHA_cent2.Sim,2,propzero), breaks=100)
 abline(v=propzero(cater_habitat$caterpillars), col="red")
 
 
 #dataframe for coeffs and CIs for beaten tree taxa
-TTHA <- TTHA_cent1$Sol[,3:12] # crop to just the columns wanted
+TTHA <- TTHA_cent2$Sol[,3:12] # crop to just the columns wanted
 TTHA.df <- data.frame(treetaxa=c(colnames(TTHA))) #dataframe with column for beaten tree taxa
-TTHA.df$coeff <- apply(TTHA,2, mean) # mean 
+TTHA.df$coeff <- apply(TTHA,2, median) # median 
 for(i in 1:length(TTHA.df$treetaxa)) {   # loop for CIs
   A <- HPDinterval(TTHA[,i])
   TTHA.df$lowci[i] <- A["var1","lower"] 
@@ -288,22 +294,10 @@ for(i in 1:length(TTHA.df$treetaxa)) {   # loop for CIs
 } 
 TTHA.df$treetaxa <- gsub("tree.species.","", TTHA.df$treetaxa)
 
-
-#plot beaten tree taxa
-plot1 <- ggplot(TTHA.df, aes(treetaxa, coeff))+
-  geom_point(size=3, alpha=0.5)+
-  geom_errorbar(aes(ymax=upci, ymin=lowci, width=0.5))+
-  theme_bw()+
-  theme(text = element_text(size=25),axis.text.x= element_text(angle=90))+
-  geom_hline(yintercept=0, linetype="dashed", colour="red")+
-  ggtitle("a) Sampled Tree Taxon")+
-  xlab("")+
-  ylab("Coefficient")
-
 #dataframe for coeffs and CIs for habitat FS's
-TTHA2 <- TTHA_cent1$Sol[,13:24] # crop to just the columns wanted
+TTHA2 <- TTHA_cent2$Sol[,13:24] # crop to just the columns wanted
 TTHA2.df <- data.frame(treetaxa=c(colnames(TTHA2))) #dataframe with column for beaten tree taxa
-TTHA2.df$coeff <- apply(TTHA2,2, mean) # mean 
+TTHA2.df$coeff <- apply(TTHA2,2, median) # mean 
 for(i in 1:length(TTHA2.df$treetaxa)) {   # loop for CIs
   A <- HPDinterval(TTHA2[,i])
   TTHA2.df$lowci[i] <- A["var1","lower"] 
@@ -312,20 +306,66 @@ for(i in 1:length(TTHA2.df$treetaxa)) {   # loop for CIs
 TTHA2.df$treetaxa <- gsub("_cent.NA.1","", TTHA2.df$treetaxa)
 TTHA2.df$treetaxa <- gsub("OthDecid","Other", TTHA2.df$treetaxa)
 
+
+#plot beaten tree taxa
+plot1 <- ggplot(TTHA.df, aes(fct_rev(treetaxa), coeff))+
+  geom_point(size=2, alpha=0.9)+
+  geom_errorbar(aes(ymax=upci, ymin=lowci, width=0.5))+
+  #annotate("text", label="*", x="Alder", y=-0.03, size=7)+
+  #annotate("text", label="*", x="Ash", y=-0.1, size=7)+
+  #annotate("text", label="*", x="Oak", y=0.88, size=7)+
+  #annotate("text", label="*", x="Willow", y=1.05, size=7)+
+  theme_bw()+
+  coord_flip()+
+  theme(text = element_text(size=15))+
+  #theme(text = element_text(size=25),axis.text.x= element_text(angle=90))+
+  geom_hline(yintercept=0, linetype="dashed", colour="red", size=0.3)+
+  #ggtitle("a)")+
+  xlab("Tree Taxon")+
+  ylab("Coefficient (log scale)") #9"x6"
+
 #plot for habitat FS's
-plot2 <- ggplot(TTHA2.df, aes(fct_inorder(treetaxa), coeff))+
-  geom_point(size=3, alpha=0.5)+
+plot2 <- ggplot(TTHA2.df, aes(fct_rev(fct_inorder(treetaxa)), coeff))+
+  geom_point(size=2, alpha=0.9)+
   geom_errorbar(aes(ymax=upci, ymin=lowci, width=0.5))+
   theme_bw()+
-  theme(text = element_text(size=25),axis.text.x= element_text(angle=90))+
-  geom_hline(yintercept=0, linetype="dashed", colour="red")+
-  ggtitle("b) Habitat composition")+
-  xlab("")+
-  ylab("Coefficient")
+  theme(text = element_text(size=15))+#,axis.text.x= element_text(angle=90))+
+ #annotate("text", label="*", x="Oak", y=0.034, size=7)+
+  geom_hline(yintercept=0, linetype="dashed", colour="red", size=0.3)+
+  #ggtitle("b)")+
+  coord_flip()+
+  xlab("Habitat category")+
+  ylab("Coefficient (log scale)")#9"x6"
 
-row1 <- grid.arrange(plot1, ncol = 1, widths = c(0.5))
-row2 <- grid.arrange(plot2, ncol = 1, widths = c(1))
-TTHAcoeffs <- grid.arrange(row1, row2, nrow = 2, heights = c(1,1))
+gap <- ggplot()+theme_classic()
+row1 <- grid.arrange(plot1,gap, plot2, ncol=3, widths=c(1,0.1,1)) #saved as 6"x7"
+
+#Proportional difference to oak
+alderOD <- exp(TTHA_cent2$Sol[,3]-TTHA_cent2$Sol[,9])
+ashOD <- exp(TTHA_cent2$Sol[,4]-TTHA_cent2$Sol[,9])
+beechOD <- exp(TTHA_cent2$Sol[,5]-TTHA_cent2$Sol[,9])
+birchOD <- exp(TTHA_cent2$Sol[,6]-TTHA_cent2$Sol[,9])
+elmOD <- exp(TTHA_cent2$Sol[,7]-TTHA_cent2$Sol[,9])
+hazelOD <- exp(TTHA_cent2$Sol[,8]-TTHA_cent2$Sol[,9])
+rowanOD <- exp(TTHA_cent2$Sol[,10]-TTHA_cent2$Sol[,9])
+sycamoreOD <- exp(TTHA_cent2$Sol[,11]-TTHA_cent2$Sol[,9])
+willowOD <- exp(TTHA_cent2$Sol[,12]-TTHA_cent2$Sol[,9])
+
+TTOD <- data.frame(TT=c("Alder", "Ash", "Beech", "Birch", "Elm", "Hazel", "Rowan", "Sycamore", "Willow"),
+                   medianOD=c(median(alderOD), median(ashOD), median(beechOD), median(birchOD), median(elmOD), median(hazelOD), median(rowanOD), median(sycamoreOD), median(willowOD)),
+                   lowci=c(HPDinterval(alderOD)[1], HPDinterval(ashOD)[1],HPDinterval(beechOD)[1],HPDinterval(birchOD)[1],HPDinterval(elmOD)[1],HPDinterval(hazelOD)[1],HPDinterval(rowanOD)[1],HPDinterval(sycamoreOD)[1],HPDinterval(willowOD)[1]),
+                   upci=c(HPDinterval(alderOD)[2], HPDinterval(ashOD)[2],HPDinterval(beechOD)[2],HPDinterval(birchOD)[2],HPDinterval(elmOD)[2],HPDinterval(hazelOD)[2],HPDinterval(rowanOD)[2],HPDinterval(sycamoreOD)[2],HPDinterval(willowOD)[2]))
+#write.csv(TTOD,'~/Documents/Models/Tables/TTHA2.TTODMetrics.csv')
+
+ggplot(TTOD, aes(fct_rev(TT), medianOD))+
+  geom_point(size=2, alpha=0.9)+
+  geom_errorbar(aes(ymax=(upci), ymin=(lowci), width=0.5))+
+  theme_bw()+
+  xlab("Tree Taxon")+
+  ylab("Difference to oak (proportional)")+
+  coord_flip()+ 
+  geom_hline(yintercept=1, linetype="dashed", color = "red")+
+  theme(text = element_text(size=15), axis.text.x = element_text(angle = 45, hjust=1)) #saved 6"x4"
 
 #### Plot with slope for total and each tree taxa?
 summary(rowSums(Habitat_Site[2:13])) #real FS total scale
@@ -349,51 +389,54 @@ conifercent <- seq(min(Habitat_Site$Conifer_cent), max(Habitat_Site$Conifer_cent
 othercent <- seq(min(Habitat_Site$OthDecid_cent), max(Habitat_Site$OthDecid_cent), 0.001)
 
 
-Totalslope <- mean(TTHA_cent1$Sol[,1])+mean(TTHA_cent1$Sol[,2])*totcentfs
+Totalslope <- median(TTHA_cent2$Sol[,1])+median(TTHA_cent2$Sol[,2])*totcentfs
+# each slope coefficient is the deviation from the total slope from fixed effects
+Alderslope <- median(TTHA_cent2$Sol[,1])+median(TTHA_cent2$Sol[,2]+TTHA_cent2$Sol[,13])*aldercent
+Ashslope <- median(TTHA_cent2$Sol[,1])+median(TTHA_cent2$Sol[,2]+TTHA_cent2$Sol[,14])*ashcent
+Beechslope <- median(TTHA_cent2$Sol[,1])+median(TTHA_cent2$Sol[,2]+TTHA_cent2$Sol[,15])*beechcent
+Birchslope <- median(TTHA_cent2$Sol[,1])+median(TTHA_cent2$Sol[,2]+TTHA_cent2$Sol[,16])*birchcent
+Elmslope <- median(TTHA_cent2$Sol[,1])+median(TTHA_cent2$Sol[,2]+TTHA_cent2$Sol[,17])*elmcent
+Hazelslope <- median(TTHA_cent2$Sol[,1])+median(TTHA_cent2$Sol[,2]+TTHA_cent2$Sol[,18])*hazelcent
+Oakslope <- median(TTHA_cent2$Sol[,1])+median(TTHA_cent2$Sol[,2]+TTHA_cent2$Sol[,19])*oakcent
+Rowanslope <- median(TTHA_cent2$Sol[,1])+median(TTHA_cent2$Sol[,2]+TTHA_cent2$Sol[,20])*rowancent
+Sycamoreslope <- median(TTHA_cent2$Sol[,1])+median(TTHA_cent2$Sol[,2]+TTHA_cent2$Sol[,21])*sycamorecent
+Willowslope <- median(TTHA_cent2$Sol[,1])+median(TTHA_cent2$Sol[,2]+TTHA_cent2$Sol[,22])*willowcent
+Coniferslope <- median(TTHA_cent2$Sol[,1])+median(TTHA_cent2$Sol[,2]+TTHA_cent2$Sol[,23])*conifercent
+Otherslope <- median(TTHA_cent2$Sol[,1])+median(TTHA_cent2$Sol[,2]+TTHA_cent2$Sol[,24])*othercent
 
-Alderslope <- mean(TTHA_cent1$Sol[,1])+mean(TTHA_cent1$Sol[,13])*aldercent
-Ashslope <- mean(TTHA_cent1$Sol[,1])+mean(TTHA_cent1$Sol[,14])*ashcent
-Beechslope <- mean(TTHA_cent1$Sol[,1])+mean(TTHA_cent1$Sol[,15])*beechcent
-Birchslope <- mean(TTHA_cent1$Sol[,1])+mean(TTHA_cent1$Sol[,16])*birchcent
-Elmslope <- mean(TTHA_cent1$Sol[,1])+mean(TTHA_cent1$Sol[,17])*elmcent
-Hazelslope <- mean(TTHA_cent1$Sol[,1])+mean(TTHA_cent1$Sol[,18])*hazelcent
-Oakslope <- mean(TTHA_cent1$Sol[,1])+mean(TTHA_cent1$Sol[,19])*oakcent
-Rowanslope <- mean(TTHA_cent1$Sol[,1])+mean(TTHA_cent1$Sol[,20])*rowancent
-Sycamoreslope <- mean(TTHA_cent1$Sol[,1])+mean(TTHA_cent1$Sol[,21])*sycamorecent
-Willowslope <- mean(TTHA_cent1$Sol[,1])+mean(TTHA_cent1$Sol[,22])*willowcent
-Coniferslope <- mean(TTHA_cent1$Sol[,1])+mean(TTHA_cent1$Sol[,23])*conifercent
-Otherslope <- mean(TTHA_cent1$Sol[,1])+mean(TTHA_cent1$Sol[,24])*othercent
+#AllTaxaCols <- c("darkred", "firebrick3", "chocolate2", "goldenrod", "olivedrab4", "darkgreen", "deepskyblue3", "royalblue4", "slateblue2", "orchid")
+#Other+Conifer <- c("gray57", "gray35")
 
-AllTaxaCols <- c("darkred", "firebrick3", "chocolate2", "goldenrod", "olivedrab4", "darkgreen", "deepskyblue3", "royalblue4", "slateblue2", "orchid")
-Other+Conifer <- c("gray57", "gray35")
-
-par(mfcol=c(1,2))
-plot(totcentfs, exp(Totalslope), type="l", lty=6,  ylim=c(0.00848,0.07467), xlab="Total FS (from sum of mean centred)", ylab="Caterpillar Abundance")
+par(mfcol=c(1,1))
+#plot(totcentfs, exp(Totalslope), type="l", lty=6,  ylim=c(0.00848,0.07467), xlab="Total Foliage Score", ylab="Caterpillar Abundance")
 plot(aldercent, exp(Alderslope), type="l", lty=6, ylim=c(0.00848,0.07467), xlim=c(-5.691,91.334), col="darkred", xlab="Deviation in FS from mean", ylab="Caterpillar Abundance")
 points(ashcent, exp(Ashslope), type="l", col="firebrick3", lty=6)
 points(beechcent, exp(Beechslope), type="l", col="chocolate2", lty=6)
 points(birchcent, exp(Birchslope), type="l", col="goldenrod", lty=6)
 points(elmcent, exp(Elmslope), type="l", col="olivedrab4", lty=6)
-points(hazelcent, exp(Hazelslope), type="l", col="darkgreen", lty=6)
 points(oakcent, exp(Oakslope), type="l", col="deepskyblue3")
-points(rowancent, exp(Rowanslope), type="l", col="royalblue4", lty=6)
 points(sycamorecent, exp(Sycamoreslope), type="l", col="slateblue2", lty=6)
 points(willowcent, exp(Willowslope), type="l", col="orchid", lty=6)
 points(conifercent, exp(Coniferslope), type="l", col="gray57", lty=6)
 points(othercent, exp(Otherslope), type="l", col="gray35", lty=6)
+points(hazelcent, exp(Hazelslope), type="l", col="darkgreen", lty=6)
+points(rowancent, exp(Rowanslope), type="l", col="royalblue4", lty=6)
+legend("topleft", legend=c("Alder","Ash", "Beech", "Birch", "Elm", "Hazel", "Oak", "Rowan", "Sycamore", "Willow", "Conifer", "Other"),
+       lty=c(1,1,1,1,1,1,1,1,1,1,1,1), lwd=3, 
+       col=c("darkred", "firebrick3", "chocolate2", "goldenrod", "olivedrab4", "darkgreen", "deepskyblue3", "royalblue4", "slateblue2", "orchid","gray57","grey35"), 
+       cex=0.85, seg.len=0.8, bty = "n") # saved as 7"x4.5"
 
-#plot(aldercent, Alderslope, type="l", lty=6, ylim=c(-4.770,-2.595), xlim=c(-5.691,91.334), col="darkred", xlab="Deviation in FS from mean", ylab="log caterpillars")
-#points(ashcent, Ashslope, type="l", col="firebrick3", lty=6)
-#points(beechcent, Beechslope, type="l", col="chocolate2", lty=6)
-#points(birchcent, Birchslope, type="l", col="goldenrod", lty=6)
-#points(elmcent, Elmslope, type="l", col="olivedrab4", lty=6)
-#points(hazelcent, Hazelslope, type="l", col="darkgreen", lty=6)
-#points(oakcent, Oakslope, type="l", col="deepskyblue3")
-#points(rowancent, Rowanslope, type="l", col="royalblue4", lty=6)
-#points(sycamorecent, Sycamoreslope, type="l", col="slateblue2", lty=6)
-#points(willowcent, Willowslope, type="l", col="orchid", lty=6)
-#points(conifercent, Coniferslope, type="l", col="gray57", lty=6)
-#points(othercent, Otherslope, type="l", col="gray35", lty=6)plot()
+TTHA.df$expcoeff <- exp(TTHA.df$coeff)
+TTHA.df$explowci <- exp(TTHA.df$lowci)
+TTHA.df$expupci <- exp(TTHA.df$upci)
+#write.csv(TTHA.df,'~/Documents/Models/Tables/TTHA.TTMetrics.csv')
+TTHA2.df$expcoeff <- exp(TTHA2.df$coeff)
+TTHA2.df$explowci <- exp(TTHA2.df$lowci)
+TTHA2.df$expupci <- exp(TTHA2.df$upci)
+#write.csv(TTHA2.df,'~/Documents/Models/Tables/TTHA2.TTMetrics.csv')
+
+  
+
 
 ############################
 #### Model output table ####
@@ -404,69 +447,69 @@ library(MCMCglmm)
 
 ####fixed
 fixed<-rbind(
-  c("Intercept",paste(round(mean(TTHA_cent1$Sol[,1]),3)," (",
-                      round(HPDinterval(TTHA_cent1$Sol[,1])[1],3)," - ",
-                      round(HPDinterval(TTHA_cent1$Sol[,1])[2],3),")",sep=""),
-                      round(effectiveSize(TTHA_cent1$Sol[,1]))),
-  c("Total Foliage Score",paste(round(mean(TTHA_cent1$Sol[,2]),3)," (",
-                      round(HPDinterval(TTHA_cent1$Sol[,2])[1],3)," - ",
-                      round(HPDinterval(TTHA_cent1$Sol[,2])[2],3),")",sep=""),
-                      round(effectiveSize(TTHA_cent1$Sol[,2]))))
+  c("Intercept",paste(round(mean(TTHA_cent2$Sol[,1]),3)," (",
+                      round(HPDinterval(TTHA_cent2$Sol[,1])[1],3)," - ",
+                      round(HPDinterval(TTHA_cent2$Sol[,1])[2],3),")",sep=""),
+                      round(effectiveSize(TTHA_cent2$Sol[,1]))),
+  c("Total Foliage Score",paste(round(mean(TTHA_cent2$Sol[,2]),3)," (",
+                      round(HPDinterval(TTHA_cent2$Sol[,2])[1],3)," - ",
+                      round(HPDinterval(TTHA_cent2$Sol[,2])[2],3),")",sep=""),
+                      round(effectiveSize(TTHA_cent2$Sol[,2]))))
 
 ####random 
 column<-1
-treetaxa<-c("Sampled Tree Taxa",paste(round(posterior.mode(TTHA_cent1$VCV[, column]),3)," (",
-                             round(HPDinterval(TTHA_cent1$VCV[, column])[1],3)," - ",
-                             round(HPDinterval(TTHA_cent1$VCV[, column])[2],3),")",sep=""),
-            round(effectiveSize(TTHA_cent1$VCV[, column])))
+treetaxa<-c("Sampled Tree Taxa",paste(round(posterior.mode(TTHA_cent2$VCV[, column]),3)," (",
+                             round(HPDinterval(TTHA_cent2$VCV[, column])[1],3)," - ",
+                             round(HPDinterval(TTHA_cent2$VCV[, column])[2],3),")",sep=""),
+            round(effectiveSize(TTHA_cent2$VCV[, column])))
 
 column<-2
-habitat<-c("Habitat Composition",paste(round(posterior.mode(TTHA_cent1$VCV[, column]),3)," (",
-                     round(HPDinterval(TTHA_cent1$VCV[, column])[1],3)," - ",
-                     round(HPDinterval(TTHA_cent1$VCV[, column])[2],3),")",sep=""),
-        round(effectiveSize(TTHA_cent1$VCV[, column])))
+habitat<-c("Habitat Composition",paste(round(posterior.mode(TTHA_cent2$VCV[, column]),3)," (",
+                     round(HPDinterval(TTHA_cent2$VCV[, column])[1],3)," - ",
+                     round(HPDinterval(TTHA_cent2$VCV[, column])[2],3),")",sep=""),
+        round(effectiveSize(TTHA_cent2$VCV[, column])))
 
 column<-3
-site<-c("Site",paste(round(posterior.mode(TTHA_cent1$VCV[, column]),3)," (",
-                              round(HPDinterval(TTHA_cent1$VCV[, column])[1],3)," - ",
-                              round(HPDinterval(TTHA_cent1$VCV[, column])[2],3),")",sep=""),
-            round(effectiveSize(TTHA_cent1$VCV[, column])))
+site<-c("Site",paste(round(posterior.mode(TTHA_cent2$VCV[, column]),3)," (",
+                              round(HPDinterval(TTHA_cent2$VCV[, column])[1],3)," - ",
+                              round(HPDinterval(TTHA_cent2$VCV[, column])[2],3),")",sep=""),
+            round(effectiveSize(TTHA_cent2$VCV[, column])))
 
 column<-4
-year<-c("Year",paste(round(posterior.mode(TTHA_cent1$VCV[, column]),3)," (",
-                            round(HPDinterval(TTHA_cent1$VCV[, column])[1],3)," - ",
-                            round(HPDinterval(TTHA_cent1$VCV[, column])[2],3),")",sep=""),
-           round(effectiveSize(TTHA_cent1$VCV[, column])))
+year<-c("Year",paste(round(posterior.mode(TTHA_cent2$VCV[, column]),3)," (",
+                            round(HPDinterval(TTHA_cent2$VCV[, column])[1],3)," - ",
+                            round(HPDinterval(TTHA_cent2$VCV[, column])[2],3),")",sep=""),
+           round(effectiveSize(TTHA_cent2$VCV[, column])))
 
 column<-5
-siteyear<-c("Site Year",paste(round(posterior.mode(TTHA_cent1$VCV[, column]),3)," (",
-                     round(HPDinterval(TTHA_cent1$VCV[, column])[1],3)," - ",
-                     round(HPDinterval(TTHA_cent1$VCV[, column])[2],3),")",sep=""),
-        round(effectiveSize(TTHA_cent1$VCV[, column])))
+siteyear<-c("Site Year",paste(round(posterior.mode(TTHA_cent2$VCV[, column]),3)," (",
+                     round(HPDinterval(TTHA_cent2$VCV[, column])[1],3)," - ",
+                     round(HPDinterval(TTHA_cent2$VCV[, column])[2],3),")",sep=""),
+        round(effectiveSize(TTHA_cent2$VCV[, column])))
 
 column<-6
-treeID<-c("Tree ID",paste(round(posterior.mode(TTHA_cent1$VCV[, column]),3)," (",
-                          round(HPDinterval(TTHA_cent1$VCV[, column])[1],3)," - ",
-                          round(HPDinterval(TTHA_cent1$VCV[, column])[2],3),")",sep=""),
-          round(effectiveSize(TTHA_cent1$VCV[, column])))
+treeID<-c("Tree ID",paste(round(posterior.mode(TTHA_cent2$VCV[, column]),3)," (",
+                          round(HPDinterval(TTHA_cent2$VCV[, column])[1],3)," - ",
+                          round(HPDinterval(TTHA_cent2$VCV[, column])[2],3),")",sep=""),
+          round(effectiveSize(TTHA_cent2$VCV[, column])))
 
 column<-7
-siteday<-c("Site Day",paste(round(posterior.mode(TTHA_cent1$VCV[, column]),3)," (",
-                              round(HPDinterval(TTHA_cent1$VCV[, column])[1],3)," - ",
-                              round(HPDinterval(TTHA_cent1$VCV[, column])[2],3),")",sep=""),
-            round(effectiveSize(TTHA_cent1$VCV[, column])))
+siteday<-c("Site Day",paste(round(posterior.mode(TTHA_cent2$VCV[, column]),3)," (",
+                              round(HPDinterval(TTHA_cent2$VCV[, column])[1],3)," - ",
+                              round(HPDinterval(TTHA_cent2$VCV[, column])[2],3),")",sep=""),
+            round(effectiveSize(TTHA_cent2$VCV[, column])))
 
 column<-8
-recorder<-c("Recorder",paste(round(posterior.mode(TTHA_cent1$VCV[, column]),3)," (",
-                             round(HPDinterval(TTHA_cent1$VCV[, column])[1],3)," - ",
-                             round(HPDinterval(TTHA_cent1$VCV[, column])[2],3),")",sep=""),
-            round(effectiveSize(TTHA_cent1$VCV[, column])))
+recorder<-c("Recorder",paste(round(posterior.mode(TTHA_cent2$VCV[, column]),3)," (",
+                             round(HPDinterval(TTHA_cent2$VCV[, column])[1],3)," - ",
+                             round(HPDinterval(TTHA_cent2$VCV[, column])[2],3),")",sep=""),
+            round(effectiveSize(TTHA_cent2$VCV[, column])))
 
 column<-9
-residual<-c("Residual",paste(round(posterior.mode(TTHA_cent1$VCV[, column]),3)," (",
-                             round(HPDinterval(TTHA_cent1$VCV[, column])[1],3)," - ",
-                             round(HPDinterval(TTHA_cent1$VCV[, column])[2],3),")",sep=""),
-            round(effectiveSize(TTHA_cent1$VCV[, column])))
+residual<-c("Residual",paste(round(posterior.mode(TTHA_cent2$VCV[, column]),3)," (",
+                             round(HPDinterval(TTHA_cent2$VCV[, column])[1],3)," - ",
+                             round(HPDinterval(TTHA_cent2$VCV[, column])[2],3),")",sep=""),
+            round(effectiveSize(TTHA_cent2$VCV[, column])))
 
 
 
@@ -474,4 +517,4 @@ residual<-c("Residual",paste(round(posterior.mode(TTHA_cent1$VCV[, column]),3),"
 random<-rbind(treetaxa, habitat, site, year, siteyear, treeID, siteday,recorder,residual)
 
 
-write.table(rbind(c("Fixed Terms","",""),fixed,c("Random Terms","",""),random),"~/Documents/Models/Tables/TableTTHA_cent1.txt",sep="\t",col.names=c("","Coefficient/Variance (Mean/mode and CI)","Effective sample size"),row.names=F)
+write.table(rbind(c("Fixed Terms","",""),fixed,c("Random Terms","",""),random),"~/Documents/Models/Tables/TableTTHA_cent2.txt",sep="\t",col.names=c("","Coefficient/Variance (Mean/mode and CI)","Effective sample size"),row.names=F)
