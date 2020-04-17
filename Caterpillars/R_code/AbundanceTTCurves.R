@@ -214,7 +214,10 @@ cater_habitat<- merge(cater, Habitat_Site, by="site", duplicates.ok=TRUE)
 cater_habitat$treeID <- paste(cater_habitat$tree, cater_habitat$site)
 cater_habitat$siteday <- paste(cater_habitat$site, cater_habitat$date, cater_habitat$year)
 cater_habitat$siteyear <- paste(cater_habitat$site, cater_habitat$year)
-cater_habitat$datescaled <- cater_habitat$date/max(cater_habitat$date)
+#cater_habitat$datescaled <- cater_habitat$date/max(cater_habitat$date) ## WRONG
+cater_habitat$datescaled <- scale(cater_habitat$date) #unscale(x, center= 146.4095, scale=14.19835)   now from -2.071330 to 2.013653
+mean(cater_habitat$date) # 146.4095
+sd(cater_habitat$date) # 14.19835
 
 #!!!!!!!!!!! if removing OthDecid !!!!!!!!!!!!
 cater_habitat<- subset(cater_habitat, tree.species!="OthDecid")
@@ -235,37 +238,61 @@ prior3<-list(R=list(V=1,nu=0.002),
 #                                 random=~us(1+datescaled+I(datescaled^2)):tree.species + us(1+datescaled+I(datescaled^2)):siteyear + treeID + siteday + recorder, 
 #                                 family="poisson", data=cater_habitat, prior=prior3, nitt=300000, burnin=30000, pr=TRUE)
 #save(AbundTTCurves, file = "~/Documents/Models/AbundTTCurves.RData")
-load("~/Documents/Models/AbundTTCurves.RData")
+#load("~/Documents/Models/AbundTTCurves.RData")
 
 #AbundTTCurves1<- MCMCglmm(caterpillars~ datescaled + I(datescaled^2), 
 #                         random=~us(1+datescaled+I(datescaled^2)):tree.species + us(1+datescaled+I(datescaled^2)):siteyear + treeID + siteday + recorder, 
 #                         family="poisson", data=cater_habitat, prior=prior3, nitt=750000, burnin=50000, pr=TRUE, thin=50)
 #save(AbundTTCurves1, file = "~/Documents/Models/AbundTTCurves1.RData")
-load("~/Documents/Models/AbundTTCurves1.RData")
+#load("~/Documents/Models/AbundTTCurves1.RData")
 
 # was 1million, needs a bit longer
-AbundTTCurves2<- MCMCglmm(caterpillars~ datescaled + I(datescaled^2), 
-                         random=~us(1+datescaled+I(datescaled^2)):tree.species + us(1+datescaled+I(datescaled^2)):siteyear + treeID + siteday + recorder, 
-                         family="poisson", data=cater_habitat, prior=prior3, nitt=1100000, burnin=50000, pr=TRUE, thin=30)
-save(AbundTTCurves2, file = "~/Documents/Models/AbundTTCurves2.RData")
-rm(list=ls())
-load("~/Documents/Models/AbundTTCurves2.RData")
+#AbundTTCurves3<- MCMCglmm(caterpillars~ datescaled + I(datescaled^2), 
+#                         random=~us(1+datescaled+I(datescaled^2)):tree.species + us(1+datescaled+I(datescaled^2)):siteyear + treeID + siteday + recorder, 
+#                         family="poisson", data=cater_habitat, prior=prior3, nitt=1200000, burnin=50000, pr=TRUE, thin=30)
+#save(AbundTTCurves3, file = "~/Documents/Models/AbundTTCurves3.RData")
+#rm(list=ls())
+#load("~/Documents/Models/AbundTTCurves3.RData")
 
-AlderCurve <- data.frame(int=AbundTTCurves$Sol[,1], TTint=AbundTTCurves$Sol[,4],date=AbundTTCurves$Sol[,2], TTdate=AbundTTCurves$Sol[,14], date2=AbundTTCurves$Sol[,3], TTdate2=AbundTTCurves$Sol[,24])
-AshCurve <- data.frame(int=AbundTTCurves$Sol[,1], TTint=AbundTTCurves$Sol[,5],date=AbundTTCurves$Sol[,2], TTdate=AbundTTCurves$Sol[,15], date2=AbundTTCurves$Sol[,3], TTdate2=AbundTTCurves$Sol[,25])
-BeechCurve <- data.frame(int=AbundTTCurves$Sol[,1], TTint=AbundTTCurves$Sol[,6],date=AbundTTCurves$Sol[,2], TTdate=AbundTTCurves$Sol[,16], date2=AbundTTCurves$Sol[,3], TTdate2=AbundTTCurves$Sol[,26])
-BirchCurve <- data.frame(int=AbundTTCurves$Sol[,1], TTint=AbundTTCurves$Sol[,7],date=AbundTTCurves$Sol[,2], TTdate=AbundTTCurves$Sol[,17], date2=AbundTTCurves$Sol[,3], TTdate2=AbundTTCurves$Sol[,27])
-ElmCurve <- data.frame(int=AbundTTCurves$Sol[,1], TTint=AbundTTCurves$Sol[,8],date=AbundTTCurves$Sol[,2], TTdate=AbundTTCurves$Sol[,18], date2=AbundTTCurves$Sol[,3], TTdate2=AbundTTCurves$Sol[,28])
-HazelCurve <- data.frame(int=AbundTTCurves$Sol[,1], TTint=AbundTTCurves$Sol[,9],date=AbundTTCurves$Sol[,2], TTdate=AbundTTCurves$Sol[,19], date2=AbundTTCurves$Sol[,3], TTdate2=AbundTTCurves$Sol[,29])
-OakCurve <- data.frame(int=AbundTTCurves$Sol[,1], TTint=AbundTTCurves$Sol[,10],date=AbundTTCurves$Sol[,2], TTdate=AbundTTCurves$Sol[,20], date2=AbundTTCurves$Sol[,3], TTdate2=AbundTTCurves$Sol[,30])
-RowanCurve <- data.frame(int=AbundTTCurves$Sol[,1], TTint=AbundTTCurves$Sol[,11],date=AbundTTCurves$Sol[,2], TTdate=AbundTTCurves$Sol[,21], date2=AbundTTCurves$Sol[,3], TTdate2=AbundTTCurves$Sol[,31])
-SycamoreCurve <- data.frame(int=AbundTTCurves$Sol[,1], TTint=AbundTTCurves$Sol[,12],date=AbundTTCurves$Sol[,2], TTdate=AbundTTCurves$Sol[,22], date2=AbundTTCurves$Sol[,3], TTdate2=AbundTTCurves$Sol[,32])
-WillowCurve <- data.frame(int=AbundTTCurves$Sol[,1], TTint=AbundTTCurves$Sol[,13],date=AbundTTCurves$Sol[,2], TTdate=AbundTTCurves$Sol[,23], date2=AbundTTCurves$Sol[,3], TTdate2=AbundTTCurves$Sol[,33])
+#### !!!!!!! Using proper scaling !!!!!!! ####  and changed random regression
+
+k<-10000
+prior3<-list(R=list(V=1,nu=0.002),
+             G=list(G1=list(V=diag(3), nu=3, alpha.mu=c(0,0,0), alpha.V=diag(3)*k),
+                    G1=list(V=diag(3), nu=3, alpha.mu=c(0,0,0), alpha.V=diag(3)*k),
+                    G1=list(V=diag(3), nu=3, alpha.mu=c(0,0,0), alpha.V=diag(3)*k),
+                    G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
+                    G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
+                    G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
+                    G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k)))
+
+#ATTCscaled<- MCMCglmm(caterpillars~ datescaled + I(datescaled^2), 
+#                         random=~us(1+datescaled+I(datescaled^2)):tree.species + us(1+datescaled+I(datescaled^2)):site + us(1+datescaled+I(datescaled^2)):siteyear + year + treeID + siteday + recorder, 
+#                         family="poisson", data=cater_habitat, prior=prior3, nitt=1000000, burnin=50000, pr=TRUE, thin=30)
+#save(ATTCscaled, file = "~/Documents/Models/ATTCscaled.RData")
+#load("~/Documents/Models/ATTCscaled.RData")
+
+#ATTCyearint<- MCMCglmm(caterpillars~ datescaled + I(datescaled^2), 
+#                         random=~us(1+datescaled+I(datescaled^2)):tree.species + us(1+datescaled+I(datescaled^2)):site + us(1+datescaled+I(datescaled^2)):year + siteyear + treeID + siteday + recorder, 
+#                         family="poisson", data=cater_habitat, prior=prior3, nitt=1000000, burnin=50000, pr=TRUE, thin=30)
+#save(ATTCyearint, file = "~/Documents/Models/ATTCyearint.RData")
+load("~/Documents/Models/ATTCyearint.RData")
+
+AlderCurve <- data.frame(int=AbundTTCurves3$Sol[,1], TTint=AbundTTCurves3$Sol[,4],date=AbundTTCurves3$Sol[,2], TTdate=AbundTTCurves3$Sol[,14], date2=AbundTTCurves3$Sol[,3], TTdate2=AbundTTCurves3$Sol[,24])
+AshCurve <- data.frame(int=AbundTTCurves3$Sol[,1], TTint=AbundTTCurves3$Sol[,5],date=AbundTTCurves3$Sol[,2], TTdate=AbundTTCurves3$Sol[,15], date2=AbundTTCurves3$Sol[,3], TTdate2=AbundTTCurves3$Sol[,25])
+BeechCurve <- data.frame(int=AbundTTCurves3$Sol[,1], TTint=AbundTTCurves3$Sol[,6],date=AbundTTCurves3$Sol[,2], TTdate=AbundTTCurves3$Sol[,16], date2=AbundTTCurves3$Sol[,3], TTdate2=AbundTTCurves3$Sol[,26])
+BirchCurve <- data.frame(int=AbundTTCurves3$Sol[,1], TTint=AbundTTCurves3$Sol[,7],date=AbundTTCurves3$Sol[,2], TTdate=AbundTTCurves3$Sol[,17], date2=AbundTTCurves3$Sol[,3], TTdate2=AbundTTCurves3$Sol[,27])
+ElmCurve <- data.frame(int=AbundTTCurves3$Sol[,1], TTint=AbundTTCurves3$Sol[,8],date=AbundTTCurves3$Sol[,2], TTdate=AbundTTCurves3$Sol[,18], date2=AbundTTCurves3$Sol[,3], TTdate2=AbundTTCurves3$Sol[,28])
+HazelCurve <- data.frame(int=AbundTTCurves3$Sol[,1], TTint=AbundTTCurves3$Sol[,9],date=AbundTTCurves3$Sol[,2], TTdate=AbundTTCurves3$Sol[,19], date2=AbundTTCurves3$Sol[,3], TTdate2=AbundTTCurves3$Sol[,29])
+OakCurve <- data.frame(int=AbundTTCurves3$Sol[,1], TTint=AbundTTCurves3$Sol[,10],date=AbundTTCurves3$Sol[,2], TTdate=AbundTTCurves3$Sol[,20], date2=AbundTTCurves3$Sol[,3], TTdate2=AbundTTCurves3$Sol[,30])
+RowanCurve <- data.frame(int=AbundTTCurves3$Sol[,1], TTint=AbundTTCurves3$Sol[,11],date=AbundTTCurves3$Sol[,2], TTdate=AbundTTCurves3$Sol[,21], date2=AbundTTCurves3$Sol[,3], TTdate2=AbundTTCurves3$Sol[,31])
+SycamoreCurve <- data.frame(int=AbundTTCurves3$Sol[,1], TTint=AbundTTCurves3$Sol[,12],date=AbundTTCurves3$Sol[,2], TTdate=AbundTTCurves3$Sol[,22], date2=AbundTTCurves3$Sol[,3], TTdate2=AbundTTCurves3$Sol[,32])
+WillowCurve <- data.frame(int=AbundTTCurves3$Sol[,1], TTint=AbundTTCurves3$Sol[,13],date=AbundTTCurves3$Sol[,2], TTdate=AbundTTCurves3$Sol[,23], date2=AbundTTCurves3$Sol[,3], TTdate2=AbundTTCurves3$Sol[,33])
 
 
 
 dayscal <- seq(0.67,1,0.001)
-curve <- mean(AbundTTCurves$Sol[,1])+mean(AbundTTCurves$Sol[,2])*dayscal+mean(AbundTTCurves$Sol[,3])*dayscal^2
+curve <- mean(AbundTTCurves3$Sol[,1])+mean(AbundTTCurves3$Sol[,2])*dayscal+mean(AbundTTCurves3$Sol[,3])*dayscal^2
 days <- dayscal*max(cater_habitat$date)
 mycol <- rgb(0, 150, 0, max = 250, alpha = 10, names = NULL)
 mycol2 <- rgb(150, 0, 0, max = 250, alpha = 10, names = NULL)
@@ -391,18 +418,18 @@ RowanCurve$pd <- -RowanCurve$b/(2*RowanCurve$a)
 SycamoreCurve$pd <- -SycamoreCurve$b/(2*SycamoreCurve$a)
 WillowCurve$pd <- -WillowCurve$b/(2*WillowCurve$a)
 
-AlderPDCI <- HPDinterval(-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,14])/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,24])))
-AshPDCI <- HPDinterval(-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,15])/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,25])))
-BeechPDCI <- HPDinterval(-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,16])/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,26])))
-BirchPDCI <- HPDinterval(-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,17])/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,27])))
-ElmPDCI <- HPDinterval(-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,18])/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,28])))
-HazelPDCI <- HPDinterval(-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,19])/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,29])))
-OakPDCI <- HPDinterval(-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,20])/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,30])))
-RowanPDCI <- HPDinterval(-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,21])/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,31])))
-SycamorePDCI <- HPDinterval(-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,22])/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,32])))
-WillowPDCI <- HPDinterval(-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,23])/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,33])))
+AlderPDCI <- HPDinterval(-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,14])/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,24])))
+AshPDCI <- HPDinterval(-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,15])/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,25])))
+BeechPDCI <- HPDinterval(-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,16])/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,26])))
+BirchPDCI <- HPDinterval(-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,17])/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,27])))
+ElmPDCI <- HPDinterval(-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,18])/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,28])))
+HazelPDCI <- HPDinterval(-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,19])/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,29])))
+OakPDCI <- HPDinterval(-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,20])/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,30])))
+RowanPDCI <- HPDinterval(-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,21])/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,31])))
+SycamorePDCI <- HPDinterval(-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,22])/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,32])))
+WillowPDCI <- HPDinterval(-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,23])/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,33])))
 
-meanPD <- -(AbundTTCurves$Sol[,2])/(2*(AbundTTCurves$Sol[,3]))
+meanPD <- -(AbundTTCurves3$Sol[,2])/(2*(AbundTTCurves3$Sol[,3]))
 AlderCurve$pddiff <- (-AlderCurve$b/(2*AlderCurve$a))-meanPD
 AshCurve$pddiff <- (-AshCurve$b/(2*AshCurve$a))-meanPD
 BeechCurve$pddiff <- (-BeechCurve$b/(2*BeechCurve$a))-meanPD
@@ -414,16 +441,16 @@ RowanCurve$pddiff <- (-RowanCurve$b/(2*RowanCurve$a))-meanPD
 SycamoreCurve$pddiff <- (-SycamoreCurve$b/(2*SycamoreCurve$a))-meanPD
 WillowCurve$pddiff <- (-WillowCurve$b/(2*WillowCurve$a))-meanPD
 
-AlderPDdifCI <- HPDinterval(-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,14])/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,24]))-(-(AbundTTCurves$Sol[,2])/(2*(AbundTTCurves$Sol[,3]))))
-AshPDdifCI <- HPDinterval(-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,15])/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,25]))-(-(AbundTTCurves$Sol[,2])/(2*(AbundTTCurves$Sol[,3]))))
-BeechPDdifCI <- HPDinterval(-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,16])/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,26]))-(-(AbundTTCurves$Sol[,2])/(2*(AbundTTCurves$Sol[,3]))))
-BirchPDdifCI <- HPDinterval(-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,17])/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,27]))-(-(AbundTTCurves$Sol[,2])/(2*(AbundTTCurves$Sol[,3]))))
-ElmPDdifCI <- HPDinterval(-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,18])/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,28]))-(-(AbundTTCurves$Sol[,2])/(2*(AbundTTCurves$Sol[,3]))))
-HazelPDdifCI <- HPDinterval(-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,19])/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,29]))-(-(AbundTTCurves$Sol[,2])/(2*(AbundTTCurves$Sol[,3]))))
-OakPDdifCI <- HPDinterval(-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,20])/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,30]))-(-(AbundTTCurves$Sol[,2])/(2*(AbundTTCurves$Sol[,3]))))
-RowanPDdifCI <- HPDinterval(-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,21])/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,31]))-(-(AbundTTCurves$Sol[,2])/(2*(AbundTTCurves$Sol[,3]))))
-SycamorePDdifCI <- HPDinterval(-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,22])/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,32]))-(-(AbundTTCurves$Sol[,2])/(2*(AbundTTCurves$Sol[,3]))))
-WillowPDdifCI <- HPDinterval(-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,23])/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,33]))-(-(AbundTTCurves$Sol[,2])/(2*(AbundTTCurves$Sol[,3]))))
+AlderPDdifCI <- HPDinterval(-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,14])/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,24]))-(-(AbundTTCurves3$Sol[,2])/(2*(AbundTTCurves3$Sol[,3]))))
+AshPDdifCI <- HPDinterval(-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,15])/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,25]))-(-(AbundTTCurves3$Sol[,2])/(2*(AbundTTCurves3$Sol[,3]))))
+BeechPDdifCI <- HPDinterval(-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,16])/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,26]))-(-(AbundTTCurves3$Sol[,2])/(2*(AbundTTCurves3$Sol[,3]))))
+BirchPDdifCI <- HPDinterval(-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,17])/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,27]))-(-(AbundTTCurves3$Sol[,2])/(2*(AbundTTCurves3$Sol[,3]))))
+ElmPDdifCI <- HPDinterval(-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,18])/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,28]))-(-(AbundTTCurves3$Sol[,2])/(2*(AbundTTCurves3$Sol[,3]))))
+HazelPDdifCI <- HPDinterval(-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,19])/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,29]))-(-(AbundTTCurves3$Sol[,2])/(2*(AbundTTCurves3$Sol[,3]))))
+OakPDdifCI <- HPDinterval(-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,20])/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,30]))-(-(AbundTTCurves3$Sol[,2])/(2*(AbundTTCurves3$Sol[,3]))))
+RowanPDdifCI <- HPDinterval(-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,21])/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,31]))-(-(AbundTTCurves3$Sol[,2])/(2*(AbundTTCurves3$Sol[,3]))))
+SycamorePDdifCI <- HPDinterval(-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,22])/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,32]))-(-(AbundTTCurves3$Sol[,2])/(2*(AbundTTCurves3$Sol[,3]))))
+WillowPDdifCI <- HPDinterval(-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,23])/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,33]))-(-(AbundTTCurves3$Sol[,2])/(2*(AbundTTCurves3$Sol[,3]))))
 
 
 TTcurves <- data.frame(TT=c("Alder", "Ash", "Beech", "Birch", "Elm", "Hazel", "Oak", "Rowan", "Sycamore", "Willow"), 
@@ -438,7 +465,7 @@ TTcurves <- data.frame(TT=c("Alder", "Ash", "Beech", "Birch", "Elm", "Hazel", "O
 #### Peak Height ####
 #####################
 
-meanPH <- AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,2]*meanPD+AbundTTCurves$Sol[,3]*meanPD^2
+meanPH <- AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,2]*meanPD+AbundTTCurves3$Sol[,3]*meanPD^2
 AlderCurve$ph <- AlderCurve$a*AlderCurve$pd^2+AlderCurve$b*AlderCurve$pd+AlderCurve$c
 AshCurve$ph <- AshCurve$a*AshCurve$pd^2+AshCurve$b*AshCurve$pd+AshCurve$c
 BeechCurve$ph <- BeechCurve$a*BeechCurve$pd^2+BeechCurve$b*BeechCurve$pd+BeechCurve$c
@@ -461,27 +488,27 @@ RowanCurve$phdif <- exp(RowanCurve$a*RowanCurve$pd^2+RowanCurve$b*RowanCurve$pd+
 SycamoreCurve$phdif <- exp(SycamoreCurve$a*SycamoreCurve$pd^2+SycamoreCurve$b*SycamoreCurve$pd+SycamoreCurve$c)-exp(meanPH)
 WillowCurve$phdif <- exp(WillowCurve$a*WillowCurve$pd^2+WillowCurve$b*WillowCurve$pd+WillowCurve$c)-exp(meanPH)
 
-AlderPHCI <- HPDinterval(AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,4]+(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,14])*(-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,14])/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,24])))+(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,24])*(-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,14])/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,24])))^2)
-AshPHCI <- HPDinterval(AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,5]+(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,15])*(-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,15])/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,25])))+(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,25])*(-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,15])/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,25])))^2)
-BeechPHCI <- HPDinterval(AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,6]+(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,16])*(-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,16])/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,26])))+(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,26])*(-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,16])/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,26])))^2)
-BirchPHCI <- HPDinterval(AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,7]+(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,17])*(-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,17])/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,27])))+(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,27])*(-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,17])/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,27])))^2)
-ElmPHCI <- HPDinterval(AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,8]+(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,18])*(-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,18])/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,28])))+(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,28])*(-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,18])/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,28])))^2)
-HazelPHCI <- HPDinterval(AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,9]+(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,19])*(-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,19])/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,29])))+(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,29])*(-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,19])/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,29])))^2)
-OakPHCI <- HPDinterval(AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,10]+(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,20])*(-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,20])/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,30])))+(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,30])*(-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,20])/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,30])))^2)
-RowanPHCI <- HPDinterval(AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,11]+(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,21])*(-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,21])/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,31])))+(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,31])*(-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,21])/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,31])))^2)
-SycamorePHCI <- HPDinterval(AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,12]+(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,22])*(-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,22])/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,32])))+(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,32])*(-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,22])/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,32])))^2)
-WillowPHCI <- HPDinterval(AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,13]+(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,23])*(-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,23])/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,33])))+(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,33])*(-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,23])/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,33])))^2)
+AlderPHCI <- HPDinterval(AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,4]+(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,14])*(-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,14])/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,24])))+(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,24])*(-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,14])/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,24])))^2)
+AshPHCI <- HPDinterval(AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,5]+(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,15])*(-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,15])/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,25])))+(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,25])*(-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,15])/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,25])))^2)
+BeechPHCI <- HPDinterval(AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,6]+(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,16])*(-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,16])/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,26])))+(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,26])*(-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,16])/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,26])))^2)
+BirchPHCI <- HPDinterval(AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,7]+(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,17])*(-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,17])/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,27])))+(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,27])*(-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,17])/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,27])))^2)
+ElmPHCI <- HPDinterval(AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,8]+(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,18])*(-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,18])/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,28])))+(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,28])*(-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,18])/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,28])))^2)
+HazelPHCI <- HPDinterval(AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,9]+(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,19])*(-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,19])/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,29])))+(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,29])*(-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,19])/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,29])))^2)
+OakPHCI <- HPDinterval(AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,10]+(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,20])*(-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,20])/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,30])))+(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,30])*(-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,20])/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,30])))^2)
+RowanPHCI <- HPDinterval(AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,11]+(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,21])*(-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,21])/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,31])))+(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,31])*(-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,21])/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,31])))^2)
+SycamorePHCI <- HPDinterval(AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,12]+(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,22])*(-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,22])/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,32])))+(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,32])*(-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,22])/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,32])))^2)
+WillowPHCI <- HPDinterval(AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,13]+(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,23])*(-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,23])/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,33])))+(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,33])*(-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,23])/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,33])))^2)
 
-AlderPHdifCI <- HPDinterval(exp(AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,4]+(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,14])*(-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,14])/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,24])))+(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,24])*(-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,14])/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,24])))^2)-exp(AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,2]*(-(AbundTTCurves$Sol[,2])/(2*(AbundTTCurves$Sol[,3])))+AbundTTCurves$Sol[,3]*(-(AbundTTCurves$Sol[,2])/(2*(AbundTTCurves$Sol[,3])))^2))
-AshPHdifCI <- HPDinterval(exp(AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,5]+(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,15])*(-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,15])/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,25])))+(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,25])*(-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,15])/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,25])))^2)-exp(AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,2]*(-(AbundTTCurves$Sol[,2])/(2*(AbundTTCurves$Sol[,3])))+AbundTTCurves$Sol[,3]*(-(AbundTTCurves$Sol[,2])/(2*(AbundTTCurves$Sol[,3])))^2))
-BeechPHdifCI <- HPDinterval(exp(AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,6]+(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,16])*(-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,16])/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,26])))+(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,26])*(-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,16])/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,26])))^2)-exp(AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,2]*(-(AbundTTCurves$Sol[,2])/(2*(AbundTTCurves$Sol[,3])))+AbundTTCurves$Sol[,3]*(-(AbundTTCurves$Sol[,2])/(2*(AbundTTCurves$Sol[,3])))^2))
-BirchPHdifCI <- HPDinterval(exp(AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,7]+(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,17])*(-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,17])/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,27])))+(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,27])*(-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,17])/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,27])))^2)-exp(AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,2]*(-(AbundTTCurves$Sol[,2])/(2*(AbundTTCurves$Sol[,3])))+AbundTTCurves$Sol[,3]*(-(AbundTTCurves$Sol[,2])/(2*(AbundTTCurves$Sol[,3])))^2))
-ElmPHdifCI <- HPDinterval(exp(AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,8]+(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,18])*(-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,18])/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,28])))+(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,28])*(-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,18])/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,28])))^2)-exp(AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,2]*(-(AbundTTCurves$Sol[,2])/(2*(AbundTTCurves$Sol[,3])))+AbundTTCurves$Sol[,3]*(-(AbundTTCurves$Sol[,2])/(2*(AbundTTCurves$Sol[,3])))^2))
-HazelPHdifCI <- HPDinterval(exp(AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,9]+(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,19])*(-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,19])/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,29])))+(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,29])*(-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,19])/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,29])))^2)-exp(AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,2]*(-(AbundTTCurves$Sol[,2])/(2*(AbundTTCurves$Sol[,3])))+AbundTTCurves$Sol[,3]*(-(AbundTTCurves$Sol[,2])/(2*(AbundTTCurves$Sol[,3])))^2))
-OakPHdifCI <- HPDinterval(exp(AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,10]+(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,20])*(-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,20])/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,30])))+(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,30])*(-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,20])/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,30])))^2)-exp(AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,2]*(-(AbundTTCurves$Sol[,2])/(2*(AbundTTCurves$Sol[,3])))+AbundTTCurves$Sol[,3]*(-(AbundTTCurves$Sol[,2])/(2*(AbundTTCurves$Sol[,3])))^2))
-RowanPHdifCI <- HPDinterval(exp(AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,11]+(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,21])*(-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,21])/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,31])))+(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,31])*(-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,21])/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,31])))^2)-exp(AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,2]*(-(AbundTTCurves$Sol[,2])/(2*(AbundTTCurves$Sol[,3])))+AbundTTCurves$Sol[,3]*(-(AbundTTCurves$Sol[,2])/(2*(AbundTTCurves$Sol[,3])))^2))
-SycamorePHdifCI <- HPDinterval(exp(AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,12]+(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,22])*(-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,22])/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,32])))+(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,32])*(-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,22])/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,32])))^2)-exp(AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,2]*(-(AbundTTCurves$Sol[,2])/(2*(AbundTTCurves$Sol[,3])))+AbundTTCurves$Sol[,3]*(-(AbundTTCurves$Sol[,2])/(2*(AbundTTCurves$Sol[,3])))^2))
-WillowPHdifCI <- HPDinterval(exp(AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,13]+(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,23])*(-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,23])/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,33])))+(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,33])*(-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,23])/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,33])))^2)-exp(AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,2]*(-(AbundTTCurves$Sol[,2])/(2*(AbundTTCurves$Sol[,3])))+AbundTTCurves$Sol[,3]*(-(AbundTTCurves$Sol[,2])/(2*(AbundTTCurves$Sol[,3])))^2))
+AlderPHdifCI <- HPDinterval(exp(AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,4]+(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,14])*(-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,14])/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,24])))+(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,24])*(-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,14])/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,24])))^2)-exp(AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,2]*(-(AbundTTCurves3$Sol[,2])/(2*(AbundTTCurves3$Sol[,3])))+AbundTTCurves3$Sol[,3]*(-(AbundTTCurves3$Sol[,2])/(2*(AbundTTCurves3$Sol[,3])))^2))
+AshPHdifCI <- HPDinterval(exp(AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,5]+(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,15])*(-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,15])/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,25])))+(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,25])*(-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,15])/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,25])))^2)-exp(AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,2]*(-(AbundTTCurves3$Sol[,2])/(2*(AbundTTCurves3$Sol[,3])))+AbundTTCurves3$Sol[,3]*(-(AbundTTCurves3$Sol[,2])/(2*(AbundTTCurves3$Sol[,3])))^2))
+BeechPHdifCI <- HPDinterval(exp(AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,6]+(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,16])*(-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,16])/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,26])))+(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,26])*(-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,16])/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,26])))^2)-exp(AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,2]*(-(AbundTTCurves3$Sol[,2])/(2*(AbundTTCurves3$Sol[,3])))+AbundTTCurves3$Sol[,3]*(-(AbundTTCurves3$Sol[,2])/(2*(AbundTTCurves3$Sol[,3])))^2))
+BirchPHdifCI <- HPDinterval(exp(AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,7]+(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,17])*(-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,17])/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,27])))+(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,27])*(-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,17])/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,27])))^2)-exp(AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,2]*(-(AbundTTCurves3$Sol[,2])/(2*(AbundTTCurves3$Sol[,3])))+AbundTTCurves3$Sol[,3]*(-(AbundTTCurves3$Sol[,2])/(2*(AbundTTCurves3$Sol[,3])))^2))
+ElmPHdifCI <- HPDinterval(exp(AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,8]+(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,18])*(-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,18])/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,28])))+(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,28])*(-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,18])/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,28])))^2)-exp(AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,2]*(-(AbundTTCurves3$Sol[,2])/(2*(AbundTTCurves3$Sol[,3])))+AbundTTCurves3$Sol[,3]*(-(AbundTTCurves3$Sol[,2])/(2*(AbundTTCurves3$Sol[,3])))^2))
+HazelPHdifCI <- HPDinterval(exp(AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,9]+(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,19])*(-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,19])/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,29])))+(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,29])*(-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,19])/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,29])))^2)-exp(AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,2]*(-(AbundTTCurves3$Sol[,2])/(2*(AbundTTCurves3$Sol[,3])))+AbundTTCurves3$Sol[,3]*(-(AbundTTCurves3$Sol[,2])/(2*(AbundTTCurves3$Sol[,3])))^2))
+OakPHdifCI <- HPDinterval(exp(AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,10]+(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,20])*(-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,20])/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,30])))+(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,30])*(-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,20])/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,30])))^2)-exp(AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,2]*(-(AbundTTCurves3$Sol[,2])/(2*(AbundTTCurves3$Sol[,3])))+AbundTTCurves3$Sol[,3]*(-(AbundTTCurves3$Sol[,2])/(2*(AbundTTCurves3$Sol[,3])))^2))
+RowanPHdifCI <- HPDinterval(exp(AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,11]+(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,21])*(-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,21])/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,31])))+(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,31])*(-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,21])/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,31])))^2)-exp(AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,2]*(-(AbundTTCurves3$Sol[,2])/(2*(AbundTTCurves3$Sol[,3])))+AbundTTCurves3$Sol[,3]*(-(AbundTTCurves3$Sol[,2])/(2*(AbundTTCurves3$Sol[,3])))^2))
+SycamorePHdifCI <- HPDinterval(exp(AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,12]+(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,22])*(-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,22])/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,32])))+(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,32])*(-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,22])/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,32])))^2)-exp(AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,2]*(-(AbundTTCurves3$Sol[,2])/(2*(AbundTTCurves3$Sol[,3])))+AbundTTCurves3$Sol[,3]*(-(AbundTTCurves3$Sol[,2])/(2*(AbundTTCurves3$Sol[,3])))^2))
+WillowPHdifCI <- HPDinterval(exp(AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,13]+(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,23])*(-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,23])/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,33])))+(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,33])*(-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,23])/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,33])))^2)-exp(AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,2]*(-(AbundTTCurves3$Sol[,2])/(2*(AbundTTCurves3$Sol[,3])))+AbundTTCurves3$Sol[,3]*(-(AbundTTCurves3$Sol[,2])/(2*(AbundTTCurves3$Sol[,3])))^2))
 
 TTcurves <- data.frame(TT=c("Alder", "Ash", "Beech", "Birch", "Elm", "Hazel", "Oak", "Rowan", "Sycamore", "Willow"), 
                        PD=c(mean(AlderCurve$pd),mean(AshCurve$pd),mean(BeechCurve$pd),mean(BirchCurve$pd),mean(ElmCurve$pd),mean(HazelCurve$pd),mean(OakCurve$pd),mean(RowanCurve$pd),mean(SycamoreCurve$pd),mean(WillowCurve$pd)),
@@ -502,83 +529,83 @@ TTcurves <- data.frame(TT=c("Alder", "Ash", "Beech", "Birch", "Elm", "Hazel", "O
 #### Peak Width at 0.01 abundance ####  x= (-b +/- sqrt(b^2 - 4ac))/2a
 ######################################
 
-#Alder.a <- (AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,24])
-#Ash.a <- (AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,25])
-#Beech.a <- (AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,26])
-#Birch.a <- (AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,27])
-#Elm.a <- (AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,28])
-#Hazel.a <- (AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,29])
-#Oak.a <- (AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,30])
-#Rowan.a <- (AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,31])
-#Sycamore.a <- (AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,32])
-#Willow.a <- (AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,33])
+#Alder.a <- (AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,24])
+#Ash.a <- (AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,25])
+#Beech.a <- (AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,26])
+#Birch.a <- (AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,27])
+#Elm.a <- (AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,28])
+#Hazel.a <- (AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,29])
+#Oak.a <- (AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,30])
+#Rowan.a <- (AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,31])
+#Sycamore.a <- (AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,32])
+#Willow.a <- (AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,33])
 
-#Alder.b <- (AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,14])
-#Ash.b <- (AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,15])
-#Beech.b <- (AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,16])
-#Birch.b <- (AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,17])
-#Elm.b <- (AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,18])
-#Hazel.b <- (AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,19])
-#Oak.b <- (AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,20])
-#Rowan.b <- (AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,21])
-#Sycamore.b <- (AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,22])
-#Willow.b <- (AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,23])
+#Alder.b <- (AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,14])
+#Ash.b <- (AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,15])
+#Beech.b <- (AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,16])
+#Birch.b <- (AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,17])
+#Elm.b <- (AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,18])
+#Hazel.b <- (AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,19])
+#Oak.b <- (AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,20])
+#Rowan.b <- (AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,21])
+#Sycamore.b <- (AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,22])
+#Willow.b <- (AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,23])
 
-#Alder.c <- ((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,4])-log(0.01))
-#Ash.c <- ((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,5])-log(0.01))
-#Beech.c <- ((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,6])-log(0.01))
-#Birch.c <- ((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,7])-log(0.01))
-#Elm.c <- ((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,8])-log(0.01))
-#Hazel.c <- ((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,9])-log(0.01))
-#Oak.c <- ((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,10])-log(0.01))
-#Rowan.c <- ((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,11])-log(0.01))
-#Sycamore.c <- ((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,12])-log(0.01))
-#Willow.c <- ((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,13])-log(0.01))
+#Alder.c <- ((AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,4])-log(0.01))
+#Ash.c <- ((AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,5])-log(0.01))
+#Beech.c <- ((AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,6])-log(0.01))
+#Birch.c <- ((AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,7])-log(0.01))
+#Elm.c <- ((AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,8])-log(0.01))
+#Hazel.c <- ((AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,9])-log(0.01))
+#Oak.c <- ((AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,10])-log(0.01))
+#Rowan.c <- ((AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,11])-log(0.01))
+#Sycamore.c <- ((AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,12])-log(0.01))
+#Willow.c <- ((AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,13])-log(0.01))
 
-AlderPW1    <- (-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,14])+sqrt((AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,14])^2-4*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,24])*((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,4])-log(0.01))))/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,24]))
-AlderPW2    <- (-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,14])-sqrt((AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,14])^2-4*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,24])*((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,4])-log(0.01))))/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,24]))
-AshPW1      <- (-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,15])+sqrt((AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,15])^2-4*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,25])*((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,5])-log(0.01))))/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,25]))
-AshPW2      <- (-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,15])-sqrt((AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,15])^2-4*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,25])*((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,5])-log(0.01))))/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,25]))
-BeechPW1    <- (-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,16])+sqrt((AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,16])^2-4*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,26])*((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,6])-log(0.01))))/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,26]))
-BeechPW2    <- (-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,16])-sqrt((AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,16])^2-4*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,26])*((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,6])-log(0.01))))/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,26]))
-BirchPW1    <- (-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,17])+sqrt((AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,17])^2-4*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,27])*((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,7])-log(0.01))))/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,27]))
-BirchPW2    <- (-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,17])-sqrt((AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,17])^2-4*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,27])*((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,7])-log(0.01))))/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,27]))
-ElmPW1      <- (-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,18])+sqrt((AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,18])^2-4*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,28])*((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,8])-log(0.01))))/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,28]))
-ElmPW2      <- (-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,18])-sqrt((AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,18])^2-4*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,28])*((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,8])-log(0.01))))/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,28]))
-HazelPW1    <- (-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,19])+sqrt((AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,19])^2-4*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,29])*((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,9])-log(0.01))))/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,29]))
-HazelPW2    <- (-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,19])-sqrt((AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,19])^2-4*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,29])*((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,9])-log(0.01))))/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,29]))
-OakPW1      <- (-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,20])+sqrt((AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,20])^2-4*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,30])*((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,10])-log(0.01))))/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,30]))
-OakPW2      <- (-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,20])-sqrt((AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,20])^2-4*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,30])*((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,10])-log(0.01))))/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,30]))
-RowanPW1    <- (-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,21])+sqrt((AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,21])^2-4*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,31])*((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,11])-log(0.01))))/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,31]))
-RowanPW2    <- (-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,21])-sqrt((AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,21])^2-4*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,31])*((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,11])-log(0.01))))/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,31]))
-SycamorePW1 <- (-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,22])+sqrt((AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,22])^2-4*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,32])*((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,12])-log(0.01))))/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,32]))
-SycamorePW2 <- (-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,22])-sqrt((AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,22])^2-4*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,32])*((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,12])-log(0.01))))/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,32]))
-WillowPW1   <- (-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,23])+sqrt((AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,23])^2-4*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,33])*((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,13])-log(0.01))))/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,33]))
-WillowPW2   <- (-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,23])-sqrt((AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,23])^2-4*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,33])*((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,13])-log(0.01))))/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,33]))
+AlderPW1    <- (-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,14])+sqrt((AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,14])^2-4*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,24])*((AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,4])-log(0.01))))/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,24]))
+AlderPW2    <- (-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,14])-sqrt((AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,14])^2-4*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,24])*((AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,4])-log(0.01))))/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,24]))
+AshPW1      <- (-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,15])+sqrt((AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,15])^2-4*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,25])*((AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,5])-log(0.01))))/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,25]))
+AshPW2      <- (-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,15])-sqrt((AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,15])^2-4*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,25])*((AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,5])-log(0.01))))/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,25]))
+BeechPW1    <- (-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,16])+sqrt((AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,16])^2-4*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,26])*((AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,6])-log(0.01))))/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,26]))
+BeechPW2    <- (-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,16])-sqrt((AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,16])^2-4*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,26])*((AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,6])-log(0.01))))/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,26]))
+BirchPW1    <- (-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,17])+sqrt((AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,17])^2-4*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,27])*((AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,7])-log(0.01))))/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,27]))
+BirchPW2    <- (-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,17])-sqrt((AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,17])^2-4*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,27])*((AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,7])-log(0.01))))/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,27]))
+ElmPW1      <- (-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,18])+sqrt((AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,18])^2-4*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,28])*((AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,8])-log(0.01))))/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,28]))
+ElmPW2      <- (-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,18])-sqrt((AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,18])^2-4*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,28])*((AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,8])-log(0.01))))/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,28]))
+HazelPW1    <- (-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,19])+sqrt((AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,19])^2-4*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,29])*((AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,9])-log(0.01))))/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,29]))
+HazelPW2    <- (-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,19])-sqrt((AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,19])^2-4*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,29])*((AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,9])-log(0.01))))/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,29]))
+OakPW1      <- (-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,20])+sqrt((AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,20])^2-4*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,30])*((AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,10])-log(0.01))))/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,30]))
+OakPW2      <- (-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,20])-sqrt((AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,20])^2-4*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,30])*((AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,10])-log(0.01))))/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,30]))
+RowanPW1    <- (-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,21])+sqrt((AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,21])^2-4*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,31])*((AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,11])-log(0.01))))/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,31]))
+RowanPW2    <- (-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,21])-sqrt((AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,21])^2-4*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,31])*((AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,11])-log(0.01))))/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,31]))
+SycamorePW1 <- (-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,22])+sqrt((AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,22])^2-4*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,32])*((AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,12])-log(0.01))))/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,32]))
+SycamorePW2 <- (-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,22])-sqrt((AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,22])^2-4*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,32])*((AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,12])-log(0.01))))/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,32]))
+WillowPW1   <- (-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,23])+sqrt((AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,23])^2-4*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,33])*((AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,13])-log(0.01))))/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,33]))
+WillowPW2   <- (-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,23])-sqrt((AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,23])^2-4*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,33])*((AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,13])-log(0.01))))/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,33]))
 
-MeanPW1    <- (-(AbundTTCurves$Sol[,2])+sqrt((AbundTTCurves$Sol[,2])^2-4*(AbundTTCurves$Sol[,3])*((AbundTTCurves$Sol[,1])-log(0.01))))/(2*(AbundTTCurves$Sol[,3]))
-MeanPW2    <- (-(AbundTTCurves$Sol[,2])-sqrt((AbundTTCurves$Sol[,2])^2-4*(AbundTTCurves$Sol[,3])*((AbundTTCurves$Sol[,1])-log(0.01))))/(2*(AbundTTCurves$Sol[,3]))
+MeanPW1    <- (-(AbundTTCurves3$Sol[,2])+sqrt((AbundTTCurves3$Sol[,2])^2-4*(AbundTTCurves3$Sol[,3])*((AbundTTCurves3$Sol[,1])-log(0.01))))/(2*(AbundTTCurves3$Sol[,3]))
+MeanPW2    <- (-(AbundTTCurves3$Sol[,2])-sqrt((AbundTTCurves3$Sol[,2])^2-4*(AbundTTCurves3$Sol[,3])*((AbundTTCurves3$Sol[,1])-log(0.01))))/(2*(AbundTTCurves3$Sol[,3]))
 
-AlderPW1dif    <- (-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,14])+sqrt((AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,14])^2-4*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,24])*((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,4])-log(0.01))))/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,24]))-(-(AbundTTCurves$Sol[,2])+sqrt((AbundTTCurves$Sol[,2])^2-4*(AbundTTCurves$Sol[,3])*((AbundTTCurves$Sol[,1])-log(0.01))))/(2*(AbundTTCurves$Sol[,3]))
-AlderPW2dif    <- (-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,14])-sqrt((AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,14])^2-4*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,24])*((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,4])-log(0.01))))/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,24]))-(-(AbundTTCurves$Sol[,2])-sqrt((AbundTTCurves$Sol[,2])^2-4*(AbundTTCurves$Sol[,3])*((AbundTTCurves$Sol[,1])-log(0.01))))/(2*(AbundTTCurves$Sol[,3]))
-AshPW1dif      <- (-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,15])+sqrt((AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,15])^2-4*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,25])*((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,5])-log(0.01))))/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,25]))-(-(AbundTTCurves$Sol[,2])+sqrt((AbundTTCurves$Sol[,2])^2-4*(AbundTTCurves$Sol[,3])*((AbundTTCurves$Sol[,1])-log(0.01))))/(2*(AbundTTCurves$Sol[,3]))
-AshPW2dif      <- (-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,15])-sqrt((AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,15])^2-4*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,25])*((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,5])-log(0.01))))/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,25]))-(-(AbundTTCurves$Sol[,2])-sqrt((AbundTTCurves$Sol[,2])^2-4*(AbundTTCurves$Sol[,3])*((AbundTTCurves$Sol[,1])-log(0.01))))/(2*(AbundTTCurves$Sol[,3]))
-BeechPW1dif    <- (-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,16])+sqrt((AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,16])^2-4*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,26])*((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,6])-log(0.01))))/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,26]))-(-(AbundTTCurves$Sol[,2])+sqrt((AbundTTCurves$Sol[,2])^2-4*(AbundTTCurves$Sol[,3])*((AbundTTCurves$Sol[,1])-log(0.01))))/(2*(AbundTTCurves$Sol[,3]))
-BeechPW2dif    <- (-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,16])-sqrt((AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,16])^2-4*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,26])*((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,6])-log(0.01))))/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,26]))-(-(AbundTTCurves$Sol[,2])-sqrt((AbundTTCurves$Sol[,2])^2-4*(AbundTTCurves$Sol[,3])*((AbundTTCurves$Sol[,1])-log(0.01))))/(2*(AbundTTCurves$Sol[,3]))
-BirchPW1dif    <- (-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,17])+sqrt((AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,17])^2-4*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,27])*((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,7])-log(0.01))))/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,27]))-(-(AbundTTCurves$Sol[,2])+sqrt((AbundTTCurves$Sol[,2])^2-4*(AbundTTCurves$Sol[,3])*((AbundTTCurves$Sol[,1])-log(0.01))))/(2*(AbundTTCurves$Sol[,3]))
-BirchPW2dif    <- (-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,17])-sqrt((AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,17])^2-4*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,27])*((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,7])-log(0.01))))/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,27]))-(-(AbundTTCurves$Sol[,2])-sqrt((AbundTTCurves$Sol[,2])^2-4*(AbundTTCurves$Sol[,3])*((AbundTTCurves$Sol[,1])-log(0.01))))/(2*(AbundTTCurves$Sol[,3]))
-ElmPW1dif      <- (-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,18])+sqrt((AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,18])^2-4*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,28])*((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,8])-log(0.01))))/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,28]))-(-(AbundTTCurves$Sol[,2])+sqrt((AbundTTCurves$Sol[,2])^2-4*(AbundTTCurves$Sol[,3])*((AbundTTCurves$Sol[,1])-log(0.01))))/(2*(AbundTTCurves$Sol[,3]))
-ElmPW2dif      <- (-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,18])-sqrt((AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,18])^2-4*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,28])*((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,8])-log(0.01))))/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,28]))-(-(AbundTTCurves$Sol[,2])-sqrt((AbundTTCurves$Sol[,2])^2-4*(AbundTTCurves$Sol[,3])*((AbundTTCurves$Sol[,1])-log(0.01))))/(2*(AbundTTCurves$Sol[,3]))
-HazelPW1dif    <- (-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,19])+sqrt((AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,19])^2-4*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,29])*((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,9])-log(0.01))))/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,29]))-(-(AbundTTCurves$Sol[,2])+sqrt((AbundTTCurves$Sol[,2])^2-4*(AbundTTCurves$Sol[,3])*((AbundTTCurves$Sol[,1])-log(0.01))))/(2*(AbundTTCurves$Sol[,3]))
-HazelPW2dif    <- (-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,19])-sqrt((AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,19])^2-4*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,29])*((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,9])-log(0.01))))/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,29]))-(-(AbundTTCurves$Sol[,2])-sqrt((AbundTTCurves$Sol[,2])^2-4*(AbundTTCurves$Sol[,3])*((AbundTTCurves$Sol[,1])-log(0.01))))/(2*(AbundTTCurves$Sol[,3]))
-OakPW1dif      <- (-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,20])+sqrt((AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,20])^2-4*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,30])*((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,10])-log(0.01))))/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,30]))-(-(AbundTTCurves$Sol[,2])+sqrt((AbundTTCurves$Sol[,2])^2-4*(AbundTTCurves$Sol[,3])*((AbundTTCurves$Sol[,1])-log(0.01))))/(2*(AbundTTCurves$Sol[,3]))
-OakPW2dif      <- (-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,20])-sqrt((AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,20])^2-4*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,30])*((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,10])-log(0.01))))/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,30]))-(-(AbundTTCurves$Sol[,2])-sqrt((AbundTTCurves$Sol[,2])^2-4*(AbundTTCurves$Sol[,3])*((AbundTTCurves$Sol[,1])-log(0.01))))/(2*(AbundTTCurves$Sol[,3]))
-RowanPW1dif    <- (-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,21])+sqrt((AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,21])^2-4*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,31])*((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,11])-log(0.01))))/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,31]))-(-(AbundTTCurves$Sol[,2])+sqrt((AbundTTCurves$Sol[,2])^2-4*(AbundTTCurves$Sol[,3])*((AbundTTCurves$Sol[,1])-log(0.01))))/(2*(AbundTTCurves$Sol[,3]))
-RowanPW2dif    <- (-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,21])-sqrt((AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,21])^2-4*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,31])*((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,11])-log(0.01))))/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,31]))-(-(AbundTTCurves$Sol[,2])-sqrt((AbundTTCurves$Sol[,2])^2-4*(AbundTTCurves$Sol[,3])*((AbundTTCurves$Sol[,1])-log(0.01))))/(2*(AbundTTCurves$Sol[,3]))
-SycamorePW1dif <- (-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,22])+sqrt((AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,22])^2-4*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,32])*((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,12])-log(0.01))))/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,32]))-(-(AbundTTCurves$Sol[,2])+sqrt((AbundTTCurves$Sol[,2])^2-4*(AbundTTCurves$Sol[,3])*((AbundTTCurves$Sol[,1])-log(0.01))))/(2*(AbundTTCurves$Sol[,3]))
-SycamorePW2dif <- (-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,22])-sqrt((AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,22])^2-4*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,32])*((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,12])-log(0.01))))/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,32]))-(-(AbundTTCurves$Sol[,2])-sqrt((AbundTTCurves$Sol[,2])^2-4*(AbundTTCurves$Sol[,3])*((AbundTTCurves$Sol[,1])-log(0.01))))/(2*(AbundTTCurves$Sol[,3]))
-WillowPW1dif   <- (-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,23])+sqrt((AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,23])^2-4*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,33])*((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,13])-log(0.01))))/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,33]))-(-(AbundTTCurves$Sol[,2])+sqrt((AbundTTCurves$Sol[,2])^2-4*(AbundTTCurves$Sol[,3])*((AbundTTCurves$Sol[,1])-log(0.01))))/(2*(AbundTTCurves$Sol[,3]))
-WillowPW2dif   <- (-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,23])-sqrt((AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,23])^2-4*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,33])*((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,13])-log(0.01))))/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,33]))-(-(AbundTTCurves$Sol[,2])-sqrt((AbundTTCurves$Sol[,2])^2-4*(AbundTTCurves$Sol[,3])*((AbundTTCurves$Sol[,1])-log(0.01))))/(2*(AbundTTCurves$Sol[,3]))
+AlderPW1dif    <- (-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,14])+sqrt((AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,14])^2-4*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,24])*((AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,4])-log(0.01))))/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,24]))-(-(AbundTTCurves3$Sol[,2])+sqrt((AbundTTCurves3$Sol[,2])^2-4*(AbundTTCurves3$Sol[,3])*((AbundTTCurves3$Sol[,1])-log(0.01))))/(2*(AbundTTCurves3$Sol[,3]))
+AlderPW2dif    <- (-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,14])-sqrt((AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,14])^2-4*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,24])*((AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,4])-log(0.01))))/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,24]))-(-(AbundTTCurves3$Sol[,2])-sqrt((AbundTTCurves3$Sol[,2])^2-4*(AbundTTCurves3$Sol[,3])*((AbundTTCurves3$Sol[,1])-log(0.01))))/(2*(AbundTTCurves3$Sol[,3]))
+AshPW1dif      <- (-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,15])+sqrt((AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,15])^2-4*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,25])*((AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,5])-log(0.01))))/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,25]))-(-(AbundTTCurves3$Sol[,2])+sqrt((AbundTTCurves3$Sol[,2])^2-4*(AbundTTCurves3$Sol[,3])*((AbundTTCurves3$Sol[,1])-log(0.01))))/(2*(AbundTTCurves3$Sol[,3]))
+AshPW2dif      <- (-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,15])-sqrt((AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,15])^2-4*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,25])*((AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,5])-log(0.01))))/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,25]))-(-(AbundTTCurves3$Sol[,2])-sqrt((AbundTTCurves3$Sol[,2])^2-4*(AbundTTCurves3$Sol[,3])*((AbundTTCurves3$Sol[,1])-log(0.01))))/(2*(AbundTTCurves3$Sol[,3]))
+BeechPW1dif    <- (-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,16])+sqrt((AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,16])^2-4*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,26])*((AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,6])-log(0.01))))/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,26]))-(-(AbundTTCurves3$Sol[,2])+sqrt((AbundTTCurves3$Sol[,2])^2-4*(AbundTTCurves3$Sol[,3])*((AbundTTCurves3$Sol[,1])-log(0.01))))/(2*(AbundTTCurves3$Sol[,3]))
+BeechPW2dif    <- (-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,16])-sqrt((AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,16])^2-4*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,26])*((AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,6])-log(0.01))))/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,26]))-(-(AbundTTCurves3$Sol[,2])-sqrt((AbundTTCurves3$Sol[,2])^2-4*(AbundTTCurves3$Sol[,3])*((AbundTTCurves3$Sol[,1])-log(0.01))))/(2*(AbundTTCurves3$Sol[,3]))
+BirchPW1dif    <- (-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,17])+sqrt((AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,17])^2-4*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,27])*((AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,7])-log(0.01))))/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,27]))-(-(AbundTTCurves3$Sol[,2])+sqrt((AbundTTCurves3$Sol[,2])^2-4*(AbundTTCurves3$Sol[,3])*((AbundTTCurves3$Sol[,1])-log(0.01))))/(2*(AbundTTCurves3$Sol[,3]))
+BirchPW2dif    <- (-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,17])-sqrt((AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,17])^2-4*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,27])*((AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,7])-log(0.01))))/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,27]))-(-(AbundTTCurves3$Sol[,2])-sqrt((AbundTTCurves3$Sol[,2])^2-4*(AbundTTCurves3$Sol[,3])*((AbundTTCurves3$Sol[,1])-log(0.01))))/(2*(AbundTTCurves3$Sol[,3]))
+ElmPW1dif      <- (-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,18])+sqrt((AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,18])^2-4*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,28])*((AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,8])-log(0.01))))/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,28]))-(-(AbundTTCurves3$Sol[,2])+sqrt((AbundTTCurves3$Sol[,2])^2-4*(AbundTTCurves3$Sol[,3])*((AbundTTCurves3$Sol[,1])-log(0.01))))/(2*(AbundTTCurves3$Sol[,3]))
+ElmPW2dif      <- (-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,18])-sqrt((AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,18])^2-4*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,28])*((AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,8])-log(0.01))))/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,28]))-(-(AbundTTCurves3$Sol[,2])-sqrt((AbundTTCurves3$Sol[,2])^2-4*(AbundTTCurves3$Sol[,3])*((AbundTTCurves3$Sol[,1])-log(0.01))))/(2*(AbundTTCurves3$Sol[,3]))
+HazelPW1dif    <- (-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,19])+sqrt((AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,19])^2-4*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,29])*((AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,9])-log(0.01))))/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,29]))-(-(AbundTTCurves3$Sol[,2])+sqrt((AbundTTCurves3$Sol[,2])^2-4*(AbundTTCurves3$Sol[,3])*((AbundTTCurves3$Sol[,1])-log(0.01))))/(2*(AbundTTCurves3$Sol[,3]))
+HazelPW2dif    <- (-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,19])-sqrt((AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,19])^2-4*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,29])*((AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,9])-log(0.01))))/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,29]))-(-(AbundTTCurves3$Sol[,2])-sqrt((AbundTTCurves3$Sol[,2])^2-4*(AbundTTCurves3$Sol[,3])*((AbundTTCurves3$Sol[,1])-log(0.01))))/(2*(AbundTTCurves3$Sol[,3]))
+OakPW1dif      <- (-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,20])+sqrt((AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,20])^2-4*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,30])*((AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,10])-log(0.01))))/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,30]))-(-(AbundTTCurves3$Sol[,2])+sqrt((AbundTTCurves3$Sol[,2])^2-4*(AbundTTCurves3$Sol[,3])*((AbundTTCurves3$Sol[,1])-log(0.01))))/(2*(AbundTTCurves3$Sol[,3]))
+OakPW2dif      <- (-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,20])-sqrt((AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,20])^2-4*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,30])*((AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,10])-log(0.01))))/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,30]))-(-(AbundTTCurves3$Sol[,2])-sqrt((AbundTTCurves3$Sol[,2])^2-4*(AbundTTCurves3$Sol[,3])*((AbundTTCurves3$Sol[,1])-log(0.01))))/(2*(AbundTTCurves3$Sol[,3]))
+RowanPW1dif    <- (-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,21])+sqrt((AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,21])^2-4*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,31])*((AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,11])-log(0.01))))/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,31]))-(-(AbundTTCurves3$Sol[,2])+sqrt((AbundTTCurves3$Sol[,2])^2-4*(AbundTTCurves3$Sol[,3])*((AbundTTCurves3$Sol[,1])-log(0.01))))/(2*(AbundTTCurves3$Sol[,3]))
+RowanPW2dif    <- (-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,21])-sqrt((AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,21])^2-4*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,31])*((AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,11])-log(0.01))))/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,31]))-(-(AbundTTCurves3$Sol[,2])-sqrt((AbundTTCurves3$Sol[,2])^2-4*(AbundTTCurves3$Sol[,3])*((AbundTTCurves3$Sol[,1])-log(0.01))))/(2*(AbundTTCurves3$Sol[,3]))
+SycamorePW1dif <- (-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,22])+sqrt((AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,22])^2-4*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,32])*((AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,12])-log(0.01))))/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,32]))-(-(AbundTTCurves3$Sol[,2])+sqrt((AbundTTCurves3$Sol[,2])^2-4*(AbundTTCurves3$Sol[,3])*((AbundTTCurves3$Sol[,1])-log(0.01))))/(2*(AbundTTCurves3$Sol[,3]))
+SycamorePW2dif <- (-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,22])-sqrt((AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,22])^2-4*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,32])*((AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,12])-log(0.01))))/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,32]))-(-(AbundTTCurves3$Sol[,2])-sqrt((AbundTTCurves3$Sol[,2])^2-4*(AbundTTCurves3$Sol[,3])*((AbundTTCurves3$Sol[,1])-log(0.01))))/(2*(AbundTTCurves3$Sol[,3]))
+WillowPW1dif   <- (-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,23])+sqrt((AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,23])^2-4*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,33])*((AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,13])-log(0.01))))/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,33]))-(-(AbundTTCurves3$Sol[,2])+sqrt((AbundTTCurves3$Sol[,2])^2-4*(AbundTTCurves3$Sol[,3])*((AbundTTCurves3$Sol[,1])-log(0.01))))/(2*(AbundTTCurves3$Sol[,3]))
+WillowPW2dif   <- (-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,23])-sqrt((AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,23])^2-4*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,33])*((AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,13])-log(0.01))))/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,33]))-(-(AbundTTCurves3$Sol[,2])-sqrt((AbundTTCurves3$Sol[,2])^2-4*(AbundTTCurves3$Sol[,3])*((AbundTTCurves3$Sol[,1])-log(0.01))))/(2*(AbundTTCurves3$Sol[,3]))
 
 #### NaNs in Ash and Mean !
 
@@ -630,29 +657,29 @@ TTcurves <- data.frame(TT=c("Alder", "Ash", "Beech", "Birch", "Elm", "Hazel", "O
 
 #### Peak Width at 0.5 height ####
 
-AlderPW1.5    <- (-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,14])+sqrt((AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,14])^2-4*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,24])*((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,4])-log(exp(AlderCurve$ph)/2))))/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,24]))
-AlderPW2.5    <- (-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,14])-sqrt((AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,14])^2-4*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,24])*((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,4])-log(exp(AlderCurve$ph)/2))))/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,24]))
-AshPW1.5      <- (-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,15])+sqrt((AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,15])^2-4*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,25])*((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,5])-log(exp(AshCurve$ph)/2))))/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,25]))
-AshPW2.5      <- (-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,15])-sqrt((AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,15])^2-4*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,25])*((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,5])-log(exp(AshCurve$ph)/2))))/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,25]))
-BeechPW1.5    <- (-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,16])+sqrt((AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,16])^2-4*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,26])*((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,6])-log(exp(BeechCurve$ph)/2))))/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,26]))
-BeechPW2.5    <- (-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,16])-sqrt((AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,16])^2-4*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,26])*((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,6])-log(exp(BeechCurve$ph)/2))))/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,26]))
-BirchPW1.5    <- (-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,17])+sqrt((AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,17])^2-4*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,27])*((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,7])-log(exp(BirchCurve$ph)/2))))/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,27]))
-BirchPW2.5    <- (-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,17])-sqrt((AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,17])^2-4*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,27])*((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,7])-log(exp(BirchCurve$ph)/2))))/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,27]))
-ElmPW1.5      <- (-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,18])+sqrt((AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,18])^2-4*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,28])*((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,8])-log(exp(ElmCurve$ph)/2))))/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,28]))
-ElmPW2.5      <- (-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,18])-sqrt((AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,18])^2-4*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,28])*((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,8])-log(exp(ElmCurve$ph)/2))))/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,28]))
-HazelPW1.5    <- (-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,19])+sqrt((AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,19])^2-4*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,29])*((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,9])-log(exp(HazelCurve$ph)/2))))/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,29]))
-HazelPW2.5    <- (-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,19])-sqrt((AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,19])^2-4*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,29])*((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,9])-log(exp(HazelCurve$ph)/2))))/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,29]))
-OakPW1.5      <- (-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,20])+sqrt((AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,20])^2-4*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,30])*((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,10])-log(exp(OakCurve$ph)/2))))/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,30]))
-OakPW2.5      <- (-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,20])-sqrt((AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,20])^2-4*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,30])*((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,10])-log(exp(OakCurve$ph)/2))))/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,30]))
-RowanPW1.5    <- (-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,21])+sqrt((AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,21])^2-4*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,31])*((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,11])-log(exp(RowanCurve$ph)/2))))/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,31]))
-RowanPW2.5    <- (-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,21])-sqrt((AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,21])^2-4*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,31])*((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,11])-log(exp(RowanCurve$ph)/2))))/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,31]))
-SycamorePW1.5 <- (-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,22])+sqrt((AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,22])^2-4*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,32])*((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,12])-log(exp(SycamoreCurve$ph)/2))))/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,32]))
-SycamorePW2.5 <- (-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,22])-sqrt((AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,22])^2-4*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,32])*((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,12])-log(exp(SycamoreCurve$ph)/2))))/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,32]))
-WillowPW1.5   <- (-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,23])+sqrt((AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,23])^2-4*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,33])*((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,13])-log(exp(WillowCurve$ph)/2))))/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,33]))
-WillowPW2.5   <- (-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,23])-sqrt((AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,23])^2-4*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,33])*((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,13])-log(exp(WillowCurve$ph)/2))))/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,33]))
+AlderPW1.5    <- (-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,14])+sqrt((AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,14])^2-4*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,24])*((AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,4])-log(exp(AlderCurve$ph)/2))))/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,24]))
+AlderPW2.5    <- (-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,14])-sqrt((AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,14])^2-4*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,24])*((AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,4])-log(exp(AlderCurve$ph)/2))))/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,24]))
+AshPW1.5      <- (-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,15])+sqrt((AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,15])^2-4*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,25])*((AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,5])-log(exp(AshCurve$ph)/2))))/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,25]))
+AshPW2.5      <- (-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,15])-sqrt((AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,15])^2-4*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,25])*((AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,5])-log(exp(AshCurve$ph)/2))))/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,25]))
+BeechPW1.5    <- (-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,16])+sqrt((AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,16])^2-4*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,26])*((AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,6])-log(exp(BeechCurve$ph)/2))))/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,26]))
+BeechPW2.5    <- (-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,16])-sqrt((AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,16])^2-4*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,26])*((AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,6])-log(exp(BeechCurve$ph)/2))))/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,26]))
+BirchPW1.5    <- (-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,17])+sqrt((AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,17])^2-4*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,27])*((AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,7])-log(exp(BirchCurve$ph)/2))))/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,27]))
+BirchPW2.5    <- (-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,17])-sqrt((AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,17])^2-4*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,27])*((AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,7])-log(exp(BirchCurve$ph)/2))))/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,27]))
+ElmPW1.5      <- (-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,18])+sqrt((AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,18])^2-4*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,28])*((AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,8])-log(exp(ElmCurve$ph)/2))))/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,28]))
+ElmPW2.5      <- (-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,18])-sqrt((AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,18])^2-4*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,28])*((AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,8])-log(exp(ElmCurve$ph)/2))))/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,28]))
+HazelPW1.5    <- (-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,19])+sqrt((AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,19])^2-4*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,29])*((AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,9])-log(exp(HazelCurve$ph)/2))))/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,29]))
+HazelPW2.5    <- (-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,19])-sqrt((AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,19])^2-4*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,29])*((AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,9])-log(exp(HazelCurve$ph)/2))))/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,29]))
+OakPW1.5      <- (-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,20])+sqrt((AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,20])^2-4*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,30])*((AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,10])-log(exp(OakCurve$ph)/2))))/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,30]))
+OakPW2.5      <- (-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,20])-sqrt((AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,20])^2-4*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,30])*((AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,10])-log(exp(OakCurve$ph)/2))))/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,30]))
+RowanPW1.5    <- (-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,21])+sqrt((AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,21])^2-4*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,31])*((AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,11])-log(exp(RowanCurve$ph)/2))))/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,31]))
+RowanPW2.5    <- (-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,21])-sqrt((AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,21])^2-4*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,31])*((AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,11])-log(exp(RowanCurve$ph)/2))))/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,31]))
+SycamorePW1.5 <- (-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,22])+sqrt((AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,22])^2-4*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,32])*((AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,12])-log(exp(SycamoreCurve$ph)/2))))/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,32]))
+SycamorePW2.5 <- (-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,22])-sqrt((AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,22])^2-4*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,32])*((AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,12])-log(exp(SycamoreCurve$ph)/2))))/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,32]))
+WillowPW1.5   <- (-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,23])+sqrt((AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,23])^2-4*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,33])*((AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,13])-log(exp(WillowCurve$ph)/2))))/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,33]))
+WillowPW2.5   <- (-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,23])-sqrt((AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,23])^2-4*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,33])*((AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,13])-log(exp(WillowCurve$ph)/2))))/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,33]))
 
-MeanPW1.5    <- (-(AbundTTCurves$Sol[,2])+sqrt((AbundTTCurves$Sol[,2])^2-4*(AbundTTCurves$Sol[,3])*((AbundTTCurves$Sol[,1])-log(exp(meanPH)/2))))/(2*(AbundTTCurves$Sol[,3]))
-MeanPW2.5    <- (-(AbundTTCurves$Sol[,2])-sqrt((AbundTTCurves$Sol[,2])^2-4*(AbundTTCurves$Sol[,3])*((AbundTTCurves$Sol[,1])-log(exp(meanPH)/2))))/(2*(AbundTTCurves$Sol[,3]))
+MeanPW1.5    <- (-(AbundTTCurves3$Sol[,2])+sqrt((AbundTTCurves3$Sol[,2])^2-4*(AbundTTCurves3$Sol[,3])*((AbundTTCurves3$Sol[,1])-log(exp(meanPH)/2))))/(2*(AbundTTCurves3$Sol[,3]))
+MeanPW2.5    <- (-(AbundTTCurves3$Sol[,2])-sqrt((AbundTTCurves3$Sol[,2])^2-4*(AbundTTCurves3$Sol[,3])*((AbundTTCurves3$Sol[,1])-log(exp(meanPH)/2))))/(2*(AbundTTCurves3$Sol[,3]))
 
 TTcurves2 <- data.frame(TT=c("Alder", "Ash", "Beech", "Birch", "Elm", "Hazel", "Oak", "Rowan", "Sycamore", "Willow"), 
                        PD=c(mean(AlderCurve$pd),mean(AshCurve$pd),mean(BeechCurve$pd),mean(BirchCurve$pd),mean(ElmCurve$pd),mean(HazelCurve$pd),mean(OakCurve$pd),mean(RowanCurve$pd),mean(SycamoreCurve$pd),mean(WillowCurve$pd)),
@@ -684,7 +711,7 @@ TTcurves2 <- data.frame(TT=c("Alder", "Ash", "Beech", "Birch", "Elm", "Hazel", "
 #### Curves in ggplot ####
 ##########################
 dayscal <- seq(0.67,1,0.001)
-curve <- mean(AbundTTCurves$Sol[,1])+mean(AbundTTCurves$Sol[,2])*dayscal+mean(AbundTTCurves$Sol[,3])*dayscal^2
+curve <- mean(AbundTTCurves3$Sol[,1])+mean(AbundTTCurves3$Sol[,2])*dayscal+mean(AbundTTCurves3$Sol[,3])*dayscal^2
 days <- dayscal*max(cater_habitat$date)
 TTlines <- data.frame(dayscal=seq(0.67,1,0.001))
 TTlines$days <- TTlines$dayscal*max(cater_habitat$date)
@@ -901,26 +928,26 @@ RowanphOD <- exp(RowanCurve$a*RowanCurve$pd^2+RowanCurve$b*RowanCurve$pd+RowanCu
 SycamorephOD <- exp(SycamoreCurve$a*SycamoreCurve$pd^2+SycamoreCurve$b*SycamoreCurve$pd+SycamoreCurve$c)-exp(OakCurve$a*OakCurve$pd^2+OakCurve$b*OakCurve$pd+OakCurve$c)
 WillowphOD <- exp(WillowCurve$a*WillowCurve$pd^2+WillowCurve$b*WillowCurve$pd+WillowCurve$c)-exp(OakCurve$a*OakCurve$pd^2+OakCurve$b*OakCurve$pd+OakCurve$c)
 
-AlderPW1    <- (-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,14])+sqrt((AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,14])^2-4*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,24])*((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,4])-log(0.01))))/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,24]))
-AlderPW2    <- (-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,14])-sqrt((AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,14])^2-4*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,24])*((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,4])-log(0.01))))/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,24]))
-AshPW1      <- (-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,15])+sqrt((AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,15])^2-4*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,25])*((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,5])-log(0.01))))/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,25]))
-AshPW2      <- (-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,15])-sqrt((AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,15])^2-4*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,25])*((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,5])-log(0.01))))/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,25]))
-BeechPW1    <- (-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,16])+sqrt((AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,16])^2-4*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,26])*((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,6])-log(0.01))))/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,26]))
-BeechPW2    <- (-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,16])-sqrt((AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,16])^2-4*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,26])*((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,6])-log(0.01))))/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,26]))
-BirchPW1    <- (-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,17])+sqrt((AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,17])^2-4*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,27])*((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,7])-log(0.01))))/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,27]))
-BirchPW2    <- (-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,17])-sqrt((AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,17])^2-4*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,27])*((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,7])-log(0.01))))/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,27]))
-ElmPW1      <- (-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,18])+sqrt((AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,18])^2-4*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,28])*((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,8])-log(0.01))))/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,28]))
-ElmPW2      <- (-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,18])-sqrt((AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,18])^2-4*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,28])*((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,8])-log(0.01))))/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,28]))
-HazelPW1    <- (-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,19])+sqrt((AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,19])^2-4*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,29])*((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,9])-log(0.01))))/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,29]))
-HazelPW2    <- (-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,19])-sqrt((AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,19])^2-4*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,29])*((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,9])-log(0.01))))/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,29]))
-OakPW1      <- (-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,20])+sqrt((AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,20])^2-4*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,30])*((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,10])-log(0.01))))/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,30]))
-OakPW2      <- (-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,20])-sqrt((AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,20])^2-4*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,30])*((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,10])-log(0.01))))/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,30]))
-RowanPW1    <- (-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,21])+sqrt((AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,21])^2-4*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,31])*((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,11])-log(0.01))))/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,31]))
-RowanPW2    <- (-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,21])-sqrt((AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,21])^2-4*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,31])*((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,11])-log(0.01))))/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,31]))
-SycamorePW1 <- (-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,22])+sqrt((AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,22])^2-4*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,32])*((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,12])-log(0.01))))/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,32]))
-SycamorePW2 <- (-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,22])-sqrt((AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,22])^2-4*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,32])*((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,12])-log(0.01))))/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,32]))
-WillowPW1   <- (-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,23])+sqrt((AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,23])^2-4*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,33])*((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,13])-log(0.01))))/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,33]))
-WillowPW2   <- (-(AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,23])-sqrt((AbundTTCurves$Sol[,2]+AbundTTCurves$Sol[,23])^2-4*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,33])*((AbundTTCurves$Sol[,1]+AbundTTCurves$Sol[,13])-log(0.01))))/(2*(AbundTTCurves$Sol[,3]+AbundTTCurves$Sol[,33]))
+AlderPW1    <- (-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,14])+sqrt((AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,14])^2-4*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,24])*((AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,4])-log(0.01))))/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,24]))
+AlderPW2    <- (-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,14])-sqrt((AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,14])^2-4*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,24])*((AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,4])-log(0.01))))/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,24]))
+AshPW1      <- (-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,15])+sqrt((AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,15])^2-4*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,25])*((AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,5])-log(0.01))))/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,25]))
+AshPW2      <- (-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,15])-sqrt((AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,15])^2-4*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,25])*((AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,5])-log(0.01))))/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,25]))
+BeechPW1    <- (-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,16])+sqrt((AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,16])^2-4*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,26])*((AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,6])-log(0.01))))/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,26]))
+BeechPW2    <- (-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,16])-sqrt((AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,16])^2-4*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,26])*((AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,6])-log(0.01))))/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,26]))
+BirchPW1    <- (-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,17])+sqrt((AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,17])^2-4*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,27])*((AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,7])-log(0.01))))/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,27]))
+BirchPW2    <- (-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,17])-sqrt((AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,17])^2-4*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,27])*((AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,7])-log(0.01))))/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,27]))
+ElmPW1      <- (-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,18])+sqrt((AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,18])^2-4*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,28])*((AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,8])-log(0.01))))/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,28]))
+ElmPW2      <- (-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,18])-sqrt((AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,18])^2-4*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,28])*((AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,8])-log(0.01))))/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,28]))
+HazelPW1    <- (-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,19])+sqrt((AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,19])^2-4*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,29])*((AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,9])-log(0.01))))/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,29]))
+HazelPW2    <- (-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,19])-sqrt((AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,19])^2-4*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,29])*((AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,9])-log(0.01))))/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,29]))
+OakPW1      <- (-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,20])+sqrt((AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,20])^2-4*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,30])*((AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,10])-log(0.01))))/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,30]))
+OakPW2      <- (-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,20])-sqrt((AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,20])^2-4*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,30])*((AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,10])-log(0.01))))/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,30]))
+RowanPW1    <- (-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,21])+sqrt((AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,21])^2-4*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,31])*((AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,11])-log(0.01))))/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,31]))
+RowanPW2    <- (-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,21])-sqrt((AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,21])^2-4*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,31])*((AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,11])-log(0.01))))/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,31]))
+SycamorePW1 <- (-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,22])+sqrt((AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,22])^2-4*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,32])*((AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,12])-log(0.01))))/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,32]))
+SycamorePW2 <- (-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,22])-sqrt((AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,22])^2-4*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,32])*((AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,12])-log(0.01))))/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,32]))
+WillowPW1   <- (-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,23])+sqrt((AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,23])^2-4*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,33])*((AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,13])-log(0.01))))/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,33]))
+WillowPW2   <- (-(AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,23])-sqrt((AbundTTCurves3$Sol[,2]+AbundTTCurves3$Sol[,23])^2-4*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,33])*((AbundTTCurves3$Sol[,1]+AbundTTCurves3$Sol[,13])-log(0.01))))/(2*(AbundTTCurves3$Sol[,3]+AbundTTCurves3$Sol[,33]))
 
 AlderpwOD <- (AlderPW2-AlderPW1)-(OakPW2-OakPW1)
 AshpwOD <- (AshPW2-AshPW1)-(OakPW2-OakPW1)
@@ -1031,122 +1058,163 @@ library(MCMCglmm)
 
 ####fixed
 fixed<-rbind(
-  c("Intercept",paste(round(mean(AbundTTCurves$Sol[,1]),3)," (",
-                      round(HPDinterval(AbundTTCurves$Sol[,1])[1],3)," - ",
-                      round(HPDinterval(AbundTTCurves$Sol[,1])[2],3),")",sep=""),
-    round(effectiveSize(AbundTTCurves$Sol[,1]))),
-  c("Date (scaled)",paste(round(mean(AbundTTCurves$Sol[,2]),3)," (",
-                          round(HPDinterval(AbundTTCurves$Sol[,2])[1],3)," - ",
-                          round(HPDinterval(AbundTTCurves$Sol[,2])[2],3),")",sep=""),
-    round(effectiveSize(AbundTTCurves$Sol[,2]))),
-  c("Date² (scaled)",paste(round(mean(AbundTTCurves$Sol[,3]),3)," (",
-                           round(HPDinterval(AbundTTCurves$Sol[,3])[1],3)," - ",
-                           round(HPDinterval(AbundTTCurves$Sol[,3])[2],3),")",sep=""),
-    round(effectiveSize(AbundTTCurves$Sol[,3]))))
+  c("Intercept",paste(round(mean(ATTCyearint$Sol[,1]),3)," (",
+                      round(HPDinterval(ATTCyearint$Sol[,1])[1],3)," - ",
+                      round(HPDinterval(ATTCyearint$Sol[,1])[2],3),")",sep=""),
+    round(effectiveSize(ATTCyearint$Sol[,1]))),
+  c("Date (scaled)",paste(round(mean(ATTCyearint$Sol[,2]),3)," (",
+                          round(HPDinterval(ATTCyearint$Sol[,2])[1],3)," - ",
+                          round(HPDinterval(ATTCyearint$Sol[,2])[2],3),")",sep=""),
+    round(effectiveSize(ATTCyearint$Sol[,2]))),
+  c("Date² (scaled)",paste(round(mean(ATTCyearint$Sol[,3]),3)," (",
+                           round(HPDinterval(ATTCyearint$Sol[,3])[1],3)," - ",
+                           round(HPDinterval(ATTCyearint$Sol[,3])[2],3),")",sep=""),
+    round(effectiveSize(ATTCyearint$Sol[,3]))))
 
 ####random 
 column<-1
-treetaxa1<-c("TreeTaxa- Intercept var",paste(round(posterior.mode(AbundTTCurves$VCV[, column]),3)," (",
-                                             round(HPDinterval(AbundTTCurves$VCV[, column])[1],3)," - ",
-                                             round(HPDinterval(AbundTTCurves$VCV[, column])[2],3),")",sep=""),
-             round(effectiveSize(AbundTTCurves$VCV[, column])))
+treetaxa1<-c("TreeTaxa- Intercept var",paste(round(posterior.mode(ATTCyearint$VCV[, column]),3)," (",
+                                             round(HPDinterval(ATTCyearint$VCV[, column])[1],3)," - ",
+                                             round(HPDinterval(ATTCyearint$VCV[, column])[2],3),")",sep=""),
+             round(effectiveSize(ATTCyearint$VCV[, column])))
 
 column<-2
-treetaxa2<-c("TreeTaxa- Intercept:Date slope covar",paste(round(posterior.mode(AbundTTCurves$VCV[, column]),3)," (",
-                                                          round(HPDinterval(AbundTTCurves$VCV[, column])[1],3)," - ",
-                                                          round(HPDinterval(AbundTTCurves$VCV[, column])[2],3),")",sep=""),
-             round(effectiveSize(AbundTTCurves$VCV[, column])))
+treetaxa2<-c("TreeTaxa- Intercept:Date slope covar",paste(round(posterior.mode(ATTCyearint$VCV[, column]),3)," (",
+                                                          round(HPDinterval(ATTCyearint$VCV[, column])[1],3)," - ",
+                                                          round(HPDinterval(ATTCyearint$VCV[, column])[2],3),")",sep=""),
+             round(effectiveSize(ATTCyearint$VCV[, column])))
 
 column<-3
-treetaxa3<-c("TreeTaxa- Intercept:Date² slope covar",paste(round(posterior.mode(AbundTTCurves$VCV[, column]),3)," (",
-                                                           round(HPDinterval(AbundTTCurves$VCV[, column])[1],3)," - ",
-                                                           round(HPDinterval(AbundTTCurves$VCV[, column])[2],3),")",sep=""),
-             round(effectiveSize(AbundTTCurves$VCV[, column])))
+treetaxa3<-c("TreeTaxa- Intercept:Date² slope covar",paste(round(posterior.mode(ATTCyearint$VCV[, column]),3)," (",
+                                                           round(HPDinterval(ATTCyearint$VCV[, column])[1],3)," - ",
+                                                           round(HPDinterval(ATTCyearint$VCV[, column])[2],3),")",sep=""),
+             round(effectiveSize(ATTCyearint$VCV[, column])))
 
 column<-5
-treetaxa5<-c("TreeTaxa- Date slope var",paste(round(posterior.mode(AbundTTCurves$VCV[, column]),3)," (",
-                                              round(HPDinterval(AbundTTCurves$VCV[, column])[1],3)," - ",
-                                              round(HPDinterval(AbundTTCurves$VCV[, column])[2],3),")",sep=""),
-             round(effectiveSize(AbundTTCurves$VCV[, column])))
+treetaxa5<-c("TreeTaxa- Date slope var",paste(round(posterior.mode(ATTCyearint$VCV[, column]),3)," (",
+                                              round(HPDinterval(ATTCyearint$VCV[, column])[1],3)," - ",
+                                              round(HPDinterval(ATTCyearint$VCV[, column])[2],3),")",sep=""),
+             round(effectiveSize(ATTCyearint$VCV[, column])))
 
 column<-6
-treetaxa6<-c("TreeTaxa- Date slope:Date² slope covar",paste(round(posterior.mode(AbundTTCurves$VCV[, column]),3)," (",
-                                                            round(HPDinterval(AbundTTCurves$VCV[, column])[1],3)," - ",
-                                                            round(HPDinterval(AbundTTCurves$VCV[, column])[2],3),")",sep=""),
-             round(effectiveSize(AbundTTCurves$VCV[, column])))
+treetaxa6<-c("TreeTaxa- Date slope:Date² slope covar",paste(round(posterior.mode(ATTCyearint$VCV[, column]),3)," (",
+                                                            round(HPDinterval(ATTCyearint$VCV[, column])[1],3)," - ",
+                                                            round(HPDinterval(ATTCyearint$VCV[, column])[2],3),")",sep=""),
+             round(effectiveSize(ATTCyearint$VCV[, column])))
 
 column<-9
-treetaxa9<-c("TreeTaxa- Date² slope var",paste(round(posterior.mode(AbundTTCurves$VCV[, column]),3)," (",
-                                               round(HPDinterval(AbundTTCurves$VCV[, column])[1],3)," - ",
-                                               round(HPDinterval(AbundTTCurves$VCV[, column])[2],3),")",sep=""),
-             round(effectiveSize(AbundTTCurves$VCV[, column])))
+treetaxa9<-c("TreeTaxa- Date² slope var",paste(round(posterior.mode(ATTCyearint$VCV[, column]),3)," (",
+                                               round(HPDinterval(ATTCyearint$VCV[, column])[1],3)," - ",
+                                               round(HPDinterval(ATTCyearint$VCV[, column])[2],3),")",sep=""),
+             round(effectiveSize(ATTCyearint$VCV[, column])))
 
 column<-10
-siteyear10<-c("SiteYear- Intercept var",paste(round(posterior.mode(AbundTTCurves$VCV[, column]),3)," (",
-                                             round(HPDinterval(AbundTTCurves$VCV[, column])[1],3)," - ",
-                                             round(HPDinterval(AbundTTCurves$VCV[, column])[2],3),")",sep=""),
-             round(effectiveSize(AbundTTCurves$VCV[, column])))
+site10<-c("Site- Intercept var",paste(round(posterior.mode(ATTCyearint$VCV[, column]),3)," (",
+                                              round(HPDinterval(ATTCyearint$VCV[, column])[1],3)," - ",
+                                              round(HPDinterval(ATTCyearint$VCV[, column])[2],3),")",sep=""),
+              round(effectiveSize(ATTCyearint$VCV[, column])))
 
 column<-11
-siteyear11<-c("SiteYear- Intercept:Date slope covar",paste(round(posterior.mode(AbundTTCurves$VCV[, column]),3)," (",
-                                                          round(HPDinterval(AbundTTCurves$VCV[, column])[1],3)," - ",
-                                                          round(HPDinterval(AbundTTCurves$VCV[, column])[2],3),")",sep=""),
-             round(effectiveSize(AbundTTCurves$VCV[, column])))
+site11<-c("Site- Intercept:Date slope covar",paste(round(posterior.mode(ATTCyearint$VCV[, column]),3)," (",
+                                                           round(HPDinterval(ATTCyearint$VCV[, column])[1],3)," - ",
+                                                           round(HPDinterval(ATTCyearint$VCV[, column])[2],3),")",sep=""),
+              round(effectiveSize(ATTCyearint$VCV[, column])))
 
 column<-12
-siteyear12<-c("SiteYear- Intercept:Date² slope covar",paste(round(posterior.mode(AbundTTCurves$VCV[, column]),3)," (",
-                                                           round(HPDinterval(AbundTTCurves$VCV[, column])[1],3)," - ",
-                                                           round(HPDinterval(AbundTTCurves$VCV[, column])[2],3),")",sep=""),
-             round(effectiveSize(AbundTTCurves$VCV[, column])))
+site12<-c("Site- Intercept:Date² slope covar",paste(round(posterior.mode(ATTCyearint$VCV[, column]),3)," (",
+                                                            round(HPDinterval(ATTCyearint$VCV[, column])[1],3)," - ",
+                                                            round(HPDinterval(ATTCyearint$VCV[, column])[2],3),")",sep=""),
+              round(effectiveSize(ATTCyearint$VCV[, column])))
 
 column<-14
-siteyear14<-c("SiteYear- Date slope var",paste(round(posterior.mode(AbundTTCurves$VCV[, column]),3)," (",
-                                              round(HPDinterval(AbundTTCurves$VCV[, column])[1],3)," - ",
-                                              round(HPDinterval(AbundTTCurves$VCV[, column])[2],3),")",sep=""),
-             round(effectiveSize(AbundTTCurves$VCV[, column])))
+site14<-c("Site- Date slope var",paste(round(posterior.mode(ATTCyearint$VCV[, column]),3)," (",
+                                               round(HPDinterval(ATTCyearint$VCV[, column])[1],3)," - ",
+                                               round(HPDinterval(ATTCyearint$VCV[, column])[2],3),")",sep=""),
+              round(effectiveSize(ATTCyearint$VCV[, column])))
 
 column<-15
-siteyear15<-c("SiteYear- Date slope:Date² slope covar",paste(round(posterior.mode(AbundTTCurves$VCV[, column]),3)," (",
-                                                            round(HPDinterval(AbundTTCurves$VCV[, column])[1],3)," - ",
-                                                            round(HPDinterval(AbundTTCurves$VCV[, column])[2],3),")",sep=""),
-             round(effectiveSize(AbundTTCurves$VCV[, column])))
+site15<-c("Site- Date slope:Date² slope covar",paste(round(posterior.mode(ATTCyearint$VCV[, column]),3)," (",
+                                                             round(HPDinterval(ATTCyearint$VCV[, column])[1],3)," - ",
+                                                             round(HPDinterval(ATTCyearint$VCV[, column])[2],3),")",sep=""),
+              round(effectiveSize(ATTCyearint$VCV[, column])))
 
 column<-18
-siteyear18<-c("SiteYear- Date² slope var",paste(round(posterior.mode(AbundTTCurves$VCV[, column]),3)," (",
-                                               round(HPDinterval(AbundTTCurves$VCV[, column])[1],3)," - ",
-                                               round(HPDinterval(AbundTTCurves$VCV[, column])[2],3),")",sep=""),
-             round(effectiveSize(AbundTTCurves$VCV[, column])))
-
-column<-21
-recorder<-c("Recorder",paste(round(posterior.mode(AbundTTCurves$VCV[, column]),3)," (",
-                             round(HPDinterval(AbundTTCurves$VCV[, column])[1],3)," - ",
-                             round(HPDinterval(AbundTTCurves$VCV[, column])[2],3),")",sep=""),
-            round(effectiveSize(AbundTTCurves$VCV[, column])))
-
-
-column<-20
-siteday<-c("Site Day",paste(round(posterior.mode(AbundTTCurves$VCV[, column]),3)," (",
-                            round(HPDinterval(AbundTTCurves$VCV[, column])[1],3)," - ",
-                            round(HPDinterval(AbundTTCurves$VCV[, column])[2],3),")",sep=""),
-           round(effectiveSize(AbundTTCurves$VCV[, column])))
-
+site18<-c("Site- Date² slope var",paste(round(posterior.mode(ATTCyearint$VCV[, column]),3)," (",
+                                                round(HPDinterval(ATTCyearint$VCV[, column])[1],3)," - ",
+                                                round(HPDinterval(ATTCyearint$VCV[, column])[2],3),")",sep=""),
+              round(effectiveSize(ATTCyearint$VCV[, column])))
 
 column<-19
-treeID<-c("Tree ID",paste(round(posterior.mode(AbundTTCurves$VCV[, column]),3)," (",
-                          round(HPDinterval(AbundTTCurves$VCV[, column])[1],3)," - ",
-                          round(HPDinterval(AbundTTCurves$VCV[, column])[2],3),")",sep=""),
-          round(effectiveSize(AbundTTCurves$VCV[, column])))
+year10<-c("Year- Intercept var",paste(round(posterior.mode(ATTCyearint$VCV[, column]),3)," (",
+                                             round(HPDinterval(ATTCyearint$VCV[, column])[1],3)," - ",
+                                             round(HPDinterval(ATTCyearint$VCV[, column])[2],3),")",sep=""),
+             round(effectiveSize(ATTCyearint$VCV[, column])))
 
-column<-22
-residual<-c("Residual",paste(round(posterior.mode(AbundTTCurves$VCV[, column]),3)," (",
-                             round(HPDinterval(AbundTTCurves$VCV[, column])[1],3)," - ",
-                             round(HPDinterval(AbundTTCurves$VCV[, column])[2],3),")",sep=""),
-            round(effectiveSize(AbundTTCurves$VCV[, column])))
+column<-20
+year11<-c("Year- Intercept:Date slope covar",paste(round(posterior.mode(ATTCyearint$VCV[, column]),3)," (",
+                                                          round(HPDinterval(ATTCyearint$VCV[, column])[1],3)," - ",
+                                                          round(HPDinterval(ATTCyearint$VCV[, column])[2],3),")",sep=""),
+             round(effectiveSize(ATTCyearint$VCV[, column])))
+
+column<-21
+year12<-c("Year- Intercept:Date² slope covar",paste(round(posterior.mode(ATTCyearint$VCV[, column]),3)," (",
+                                                           round(HPDinterval(ATTCyearint$VCV[, column])[1],3)," - ",
+                                                           round(HPDinterval(ATTCyearint$VCV[, column])[2],3),")",sep=""),
+             round(effectiveSize(ATTCyearint$VCV[, column])))
+
+column<-23
+year14<-c("Year- Date slope var",paste(round(posterior.mode(ATTCyearint$VCV[, column]),3)," (",
+                                              round(HPDinterval(ATTCyearint$VCV[, column])[1],3)," - ",
+                                              round(HPDinterval(ATTCyearint$VCV[, column])[2],3),")",sep=""),
+             round(effectiveSize(ATTCyearint$VCV[, column])))
+
+column<-24
+year15<-c("Year- Date slope:Date² slope covar",paste(round(posterior.mode(ATTCyearint$VCV[, column]),3)," (",
+                                                            round(HPDinterval(ATTCyearint$VCV[, column])[1],3)," - ",
+                                                            round(HPDinterval(ATTCyearint$VCV[, column])[2],3),")",sep=""),
+             round(effectiveSize(ATTCyearint$VCV[, column])))
+
+column<-27
+year18<-c("Year- Date² slope var",paste(round(posterior.mode(ATTCyearint$VCV[, column]),3)," (",
+                                               round(HPDinterval(ATTCyearint$VCV[, column])[1],3)," - ",
+                                               round(HPDinterval(ATTCyearint$VCV[, column])[2],3),")",sep=""),
+             round(effectiveSize(ATTCyearint$VCV[, column])))
+
+column<-31
+recorder<-c("Recorder",paste(round(posterior.mode(ATTCyearint$VCV[, column]),3)," (",
+                             round(HPDinterval(ATTCyearint$VCV[, column])[1],3)," - ",
+                             round(HPDinterval(ATTCyearint$VCV[, column])[2],3),")",sep=""),
+            round(effectiveSize(ATTCyearint$VCV[, column])))
+
+
+column<-30
+siteday<-c("Site-Day",paste(round(posterior.mode(ATTCyearint$VCV[, column]),3)," (",
+                            round(HPDinterval(ATTCyearint$VCV[, column])[1],3)," - ",
+                            round(HPDinterval(ATTCyearint$VCV[, column])[2],3),")",sep=""),
+           round(effectiveSize(ATTCyearint$VCV[, column])))
+
+column<-28
+siteyear<-c("Site-Year",paste(round(posterior.mode(ATTCyearint$VCV[, column]),3)," (",
+                             round(HPDinterval(ATTCyearint$VCV[, column])[1],3)," - ",
+                             round(HPDinterval(ATTCyearint$VCV[, column])[2],3),")",sep=""),
+            round(effectiveSize(ATTCyearint$VCV[, column])))
+
+column<-29
+treeID<-c("Tree ID",paste(round(posterior.mode(ATTCyearint$VCV[, column]),3)," (",
+                          round(HPDinterval(ATTCyearint$VCV[, column])[1],3)," - ",
+                          round(HPDinterval(ATTCyearint$VCV[, column])[2],3),")",sep=""),
+          round(effectiveSize(ATTCyearint$VCV[, column])))
+
+column<-32
+residual<-c("Residual",paste(round(posterior.mode(ATTCyearint$VCV[, column]),3)," (",
+                             round(HPDinterval(ATTCyearint$VCV[, column])[1],3)," - ",
+                             round(HPDinterval(ATTCyearint$VCV[, column])[2],3),")",sep=""),
+            round(effectiveSize(ATTCyearint$VCV[, column])))
 
 
 
 
-random<-rbind(treetaxa1,treetaxa2,treetaxa3,treetaxa5,treetaxa6,treetaxa9,siteyear10,siteyear11,siteyear12,siteyear14,siteyear15,siteyear18,  recorder, siteday, treeID, residual)
+random<-rbind(treetaxa1,treetaxa2,treetaxa3,treetaxa5,treetaxa6,treetaxa9,site10,site11,site12,site14,site15,site18,year10,year11,year12,year14,year15,year18, siteyear, recorder, siteday, treeID, residual)
 
 
-write.table(rbind(c("Fixed Terms","",""),fixed,c("Random Terms","",""),random),"~/Documents/Models/Tables/TableAbundTTCurves.txt",sep="\t",col.names=c("","Coefficient/Variance (Mean/mode and CI)","Effective sample size"),row.names=F)
+write.table(rbind(c("Fixed Terms","",""),fixed,c("Random Terms","",""),random),"~/Documents/Models/Tables/TableATTCyearint.txt",sep="\t",col.names=c("","Coefficient/Variance (Mean/mode and CI)","Effective sample size"),row.names=F)
