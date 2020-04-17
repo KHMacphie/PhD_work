@@ -1978,12 +1978,12 @@ ggplot(TTmass2, aes(treetaxa, coeff))+
 
 
 #### MWSY : MW model with no date^2 interacion and using SY ####
-load("~/Documents/Models/MWSY.RData")
+load("~/Documents/Models/MWSY3.RData")
 
 #### Plotting growth curves ####
 preddayscaled <- seq(0.66,1,0.01)
 predday <- preddayscaled*max(cater_habitat$date)
-meanslope <- mean(MWSY$Sol[,1])+mean(MWSY$Sol[,2])*preddayscaled+mean(MWSY$Sol[,3])*preddayscaled^2
+meanslope <- mean(MWSY3$Sol[,1])+mean(MWSY3$Sol[,2])*preddayscaled+mean(MWSY3$Sol[,3])*preddayscaled^2
 
 par(mfcol=c(1,2), cex=1.5)
 plot(cater_habitat_1719$date, exp(cater_habitat_1719$logmpc1), log="y", xlab="Date", ylab="Mass", pch=20, col="grey")
@@ -1995,7 +1995,7 @@ plot(cater_habitat_1719$date, exp(cater_habitat_1719$logmpc1), xlab="Date", ylab
 points(cater_habitat_1719$date, exp(cater_habitat_1719$logmpc2), col=1, pch=20)
 points(predday, exp(meanslope), col=2, type="l")
 
-TTslope.cropped <- MWSY$Sol[,14:23] # crop to just the columns wanted
+TTslope.cropped <- MWSY3$Sol[,14:23] # crop to just the columns wanted
 TTslope <- data.frame(treetaxa=c(colnames(TTslope.cropped))) #dataframe with column for yearsite 
 TTslope$coeff <- apply(TTslope.cropped,2, mean) # mean 
 for(i in 1:length(TTslope$treetaxa)) {   # loop for CIs
@@ -2015,7 +2015,7 @@ TTslopecoeff <- ggplot(TTslope, aes(treetaxa, coeff))+
   labs(tag = "Slope")+
   theme(text = element_text(size=10))
 
-TTintercept.cropped <- MWSY$Sol[,4:13] # crop to just the columns wanted
+TTintercept.cropped <- MWSY3$Sol[,4:13] # crop to just the columns wanted
 TTintercept <- data.frame(treetaxa=c(colnames(TTintercept.cropped))) #dataframe with column for yearsite 
 TTintercept$coeff <- apply(TTintercept.cropped,2, mean) # mean 
 for(i in 1:length(TTintercept$treetaxa)) {   # loop for CIs
@@ -2045,20 +2045,20 @@ TTCoeff <- grid.arrange(row1, row2, nrow = 2, heights = c(1,1))
 ### slope and intercept per tax
 TaxaCatGrowth <- data.frame(Taxa=TTslope[,1], Intercept= TTintercept[,2], Slope=TTslope[,2])   
 
-preddayscaled <- seq(0.66,1,0.01)
-predday <- preddayscaled*max(cater_habitat$date)
-meanslope <- mean(MWSY$Sol[,1])+mean(MWSY$Sol[,2])*preddayscaled+mean(MWSY$Sol[,3])*preddayscaled^2
+preddayscaled <- seq(0.669,0.983,0.001)
+predday <- preddayscaled*175
+meanslope <- mean(MWSY3$Sol[,1])+mean(MWSY3$Sol[,2])*preddayscaled+mean(MWSY3$Sol[,3])*preddayscaled^2
 points(predday,meanslope, type="l", lwd=2, col=3)
-alder <- mean(MWSY$Sol[,1])+TaxaCatGrowth[1,2]+mean(MWSY$Sol[,2]+TaxaCatGrowth[1,3])*preddayscaled+mean(MWSY$Sol[,3])*preddayscaled^2
-ash <- mean(MWSY$Sol[,1])+TaxaCatGrowth[2,2]+mean(MWSY$Sol[,2]+TaxaCatGrowth[2,3])*preddayscaled+mean(MWSY$Sol[,3])*preddayscaled^2
-beech <- mean(MWSY$Sol[,1])+TaxaCatGrowth[3,2]+mean(MWSY$Sol[,2]+TaxaCatGrowth[3,3])*preddayscaled+mean(MWSY$Sol[,3])*preddayscaled^2
-birch <- mean(MWSY$Sol[,1])+TaxaCatGrowth[4,2]+mean(MWSY$Sol[,2]+TaxaCatGrowth[4,3])*preddayscaled+mean(MWSY$Sol[,3])*preddayscaled^2
-elm <- mean(MWSY$Sol[,1])+TaxaCatGrowth[5,2]+mean(MWSY$Sol[,2]+TaxaCatGrowth[5,3])*preddayscaled+mean(MWSY$Sol[,3])*preddayscaled^2
-hazel <- mean(MWSY$Sol[,1])+TaxaCatGrowth[6,2]+mean(MWSY$Sol[,2]+TaxaCatGrowth[6,3])*preddayscaled+mean(MWSY$Sol[,3])*preddayscaled^2
-oak <- mean(MWSY$Sol[,1])+TaxaCatGrowth[7,2]+mean(MWSY$Sol[,2]+TaxaCatGrowth[7,3])*preddayscaled+mean(MWSY$Sol[,3])*preddayscaled^2
-rowan <- mean(MWSY$Sol[,1])+TaxaCatGrowth[8,2]+mean(MWSY$Sol[,2]+TaxaCatGrowth[8,3])*preddayscaled+mean(MWSY$Sol[,3])*preddayscaled^2
-sycamore <- mean(MWSY$Sol[,1])+TaxaCatGrowth[9,2]+mean(MWSY$Sol[,2]+TaxaCatGrowth[9,3])*preddayscaled+mean(MWSY$Sol[,3])*preddayscaled^2
-willow <- mean(MWSY$Sol[,1])+TaxaCatGrowth[10,2]+mean(MWSY$Sol[,2]+TaxaCatGrowth[10,3])*preddayscaled+mean(MWSY$Sol[,3])*preddayscaled^2
+alder <- mean(MWSY3$Sol[,1]+MWSY3$Sol[,4])+mean(MWSY3$Sol[,2]+MWSY3$Sol[,14])*preddayscaled+mean(MWSY3$Sol[,3])*preddayscaled^2
+ash <- mean(MWSY3$Sol[,1]+MWSY3$Sol[,5])+mean(MWSY3$Sol[,2]+MWSY3$Sol[,15])*preddayscaled+mean(MWSY3$Sol[,3])*preddayscaled^2
+beech <- mean(MWSY3$Sol[,1]+MWSY3$Sol[,6])+mean(MWSY3$Sol[,2]+MWSY3$Sol[,16])*preddayscaled+mean(MWSY3$Sol[,3])*preddayscaled^2
+birch <- mean(MWSY3$Sol[,1]+MWSY3$Sol[,7])+mean(MWSY3$Sol[,2]+MWSY3$Sol[,17])*preddayscaled+mean(MWSY3$Sol[,3])*preddayscaled^2
+elm <- mean(MWSY3$Sol[,1]+MWSY3$Sol[,8])+mean(MWSY3$Sol[,2]+MWSY3$Sol[,18])*preddayscaled+mean(MWSY3$Sol[,3])*preddayscaled^2
+hazel <- mean(MWSY3$Sol[,1]+MWSY3$Sol[,9])+mean(MWSY3$Sol[,2]+MWSY3$Sol[,19])*preddayscaled+mean(MWSY3$Sol[,3])*preddayscaled^2
+oak <- mean(MWSY3$Sol[,1]+MWSY3$Sol[,10])+mean(MWSY3$Sol[,2]+MWSY3$Sol[,20])*preddayscaled+mean(MWSY3$Sol[,3])*preddayscaled^2
+rowan <- mean(MWSY3$Sol[,1]+MWSY3$Sol[,11])+mean(MWSY3$Sol[,2]+MWSY3$Sol[,21])*preddayscaled+mean(MWSY3$Sol[,3])*preddayscaled^2
+sycamore <- mean(MWSY3$Sol[,1]+MWSY3$Sol[,12])+mean(MWSY3$Sol[,2]+MWSY3$Sol[,22])*preddayscaled+mean(MWSY3$Sol[,3])*preddayscaled^2
+willow <- mean(MWSY3$Sol[,1]+MWSY3$Sol[,13])+mean(MWSY3$Sol[,2]+MWSY3$Sol[,23])*preddayscaled+mean(MWSY3$Sol[,3])*preddayscaled^2
 
 ### barchart of lower interval by date
 intsamples <- subset(cater_habitat, mpc1 == 0.001, 
@@ -2094,19 +2094,80 @@ points(predday,exp(sycamore), type="l", lwd=2, col=4)
 points(predday,exp(willow), type="l", lwd=2, col=4)
 points(predday,exp(meanslope), type="l", lwd=2, col="red")
 
+#### Plot with data as translucent ####
+mycolblack <- rgb(0, 0, 0, max = 250, alpha = 25, names = "blacktrans")
+mycolgrey <- rgb(128, 128, 128, max = 250, alpha = 25, names = "greytrans")
+#AllTaxaCols <- c("darkred", "firebrick3", "chocolate2", "goldenrod", "olivedrab4", "darkgreen", "deepskyblue3", "royalblue4", "slateblue2", "orchid")
+
+plot(cater_habitat_1719$date, exp(cater_habitat_1719$logmpc1), log="y", xlab="Date", ylab="Mass (g)", pch=20, col=mycolgrey, cex=0.3)
+points(cater_habitat$date, exp(cater_habitat$logmpc2), col=mycolblack, pch=20, cex=0.3)
+points(predday,exp(alder), type="l", lwd=2, col="darkred")
+points(predday,exp(ash), type="l", lwd=2, col="firebrick3")
+points(predday,exp(beech), type="l", lwd=2, col="chocolate2")
+points(predday,exp(birch), type="l", lwd=2, col="goldenrod")
+points(predday,exp(elm), type="l", lwd=2, col="olivedrab4")
+points(predday,exp(hazel), type="l", lwd=2, col="darkgreen")
+points(predday,exp(oak), type="l", lwd=2, col="deepskyblue3")
+points(predday,exp(rowan), type="l", lwd=2, col="royalblue4")
+points(predday,exp(sycamore), type="l", lwd=2, col="slateblue2")
+points(predday,exp(willow), type="l", lwd=2, col="orchid")
+#points(predday,exp(meanslope), type="l", lwd=2, col=1)
+par(new = T)
+hist(intsamples$date, breaks=100, axes=F, xlab=NA, ylab=NA, ylim=c(0,500), xlim=c(117,175), main="")
+plot(cater_habitat$date, exp(cater_habitat$logmpc1), xlab="Date", ylab="Mass (g)", pch=20, col=mycolgrey, cex=0.3)
+points(cater_habitat$date, exp(cater_habitat$logmpc2), col=mycolblack, pch=20, cex=0.3)
+points(predday,exp(alder), type="l", lwd=2, col="darkred")
+points(predday,exp(ash), type="l", lwd=2, col="firebrick3")
+points(predday,exp(beech), type="l", lwd=2, col="chocolate2")
+points(predday,exp(birch), type="l", lwd=2, col="goldenrod")
+points(predday,exp(elm), type="l", lwd=2, col="olivedrab4")
+points(predday,exp(hazel), type="l", lwd=2, col="darkgreen")
+points(predday,exp(oak), type="l", lwd=2, col="deepskyblue3")
+points(predday,exp(rowan), type="l", lwd=2, col="royalblue4")
+points(predday,exp(sycamore), type="l", lwd=2, col="slateblue2")
+points(predday,exp(willow), type="l", lwd=2, col="orchid")
+#points(predday,exp(meanslope), type="l", lwd=2, col=1)
+
+
+#### Mean curve on data and TT curves on appropraite axis limits ####
+plot(intsamples$date, intsamples$mpc1, xlab="Date", ylab="Mass (g)", pch=20, col=mycolblack, cex=0.4, xlim=c(117,172), ylim=c(0,1))
+points(cater_habitat$date, exp(cater_habitat$logmpc2), col=mycolblack, pch=20, cex=0.4)
+points(predday,exp(meanslope), type="l", lwd=2, col=2)
+legend("topleft", legend="Mean curve",
+       lty=1, lwd=3, 
+       col=2, 
+       cex=0.8, seg.len=0.8, bty = "n")
+plot(predday,exp(alder), type="l", lwd=1.5, col="darkred", xlab="Date", ylab="Mass (g)", ylim=c(0,0.05))
+points(predday,exp(ash), type="l", lwd=1.5, col="firebrick3")
+points(predday,exp(beech), type="l", lwd=1.5, col="chocolate2")
+points(predday,exp(birch), type="l", lwd=1.5, col="goldenrod")
+points(predday,exp(elm), type="l", lwd=1.5, col="olivedrab4")
+points(predday,exp(hazel), type="l", lwd=1.5, col="darkgreen")
+points(predday,exp(oak), type="l", lwd=1.5, col="deepskyblue3")
+points(predday,exp(rowan), type="l", lwd=1.5, col="royalblue4")
+points(predday,exp(sycamore), type="l", lwd=1.5, col="slateblue2")
+points(predday,exp(willow), type="l", lwd=1.5, col="orchid")
+points(predday,exp(meanslope), type="l", lwd=2, col=2, lty="dotted")
+points(rep(168, 101), seq(0,0.05, 0.0005), type="l", col=1, lwd=0.5, lty="dashed")
+legend("topleft", legend=c("Alder","Ash", "Beech", "Birch", "Elm", "Hazel", "Oak", "Rowan", "Sycamore", "Willow", "Mean"),
+       lty=c(1,1,1,1,1,1,1,1,1,1,3), lwd=3, 
+       col=c("darkred", "firebrick3", "chocolate2", "goldenrod", "olivedrab4", "darkgreen", "deepskyblue3", "royalblue4", "slateblue2", "orchid",2), 
+       cex=0.8, seg.len=0.8, bty = "n")
+
+
 # mass on 168- last day on which all tree taxa have had a caterpillar
-TTmass <- data.frame(mean=(exp(MWSY$Sol[,1]+MWSY$Sol[,2]*0.96+MWSY$Sol[,3]*0.96^2)))
+TTmass <- data.frame(mean=(exp(MWSY3$Sol[,1]+MWSY3$Sol[,2]*0.96+MWSY3$Sol[,3]*0.96^2)))
 colnames(TTmass)[colnames(TTmass)=="var1"] <- "mean"
-TTmass$alder <-    (exp(MWSY$Sol[,1]+MWSY$Sol[,4]+(MWSY$Sol[,2]+MWSY$Sol[,14])*0.96+(MWSY$Sol[,3])*0.96^2))-TTmass$mean
-TTmass$ash <-      (exp(MWSY$Sol[,1]+MWSY$Sol[,5]+(MWSY$Sol[,2]+MWSY$Sol[,15])*0.96+(MWSY$Sol[,3])*0.96^2))-TTmass$mean
-TTmass$beech <-    (exp(MWSY$Sol[,1]+MWSY$Sol[,6]+(MWSY$Sol[,2]+MWSY$Sol[,16])*0.96+(MWSY$Sol[,3])*0.96^2))-TTmass$mean
-TTmass$birch <-    (exp(MWSY$Sol[,1]+MWSY$Sol[,7]+(MWSY$Sol[,2]+MWSY$Sol[,17])*0.96+(MWSY$Sol[,3])*0.96^2))-TTmass$mean
-TTmass$elm <-      (exp(MWSY$Sol[,1]+MWSY$Sol[,8]+(MWSY$Sol[,2]+MWSY$Sol[,18])*0.96+(MWSY$Sol[,3])*0.96^2))-TTmass$mean
-TTmass$hazel <-    (exp(MWSY$Sol[,1]+MWSY$Sol[,9]+(MWSY$Sol[,2]+MWSY$Sol[,19])*0.96+(MWSY$Sol[,3])*0.96^2))-TTmass$mean
-TTmass$oak <-      (exp(MWSY$Sol[,1]+MWSY$Sol[,10]+(MWSY$Sol[,2]+MWSY$Sol[,20])*0.96+(MWSY$Sol[,3])*0.96^2))-TTmass$mean
-TTmass$rowan <-    (exp(MWSY$Sol[,1]+MWSY$Sol[,11]+(MWSY$Sol[,2]+MWSY$Sol[,21])*0.96+(MWSY$Sol[,3])*0.96^2))-TTmass$mean
-TTmass$sycamore <- (exp(MWSY$Sol[,1]+MWSY$Sol[,12]+(MWSY$Sol[,2]+MWSY$Sol[,22])*0.96+(MWSY$Sol[,3])*0.96^2))-TTmass$mean
-TTmass$willow <-   (exp(MWSY$Sol[,1]+MWSY$Sol[,13]+(MWSY$Sol[,2]+MWSY$Sol[,23])*0.96+(MWSY$Sol[,3])*0.96^2))-TTmass$mean
+TTmass$alder <-    (exp(MWSY3$Sol[,1]+MWSY3$Sol[,4]+(MWSY3$Sol[,2]+MWSY3$Sol[,14])*0.96+(MWSY3$Sol[,3])*0.96^2))-TTmass$mean
+TTmass$ash <-      (exp(MWSY3$Sol[,1]+MWSY3$Sol[,5]+(MWSY3$Sol[,2]+MWSY3$Sol[,15])*0.96+(MWSY3$Sol[,3])*0.96^2))-TTmass$mean
+TTmass$beech <-    (exp(MWSY3$Sol[,1]+MWSY3$Sol[,6]+(MWSY3$Sol[,2]+MWSY3$Sol[,16])*0.96+(MWSY3$Sol[,3])*0.96^2))-TTmass$mean
+TTmass$birch <-    (exp(MWSY3$Sol[,1]+MWSY3$Sol[,7]+(MWSY3$Sol[,2]+MWSY3$Sol[,17])*0.96+(MWSY3$Sol[,3])*0.96^2))-TTmass$mean
+TTmass$elm <-      (exp(MWSY3$Sol[,1]+MWSY3$Sol[,8]+(MWSY3$Sol[,2]+MWSY3$Sol[,18])*0.96+(MWSY3$Sol[,3])*0.96^2))-TTmass$mean
+TTmass$hazel <-    (exp(MWSY3$Sol[,1]+MWSY3$Sol[,9]+(MWSY3$Sol[,2]+MWSY3$Sol[,19])*0.96+(MWSY3$Sol[,3])*0.96^2))-TTmass$mean
+TTmass$oak <-      (exp(MWSY3$Sol[,1]+MWSY3$Sol[,10]+(MWSY3$Sol[,2]+MWSY3$Sol[,20])*0.96+(MWSY3$Sol[,3])*0.96^2))-TTmass$mean
+TTmass$rowan <-    (exp(MWSY3$Sol[,1]+MWSY3$Sol[,11]+(MWSY3$Sol[,2]+MWSY3$Sol[,21])*0.96+(MWSY3$Sol[,3])*0.96^2))-TTmass$mean
+TTmass$sycamore <- (exp(MWSY3$Sol[,1]+MWSY3$Sol[,12]+(MWSY3$Sol[,2]+MWSY3$Sol[,22])*0.96+(MWSY3$Sol[,3])*0.96^2))-TTmass$mean
+TTmass$willow <-   (exp(MWSY3$Sol[,1]+MWSY3$Sol[,13]+(MWSY3$Sol[,2]+MWSY3$Sol[,23])*0.96+(MWSY3$Sol[,3])*0.96^2))-TTmass$mean
 
 TTmass.cropped <- TTmass[,2:11] # crop to just the columns wanted
 TTmass2 <- data.frame(treetaxa=c(colnames(TTmass.cropped))) #dataframe with column for yearsite 
@@ -2130,18 +2191,18 @@ ggplot(TTmass2, aes(treetaxa, coeff))+
   theme(text = element_text(size=15))
 
 # day 160
-TTmass <- data.frame(mean=(exp(MWSY$Sol[,1]+MWSY$Sol[,2]*0.91+MWSY$Sol[,3]*0.91^2)))
+TTmass <- data.frame(mean=(exp(MWSY3$Sol[,1]+MWSY3$Sol[,2]*0.91+MWSY3$Sol[,3]*0.91^2)))
 colnames(TTmass)[colnames(TTmass)=="var1"] <- "mean"
-TTmass$alder <-    (exp(MWSY$Sol[,1]+MWSY$Sol[,4]+(MWSY$Sol[,2]+MWSY$Sol[,14])*0.91+(MWSY$Sol[,3])*0.91^2))-TTmass$mean
-TTmass$ash <-      (exp(MWSY$Sol[,1]+MWSY$Sol[,5]+(MWSY$Sol[,2]+MWSY$Sol[,15])*0.91+(MWSY$Sol[,3])*0.91^2))-TTmass$mean
-TTmass$beech <-    (exp(MWSY$Sol[,1]+MWSY$Sol[,6]+(MWSY$Sol[,2]+MWSY$Sol[,16])*0.91+(MWSY$Sol[,3])*0.91^2))-TTmass$mean
-TTmass$birch <-    (exp(MWSY$Sol[,1]+MWSY$Sol[,7]+(MWSY$Sol[,2]+MWSY$Sol[,17])*0.91+(MWSY$Sol[,3])*0.91^2))-TTmass$mean
-TTmass$elm <-      (exp(MWSY$Sol[,1]+MWSY$Sol[,8]+(MWSY$Sol[,2]+MWSY$Sol[,18])*0.91+(MWSY$Sol[,3])*0.91^2))-TTmass$mean
-TTmass$hazel <-    (exp(MWSY$Sol[,1]+MWSY$Sol[,9]+(MWSY$Sol[,2]+MWSY$Sol[,19])*0.91+(MWSY$Sol[,3])*0.91^2))-TTmass$mean
-TTmass$oak <-      (exp(MWSY$Sol[,1]+MWSY$Sol[,10]+(MWSY$Sol[,2]+MWSY$Sol[,20])*0.91+(MWSY$Sol[,3])*0.91^2))-TTmass$mean
-TTmass$rowan <-    (exp(MWSY$Sol[,1]+MWSY$Sol[,11]+(MWSY$Sol[,2]+MWSY$Sol[,21])*0.91+(MWSY$Sol[,3])*0.91^2))-TTmass$mean
-TTmass$sycamore <- (exp(MWSY$Sol[,1]+MWSY$Sol[,12]+(MWSY$Sol[,2]+MWSY$Sol[,22])*0.91+(MWSY$Sol[,3])*0.91^2))-TTmass$mean
-TTmass$willow <-   (exp(MWSY$Sol[,1]+MWSY$Sol[,13]+(MWSY$Sol[,2]+MWSY$Sol[,23])*0.91+(MWSY$Sol[,3])*0.91^2))-TTmass$mean
+TTmass$alder <-    (exp(MWSY3$Sol[,1]+MWSY3$Sol[,4]+(MWSY3$Sol[,2]+MWSY3$Sol[,14])*0.91+(MWSY3$Sol[,3])*0.91^2))-TTmass$mean
+TTmass$ash <-      (exp(MWSY3$Sol[,1]+MWSY3$Sol[,5]+(MWSY3$Sol[,2]+MWSY3$Sol[,15])*0.91+(MWSY3$Sol[,3])*0.91^2))-TTmass$mean
+TTmass$beech <-    (exp(MWSY3$Sol[,1]+MWSY3$Sol[,6]+(MWSY3$Sol[,2]+MWSY3$Sol[,16])*0.91+(MWSY3$Sol[,3])*0.91^2))-TTmass$mean
+TTmass$birch <-    (exp(MWSY3$Sol[,1]+MWSY3$Sol[,7]+(MWSY3$Sol[,2]+MWSY3$Sol[,17])*0.91+(MWSY3$Sol[,3])*0.91^2))-TTmass$mean
+TTmass$elm <-      (exp(MWSY3$Sol[,1]+MWSY3$Sol[,8]+(MWSY3$Sol[,2]+MWSY3$Sol[,18])*0.91+(MWSY3$Sol[,3])*0.91^2))-TTmass$mean
+TTmass$hazel <-    (exp(MWSY3$Sol[,1]+MWSY3$Sol[,9]+(MWSY3$Sol[,2]+MWSY3$Sol[,19])*0.91+(MWSY3$Sol[,3])*0.91^2))-TTmass$mean
+TTmass$oak <-      (exp(MWSY3$Sol[,1]+MWSY3$Sol[,10]+(MWSY3$Sol[,2]+MWSY3$Sol[,20])*0.91+(MWSY3$Sol[,3])*0.91^2))-TTmass$mean
+TTmass$rowan <-    (exp(MWSY3$Sol[,1]+MWSY3$Sol[,11]+(MWSY3$Sol[,2]+MWSY3$Sol[,21])*0.91+(MWSY3$Sol[,3])*0.91^2))-TTmass$mean
+TTmass$sycamore <- (exp(MWSY3$Sol[,1]+MWSY3$Sol[,12]+(MWSY3$Sol[,2]+MWSY3$Sol[,22])*0.91+(MWSY3$Sol[,3])*0.91^2))-TTmass$mean
+TTmass$willow <-   (exp(MWSY3$Sol[,1]+MWSY3$Sol[,13]+(MWSY3$Sol[,2]+MWSY3$Sol[,23])*0.91+(MWSY3$Sol[,3])*0.91^2))-TTmass$mean
 
 TTmass.cropped <- TTmass[,2:11] # crop to just the columns wanted
 TTmass2 <- data.frame(treetaxa=c(colnames(TTmass.cropped))) #dataframe with column for yearsite 
@@ -2164,6 +2225,133 @@ ggplot(TTmass2, aes(treetaxa, coeff))+
   labs(tag = "Day160")+
   theme(text = element_text(size=15))
 
+
+#### Day 165 (0.9428571) difference to mean ####
+Alder165 <-    (exp(MWSY3$Sol[,1]+MWSY3$Sol[,4]+(MWSY3$Sol[,2]+MWSY3$Sol[,14])*0.943+(MWSY3$Sol[,3])*0.943^2))-(exp(MWSY3$Sol[,1]+MWSY3$Sol[,2]*0.943+MWSY3$Sol[,3]*0.943^2))
+Ash165 <-      (exp(MWSY3$Sol[,1]+MWSY3$Sol[,5]+(MWSY3$Sol[,2]+MWSY3$Sol[,15])*0.943+(MWSY3$Sol[,3])*0.943^2))-(exp(MWSY3$Sol[,1]+MWSY3$Sol[,2]*0.943+MWSY3$Sol[,3]*0.943^2))
+Beech165 <-    (exp(MWSY3$Sol[,1]+MWSY3$Sol[,6]+(MWSY3$Sol[,2]+MWSY3$Sol[,16])*0.943+(MWSY3$Sol[,3])*0.943^2))-(exp(MWSY3$Sol[,1]+MWSY3$Sol[,2]*0.943+MWSY3$Sol[,3]*0.943^2))
+Birch165 <-    (exp(MWSY3$Sol[,1]+MWSY3$Sol[,7]+(MWSY3$Sol[,2]+MWSY3$Sol[,17])*0.943+(MWSY3$Sol[,3])*0.943^2))-(exp(MWSY3$Sol[,1]+MWSY3$Sol[,2]*0.943+MWSY3$Sol[,3]*0.943^2))
+Elm165 <-      (exp(MWSY3$Sol[,1]+MWSY3$Sol[,8]+(MWSY3$Sol[,2]+MWSY3$Sol[,18])*0.943+(MWSY3$Sol[,3])*0.943^2))-(exp(MWSY3$Sol[,1]+MWSY3$Sol[,2]*0.943+MWSY3$Sol[,3]*0.943^2))
+Hazel165 <-    (exp(MWSY3$Sol[,1]+MWSY3$Sol[,9]+(MWSY3$Sol[,2]+MWSY3$Sol[,19])*0.943+(MWSY3$Sol[,3])*0.943^2))-(exp(MWSY3$Sol[,1]+MWSY3$Sol[,2]*0.943+MWSY3$Sol[,3]*0.943^2))
+Oak165 <-      (exp(MWSY3$Sol[,1]+MWSY3$Sol[,10]+(MWSY3$Sol[,2]+MWSY3$Sol[,20])*0.943+(MWSY3$Sol[,3])*0.943^2))-(exp(MWSY3$Sol[,1]+MWSY3$Sol[,2]*0.943+MWSY3$Sol[,3]*0.943^2))
+Rowan165 <-    (exp(MWSY3$Sol[,1]+MWSY3$Sol[,11]+(MWSY3$Sol[,2]+MWSY3$Sol[,21])*0.943+(MWSY3$Sol[,3])*0.943^2))-(exp(MWSY3$Sol[,1]+MWSY3$Sol[,2]*0.943+MWSY3$Sol[,3]*0.943^2))
+Sycamore165 <- (exp(MWSY3$Sol[,1]+MWSY3$Sol[,12]+(MWSY3$Sol[,2]+MWSY3$Sol[,22])*0.943+(MWSY3$Sol[,3])*0.943^2))-(exp(MWSY3$Sol[,1]+MWSY3$Sol[,2]*0.943+MWSY3$Sol[,3]*0.943^2))
+Willow165 <-   (exp(MWSY3$Sol[,1]+MWSY3$Sol[,13]+(MWSY3$Sol[,2]+MWSY3$Sol[,23])*0.943+(MWSY3$Sol[,3])*0.943^2))-(exp(MWSY3$Sol[,1]+MWSY3$Sol[,2]*0.943+MWSY3$Sol[,3]*0.943^2))
+
+Mass165 <- data.frame(TT=c("Alder","Ash","Beech","Birch","Elm","Hazel","Oak", "Rowan","Sycamore","Willow"),
+                    mean=c(mean(Alder165), mean(Ash165), mean(Beech165), mean(Birch165), mean(Elm165), mean(Hazel165), mean(Oak165), mean(Rowan165), mean(Sycamore165), mean(Willow165)),
+                    lowci=c(HPDinterval(Alder165)[1],HPDinterval(Ash165)[1],HPDinterval(Beech165)[1],HPDinterval(Birch165)[1],HPDinterval(Elm165)[1],HPDinterval(Hazel165)[1],HPDinterval(Oak165)[1],HPDinterval(Rowan165)[1],HPDinterval(Sycamore165)[1],HPDinterval(Willow165)[1]),
+                    upci=c(HPDinterval(Alder165)[2],HPDinterval(Ash165)[2],HPDinterval(Beech165)[2],HPDinterval(Birch165)[2],HPDinterval(Elm165)[2],HPDinterval(Hazel165)[2],HPDinterval(Oak165)[2],HPDinterval(Rowan165)[2],HPDinterval(Sycamore165)[2],HPDinterval(Willow165)[2]))
+
+Mass1 <- ggplot(Mass165, aes(fct_rev(TT), mean))+
+  geom_point(size=2, alpha=0.9)+
+  geom_errorbar(aes(ymax=upci, ymin=lowci, width=0.5))+
+  geom_hline(yintercept=0, linetype="dashed", colour="red", size=0.3)+  
+  coord_flip()+
+  xlab("Tree Taxon")+
+  ylab("Mass difference to mean (g)")+
+  theme_bw()+
+  labs(tag = "Day165")+
+  theme(text=element_text(size= 20))
+
+
+#### Difference to oak (on 165: 0.9428571) #### 
+
+AlderOD <-    (exp(MWSY3$Sol[,1]+MWSY3$Sol[,4]+(MWSY3$Sol[,2]+MWSY3$Sol[,14])*0.943+(MWSY3$Sol[,3])*0.943^2))-(exp(MWSY3$Sol[,1]+MWSY3$Sol[,10]+(MWSY3$Sol[,2]+MWSY3$Sol[,20])*0.943+(MWSY3$Sol[,3])*0.943^2))
+AshOD <-      (exp(MWSY3$Sol[,1]+MWSY3$Sol[,5]+(MWSY3$Sol[,2]+MWSY3$Sol[,15])*0.943+(MWSY3$Sol[,3])*0.943^2))-(exp(MWSY3$Sol[,1]+MWSY3$Sol[,10]+(MWSY3$Sol[,2]+MWSY3$Sol[,20])*0.943+(MWSY3$Sol[,3])*0.943^2))
+BeechOD <-    (exp(MWSY3$Sol[,1]+MWSY3$Sol[,6]+(MWSY3$Sol[,2]+MWSY3$Sol[,16])*0.943+(MWSY3$Sol[,3])*0.943^2))-(exp(MWSY3$Sol[,1]+MWSY3$Sol[,10]+(MWSY3$Sol[,2]+MWSY3$Sol[,20])*0.943+(MWSY3$Sol[,3])*0.943^2))
+BirchOD <-    (exp(MWSY3$Sol[,1]+MWSY3$Sol[,7]+(MWSY3$Sol[,2]+MWSY3$Sol[,17])*0.943+(MWSY3$Sol[,3])*0.943^2))-(exp(MWSY3$Sol[,1]+MWSY3$Sol[,10]+(MWSY3$Sol[,2]+MWSY3$Sol[,20])*0.943+(MWSY3$Sol[,3])*0.943^2))
+ElmOD <-      (exp(MWSY3$Sol[,1]+MWSY3$Sol[,8]+(MWSY3$Sol[,2]+MWSY3$Sol[,18])*0.943+(MWSY3$Sol[,3])*0.943^2))-(exp(MWSY3$Sol[,1]+MWSY3$Sol[,10]+(MWSY3$Sol[,2]+MWSY3$Sol[,20])*0.943+(MWSY3$Sol[,3])*0.943^2))
+HazelOD <-    (exp(MWSY3$Sol[,1]+MWSY3$Sol[,9]+(MWSY3$Sol[,2]+MWSY3$Sol[,19])*0.943+(MWSY3$Sol[,3])*0.943^2))-(exp(MWSY3$Sol[,1]+MWSY3$Sol[,10]+(MWSY3$Sol[,2]+MWSY3$Sol[,20])*0.943+(MWSY3$Sol[,3])*0.943^2))
+RowanOD <-    (exp(MWSY3$Sol[,1]+MWSY3$Sol[,11]+(MWSY3$Sol[,2]+MWSY3$Sol[,21])*0.943+(MWSY3$Sol[,3])*0.943^2))-(exp(MWSY3$Sol[,1]+MWSY3$Sol[,10]+(MWSY3$Sol[,2]+MWSY3$Sol[,20])*0.943+(MWSY3$Sol[,3])*0.943^2))
+SycamoreOD <- (exp(MWSY3$Sol[,1]+MWSY3$Sol[,12]+(MWSY3$Sol[,2]+MWSY3$Sol[,22])*0.943+(MWSY3$Sol[,3])*0.943^2))-(exp(MWSY3$Sol[,1]+MWSY3$Sol[,10]+(MWSY3$Sol[,2]+MWSY3$Sol[,20])*0.943+(MWSY3$Sol[,3])*0.943^2))
+WillowOD <-   (exp(MWSY3$Sol[,1]+MWSY3$Sol[,13]+(MWSY3$Sol[,2]+MWSY3$Sol[,23])*0.943+(MWSY3$Sol[,3])*0.943^2))-(exp(MWSY3$Sol[,1]+MWSY3$Sol[,10]+(MWSY3$Sol[,2]+MWSY3$Sol[,20])*0.943+(MWSY3$Sol[,3])*0.943^2))
+
+OD165 <- data.frame(TT=c("Alder","Ash","Beech","Birch","Elm","Hazel","Rowan","Sycamore","Willow"),
+                   mean=c(mean(AlderOD), mean(AshOD), mean(BeechOD), mean(BirchOD), mean(ElmOD), mean(HazelOD), mean(RowanOD), mean(SycamoreOD), mean(WillowOD)),
+                   lowci=c(HPDinterval(AlderOD)[1],HPDinterval(AshOD)[1],HPDinterval(BeechOD)[1],HPDinterval(BirchOD)[1],HPDinterval(ElmOD)[1],HPDinterval(HazelOD)[1],HPDinterval(RowanOD)[1],HPDinterval(SycamoreOD)[1],HPDinterval(WillowOD)[1]),
+                   upci=c(HPDinterval(AlderOD)[2],HPDinterval(AshOD)[2],HPDinterval(BeechOD)[2],HPDinterval(BirchOD)[2],HPDinterval(ElmOD)[2],HPDinterval(HazelOD)[2],HPDinterval(RowanOD)[2],HPDinterval(SycamoreOD)[2],HPDinterval(WillowOD)[2]))
+
+Mass2 <- ggplot(OD165, aes(fct_rev(TT), mean))+
+  geom_point(size=2, alpha=0.9)+
+  geom_errorbar(aes(ymax=upci, ymin=lowci, width=0.5))+
+  geom_hline(yintercept=0, linetype="dashed", colour="red", size=0.3)+  
+  coord_flip()+
+  xlab("")+
+  ylab("Mass difference to oak (g)")+
+  annotate("text", label="*", x="Beech", y=-0.0018, size=7)+
+  annotate("text", label="*", x="Birch", y=-0.0008, size=7)+
+  annotate("text", label="*", x="Willow", y=-0.002, size=7)+
+  theme_bw()+
+  labs(tag = "  ")+
+  theme(text=element_text(size= 20))
+
+col1 <- grid.arrange(Mass1, nrow = 1, heights = 1)
+col2 <- grid.arrange(Mass2, nrow = 1, heights = 1)
+MassDif165 <- grid.arrange(col1, col2, ncol = 2, widths = c(1.2,1))
+
+#### Difference to oak (on 168: 0.96) #### 
+
+AlderOD <-    (exp(MWSY3$Sol[,1]+MWSY3$Sol[,4]+(MWSY3$Sol[,2]+MWSY3$Sol[,14])*0.96+(MWSY3$Sol[,3])*0.96^2))-(exp(MWSY3$Sol[,1]+MWSY3$Sol[,10]+(MWSY3$Sol[,2]+MWSY3$Sol[,20])*0.96+(MWSY3$Sol[,3])*0.96^2))
+AshOD <-      (exp(MWSY3$Sol[,1]+MWSY3$Sol[,5]+(MWSY3$Sol[,2]+MWSY3$Sol[,15])*0.96+(MWSY3$Sol[,3])*0.96^2))-(exp(MWSY3$Sol[,1]+MWSY3$Sol[,10]+(MWSY3$Sol[,2]+MWSY3$Sol[,20])*0.96+(MWSY3$Sol[,3])*0.96^2))
+BeechOD <-    (exp(MWSY3$Sol[,1]+MWSY3$Sol[,6]+(MWSY3$Sol[,2]+MWSY3$Sol[,16])*0.96+(MWSY3$Sol[,3])*0.96^2))-(exp(MWSY3$Sol[,1]+MWSY3$Sol[,10]+(MWSY3$Sol[,2]+MWSY3$Sol[,20])*0.96+(MWSY3$Sol[,3])*0.96^2))
+BirchOD <-    (exp(MWSY3$Sol[,1]+MWSY3$Sol[,7]+(MWSY3$Sol[,2]+MWSY3$Sol[,17])*0.96+(MWSY3$Sol[,3])*0.96^2))-(exp(MWSY3$Sol[,1]+MWSY3$Sol[,10]+(MWSY3$Sol[,2]+MWSY3$Sol[,20])*0.96+(MWSY3$Sol[,3])*0.96^2))
+ElmOD <-      (exp(MWSY3$Sol[,1]+MWSY3$Sol[,8]+(MWSY3$Sol[,2]+MWSY3$Sol[,18])*0.96+(MWSY3$Sol[,3])*0.96^2))-(exp(MWSY3$Sol[,1]+MWSY3$Sol[,10]+(MWSY3$Sol[,2]+MWSY3$Sol[,20])*0.96+(MWSY3$Sol[,3])*0.96^2))
+HazelOD <-    (exp(MWSY3$Sol[,1]+MWSY3$Sol[,9]+(MWSY3$Sol[,2]+MWSY3$Sol[,19])*0.96+(MWSY3$Sol[,3])*0.96^2))-(exp(MWSY3$Sol[,1]+MWSY3$Sol[,10]+(MWSY3$Sol[,2]+MWSY3$Sol[,20])*0.96+(MWSY3$Sol[,3])*0.96^2))
+RowanOD <-    (exp(MWSY3$Sol[,1]+MWSY3$Sol[,11]+(MWSY3$Sol[,2]+MWSY3$Sol[,21])*0.96+(MWSY3$Sol[,3])*0.96^2))-(exp(MWSY3$Sol[,1]+MWSY3$Sol[,10]+(MWSY3$Sol[,2]+MWSY3$Sol[,20])*0.96+(MWSY3$Sol[,3])*0.96^2))
+SycamoreOD <- (exp(MWSY3$Sol[,1]+MWSY3$Sol[,12]+(MWSY3$Sol[,2]+MWSY3$Sol[,22])*0.96+(MWSY3$Sol[,3])*0.96^2))-(exp(MWSY3$Sol[,1]+MWSY3$Sol[,10]+(MWSY3$Sol[,2]+MWSY3$Sol[,20])*0.96+(MWSY3$Sol[,3])*0.96^2))
+WillowOD <-   (exp(MWSY3$Sol[,1]+MWSY3$Sol[,13]+(MWSY3$Sol[,2]+MWSY3$Sol[,23])*0.96+(MWSY3$Sol[,3])*0.96^2))-(exp(MWSY3$Sol[,1]+MWSY3$Sol[,10]+(MWSY3$Sol[,2]+MWSY3$Sol[,20])*0.96+(MWSY3$Sol[,3])*0.96^2))
+
+OD168 <- data.frame(TT=c("Alder","Ash","Beech","Birch","Elm","Hazel","Rowan","Sycamore","Willow"),
+                    mean=c(mean(AlderOD), mean(AshOD), mean(BeechOD), mean(BirchOD), mean(ElmOD), mean(HazelOD), mean(RowanOD), mean(SycamoreOD), mean(WillowOD)),
+                    lowci=c(HPDinterval(AlderOD)[1],HPDinterval(AshOD)[1],HPDinterval(BeechOD)[1],HPDinterval(BirchOD)[1],HPDinterval(ElmOD)[1],HPDinterval(HazelOD)[1],HPDinterval(RowanOD)[1],HPDinterval(SycamoreOD)[1],HPDinterval(WillowOD)[1]),
+                    upci=c(HPDinterval(AlderOD)[2],HPDinterval(AshOD)[2],HPDinterval(BeechOD)[2],HPDinterval(BirchOD)[2],HPDinterval(ElmOD)[2],HPDinterval(HazelOD)[2],HPDinterval(RowanOD)[2],HPDinterval(SycamoreOD)[2],HPDinterval(WillowOD)[2]))
+
+Mass4 <- ggplot(OD168, aes(fct_rev(TT), mean))+
+  geom_point(size=2, alpha=0.9)+
+  geom_errorbar(aes(ymax=upci, ymin=lowci, width=0.5))+
+  geom_hline(yintercept=0, linetype="dashed", colour="red", size=0.3)+  
+  coord_flip()+
+  xlab("")+
+  ylab("Mass difference to oak (g)")+
+  annotate("text", label="*", x="Beech", y=-0.0018, size=7)+
+  annotate("text", label="*", x="Birch", y=-0.0006, size=7)+
+  annotate("text", label="*", x="Willow", y=-0.0018, size=7)+
+  theme_bw()+
+  labs(tag = "  ")+
+  theme(text=element_text(size= 20))
+
+#### Day 168 (0.96) difference to mean ####
+Alder168 <-    (exp(MWSY3$Sol[,1]+MWSY3$Sol[,4]+(MWSY3$Sol[,2]+MWSY3$Sol[,14])*0.96+(MWSY3$Sol[,3])*0.96^2))-(exp(MWSY3$Sol[,1]+MWSY3$Sol[,2]*0.96+MWSY3$Sol[,3]*0.96^2))
+Ash168 <-      (exp(MWSY3$Sol[,1]+MWSY3$Sol[,5]+(MWSY3$Sol[,2]+MWSY3$Sol[,15])*0.96+(MWSY3$Sol[,3])*0.96^2))-(exp(MWSY3$Sol[,1]+MWSY3$Sol[,2]*0.96+MWSY3$Sol[,3]*0.96^2))
+Beech168 <-    (exp(MWSY3$Sol[,1]+MWSY3$Sol[,6]+(MWSY3$Sol[,2]+MWSY3$Sol[,16])*0.96+(MWSY3$Sol[,3])*0.96^2))-(exp(MWSY3$Sol[,1]+MWSY3$Sol[,2]*0.96+MWSY3$Sol[,3]*0.96^2))
+Birch168 <-    (exp(MWSY3$Sol[,1]+MWSY3$Sol[,7]+(MWSY3$Sol[,2]+MWSY3$Sol[,17])*0.96+(MWSY3$Sol[,3])*0.96^2))-(exp(MWSY3$Sol[,1]+MWSY3$Sol[,2]*0.96+MWSY3$Sol[,3]*0.96^2))
+Elm168 <-      (exp(MWSY3$Sol[,1]+MWSY3$Sol[,8]+(MWSY3$Sol[,2]+MWSY3$Sol[,18])*0.96+(MWSY3$Sol[,3])*0.96^2))-(exp(MWSY3$Sol[,1]+MWSY3$Sol[,2]*0.96+MWSY3$Sol[,3]*0.96^2))
+Hazel168 <-    (exp(MWSY3$Sol[,1]+MWSY3$Sol[,9]+(MWSY3$Sol[,2]+MWSY3$Sol[,19])*0.96+(MWSY3$Sol[,3])*0.96^2))-(exp(MWSY3$Sol[,1]+MWSY3$Sol[,2]*0.96+MWSY3$Sol[,3]*0.96^2))
+Oak168 <-      (exp(MWSY3$Sol[,1]+MWSY3$Sol[,10]+(MWSY3$Sol[,2]+MWSY3$Sol[,20])*0.96+(MWSY3$Sol[,3])*0.96^2))-(exp(MWSY3$Sol[,1]+MWSY3$Sol[,2]*0.96+MWSY3$Sol[,3]*0.96^2))
+Rowan168 <-    (exp(MWSY3$Sol[,1]+MWSY3$Sol[,11]+(MWSY3$Sol[,2]+MWSY3$Sol[,21])*0.96+(MWSY3$Sol[,3])*0.96^2))-(exp(MWSY3$Sol[,1]+MWSY3$Sol[,2]*0.96+MWSY3$Sol[,3]*0.96^2))
+Sycamore168 <- (exp(MWSY3$Sol[,1]+MWSY3$Sol[,12]+(MWSY3$Sol[,2]+MWSY3$Sol[,22])*0.96+(MWSY3$Sol[,3])*0.96^2))-(exp(MWSY3$Sol[,1]+MWSY3$Sol[,2]*0.96+MWSY3$Sol[,3]*0.96^2))
+Willow168 <-   (exp(MWSY3$Sol[,1]+MWSY3$Sol[,13]+(MWSY3$Sol[,2]+MWSY3$Sol[,23])*0.96+(MWSY3$Sol[,3])*0.96^2))-(exp(MWSY3$Sol[,1]+MWSY3$Sol[,2]*0.96+MWSY3$Sol[,3]*0.96^2))
+
+Mass168 <- data.frame(TT=c("Alder","Ash","Beech","Birch","Elm","Hazel","Oak", "Rowan","Sycamore","Willow"),
+                      mean=c(mean(Alder168), mean(Ash168), mean(Beech168), mean(Birch168), mean(Elm168), mean(Hazel168), mean(Oak168), mean(Rowan168), mean(Sycamore168), mean(Willow168)),
+                      lowci=c(HPDinterval(Alder168)[1],HPDinterval(Ash168)[1],HPDinterval(Beech168)[1],HPDinterval(Birch168)[1],HPDinterval(Elm168)[1],HPDinterval(Hazel168)[1],HPDinterval(Oak168)[1],HPDinterval(Rowan168)[1],HPDinterval(Sycamore168)[1],HPDinterval(Willow168)[1]),
+                      upci=c(HPDinterval(Alder168)[2],HPDinterval(Ash168)[2],HPDinterval(Beech168)[2],HPDinterval(Birch168)[2],HPDinterval(Elm168)[2],HPDinterval(Hazel168)[2],HPDinterval(Oak168)[2],HPDinterval(Rowan168)[2],HPDinterval(Sycamore168)[2],HPDinterval(Willow168)[2]))
+
+Mass3 <- ggplot(Mass168, aes(fct_rev(TT), mean))+
+  geom_point(size=2, alpha=0.9)+
+  geom_errorbar(aes(ymax=upci, ymin=lowci, width=0.5))+
+  geom_hline(yintercept=0, linetype="dashed", colour="red", size=0.3)+  
+  coord_flip()+
+  xlab("Tree Taxon")+
+  ylab("Mass difference to mean (g)")+
+  theme_bw()+
+  labs(tag = "Day168")+
+  theme(text=element_text(size= 20))
+
+col1 <- grid.arrange(Mass3, nrow = 1, heights = 1)
+col2 <- grid.arrange(Mass4, nrow = 1, heights = 1)
+MassDif168 <- grid.arrange(col1, col2, ncol = 2, widths = c(1.2,1))
 #############################
 #### Looking at siteyear ####
 #############################
