@@ -19,6 +19,9 @@ axis(side=1,labels=F)
 axis(side=2,labels=F) 
 text(5.5,132, "A", col="red")
 text(8.5,132, "B", col="red")
+text(4.6, 82.5, "producer", col=3, cex=0.7)
+text(5.15, 79, "primary consumer", col=1, cex=0.7)
+text(5.35, 75.5, "secondary consumer", col=2, cex=0.7) # 9'X7.5"
 
 # curves for caterpillar and bird at 2 temps
 curves <- data.frame(x=seq(-30,30,0.1))
@@ -166,3 +169,52 @@ axis(side=1,labels=F)
 axis(side=2,labels=F) 
 
 
+
+#### different tree taxa peaks ####
+
+x <- seq(-30,30,0.01)
+y1  <- -x^2 + x +1
+y2 <- -x^2 + 3*x -1.5
+y3 <- -4*x^2 + -x +1.5
+y4 <- -2*x^2 + 10*x -11.5
+sum1 <- exp(y1)+exp(y2)+exp(y3)+exp(y4)
+  
+par(mfcol=c(2,1), mar=c(1,1,1,1), cex=1.5)#, oma=c(2,2,1,1),cex=2)
+plot(x, exp(y1), type="l", col="blue", ylim=c(0,8), xlim=c(-3,5.5), lwd=2, xlab="", ylab="", xaxt='n', yaxt='n')
+points(x, exp(y2), type="l", col="green3", lwd=2)
+points(x, exp(y3), type="l", col="darkgreen", lwd=2)  
+points(x, exp(y4), type="l", col="purple", lwd=2) 
+points(x,sum1, type="l", lwd=2, lty=2)
+title(ylab="Abundance", outer=TRUE, line=0)
+title(xlab="Date", outer=TRUE, line=0)
+#plot(x, exp(y5), type="l", col="white", ylim=c(0,8), xlim=c(-3,5.5), lwd=2, xlab="", ylab="", xaxt='n', yaxt='n')
+
+#axis(side=1,labels=F) 
+#axis(side=2,labels=F) 
+
+y5 <- -0.5*x^2 + 3.5*x -5.5
+y6 <- -0.3*x^2 + x 
+y7 <- -0.5*x^2 + -0.2*x +0.8
+y8 <- -4*x^2 + 14*x -11
+sum2 <- exp(y5)+exp(y6)+exp(y7)+exp(y8)
+sum3 <- exp(y5)+exp(y6)+exp(y7)+exp(y8)+exp(y1)+exp(y2)+exp(y3)+exp(y4)
+
+#par(mfcol=c(1,2), mar=c(1,1,1,1), cex=1.5)#, oma=c(2,2,1,1),cex=2)
+plot(x, exp(y5), type="l", col="darkred", ylim=c(0,8), xlim=c(-3,5.5), lwd=2, xlab="", ylab="", xaxt='n', yaxt='n')
+points(x, exp(y6), type="l", col="red2", lwd=2)
+points(x, exp(y7), type="l", col="orange", lwd=2)  
+points(x, exp(y8), type="l", col="gold2", lwd=2) 
+points(x,sum2, type="l", lwd=2, lty=2)
+title(ylab="Abundance", outer=TRUE, line=0)
+title(xlab="Date", outer=TRUE, line=0)  #saving as 7"x5"
+
+#par(mfcol=c(1,1), mar=c(1,1,1,1), cex=1.5)#, oma=c(2,2,1,1),cex=2)
+plot(x, exp(y5), type="l", col="darkred", ylim=c(0,9), xlim=c(-3,5.5), lwd=2, xlab="", ylab="", xaxt='n', yaxt='n')
+points(x, exp(y6), type="l", col="red2", lwd=2)
+points(x, exp(y7), type="l", col="orange", lwd=2)  
+points(x, exp(y8), type="l", col="gold2", lwd=2) 
+points(x, exp(y1), type="l", col="blue", lwd=2)
+points(x, exp(y2), type="l", col="green3", lwd=2)
+points(x, exp(y3), type="l", col="darkgreen", lwd=2)  
+points(x, exp(y4), type="l", col="purple", lwd=2) 
+points(x,sum3, type="l", lwd=2, lty=2)
