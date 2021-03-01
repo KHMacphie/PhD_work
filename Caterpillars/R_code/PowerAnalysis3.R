@@ -42,10 +42,10 @@ library(MCMCglmm)
 #### Parts that can be manipulated: ####
 ########################################
 # multiples of 5 trees per species to spread treatments over dates and trees
-reps.oak <- 4 # (so reps=2 = 10 trees)                                            **********
-reps.syc <- 3 #                                                                   **********
+reps.oak <- 8 # (so reps=2 = 10 trees)                                            **********
+#reps.syc <- 3 #                                                                   **********
 propdif <- 0.5 #proportional difference per 2 day difference in treatment         **********
-repeats <- 100  # how many simulations to run                                     **********
+repeats <- 50  # how many simulations to run                                     **********
 ########################################
 
 
@@ -99,19 +99,19 @@ df.oak$branch <- paste(df.oak$tree, df.oak$branch) #branch ID by species, tree a
 df.oak$rep <- NULL
 
 #Sort syc dataframe
-df.syc <- df.5trees
-df.syc$treesp <- rep("syc", length(df.syc$date)) #column for treesp
-df.syc$tree <- paste(df.syc$treesp, df.syc$tree) #tree ID by species and tree letter
+#df.syc <- df.5trees
+#df.syc$treesp <- rep("syc", length(df.syc$date)) #column for treesp
+#df.syc$tree <- paste(df.syc$treesp, df.syc$tree) #tree ID by species and tree letter
 
-df.syc <- do.call("rbind", replicate(reps.syc, df.syc, simplify = FALSE)) #repeat the syc dataframe as many times as its being replicated..
-df.syc$rep <- rep(1:reps.syc, each=(length(df.syc$date)/reps.syc))#new column with repeat number for each time the df was repeated 
+#df.syc <- do.call("rbind", replicate(reps.syc, df.syc, simplify = FALSE)) #repeat the syc dataframe as many times as its being replicated..
+#df.syc$rep <- rep(1:reps.syc, each=(length(df.syc$date)/reps.syc))#new column with repeat number for each time the df was repeated 
 
-df.syc$tree <- paste(df.syc$tree, df.syc$rep) #Tree ID individual since df replication
-df.syc$branch <- paste(df.syc$tree, df.syc$branch) #branch ID by species, tree and branch letters
-df.syc$rep <- NULL
+#df.syc$tree <- paste(df.syc$tree, df.syc$rep) #Tree ID individual since df replication
+#df.syc$branch <- paste(df.syc$tree, df.syc$branch) #branch ID by species, tree and branch letters
+#df.syc$rep <- NULL
 
 # one dataframe for all samples
-df <- rbind(df.oak, df.syc)
+df <- df.oak #rbind(df.oak, df.syc)
 df$treedate <- paste(df$tree, df$date) #treedate for random term
 df$branchdate <- paste(df$branch, df$date) #branch date for random term (residual for simulation not in model)
 
@@ -129,6 +129,13 @@ sd.branch <- sqrt(0.257/2) #treeID var split between tree and branch
 sd.treedate <- sqrt(0.666/2) #residual var split between treedate and branchdate
 sd.branchdate <- sqrt(0.666/2) #residual var split between treedate and branchdate
 
+#data frame for model coefficients and p-values
+
+modelcoeffs <- data.frame(rep=seq(1,repeats,1)) #adjust here for number of repeats
+
+#loop for simulating the response, running model and storing relevant outputs
+for(i in 1:length(modelcoeffs$rep)){   
+  
 # assigning effect magnitude to each random effect
 dates <- data.frame(date=unique(df$date))
 dates$eff.date <- rnorm(n.date, mean=0, sd=sd.date)
@@ -155,61 +162,57 @@ df$eff.branchdate <- branchdates$eff.branchdate[store5]
 
 df$treesptrmt <- paste(df$treesp, df$treatment)
 df.d2.oak <- subset(df, treesptrmt=="oak d2")
-df.d2.syc <- subset(df, treesptrmt=="syc d2")
+#df.d2.syc <- subset(df, treesptrmt=="syc d2")
 df.d4.oak <- subset(df, treesptrmt=="oak d4")
-df.d4.syc <- subset(df, treesptrmt=="syc d4")
+#df.d4.syc <- subset(df, treesptrmt=="syc d4")
 df.d6.oak <- subset(df, treesptrmt=="oak d6")
-df.d6.syc <- subset(df, treesptrmt=="syc d6")
+#df.d6.syc <- subset(df, treesptrmt=="syc d6")
 df.d8.oak <- subset(df, treesptrmt=="oak d8")
-df.d8.syc <- subset(df, treesptrmt=="syc d8")
+#df.d8.syc <- subset(df, treesptrmt=="syc d8")
 df.d10.oak <- subset(df, treesptrmt=="oak d10")
-df.d10.syc <- subset(df, treesptrmt=="syc d10")
+#df.d10.syc <- subset(df, treesptrmt=="syc d10")
 
 # sample size for each treatment on each treesp
 n.d2.oak <- length(df.d2.oak$branchdate)
-n.d2.syc <- length(df.d2.syc$branchdate)
+#n.d2.syc <- length(df.d2.syc$branchdate)
 n.d4.oak <- length(df.d4.oak$branchdate)
-n.d4.syc <- length(df.d4.syc$branchdate)
+#n.d4.syc <- length(df.d4.syc$branchdate)
 n.d6.oak <- length(df.d6.oak$branchdate)
-n.d6.syc <- length(df.d6.syc$branchdate)
+#n.d6.syc <- length(df.d6.syc$branchdate)
 n.d8.oak <- length(df.d8.oak$branchdate)
-n.d8.syc <- length(df.d8.syc$branchdate)
+#n.d8.syc <- length(df.d8.syc$branchdate)
 n.d10.oak <- length(df.d10.oak$branchdate)
-n.d10.syc <- length(df.d10.syc$branchdate)
+#n.d10.syc <- length(df.d10.syc$branchdate)
 
-df <- rbind(df.d2.oak,df.d2.syc,df.d4.oak,df.d4.syc,df.d6.oak,df.d6.syc,df.d8.oak,df.d8.syc,df.d10.oak,df.d10.syc)
+df <- rbind(df.d2.oak,df.d4.oak,df.d6.oak,df.d8.oak,df.d10.oak) #rbind(df.d2.oak,df.d2.syc,df.d4.oak,df.d4.syc,df.d6.oak,df.d6.syc,df.d8.oak,df.d8.syc,df.d10.oak,df.d10.syc)
 df$treatment<- relevel(df$treatment, ref="d4") #d4 as reference level, oak automatic because alphabetical
 
 #Difference between each treatment: going for 2 days = 50% change in abundance
 intercept <- -4.09 #intercept from TTHA
 d4.oak.mean <- intercept+0.45 #oak random effect in TTHA
-d4.syc.mean <- intercept+0.12 #syc random effect in TTHA
+#d4.syc.mean <- intercept+0.12 #syc random effect in TTHA
 d2.oak.mean <- d4.oak.mean+log(1-propdif)   
-d2.syc.mean <- d4.syc.mean+log(1-propdif)
+#d2.syc.mean <- d4.syc.mean+log(1-propdif)
 d6.oak.mean <- d4.oak.mean+log(1+propdif)
-d6.syc.mean <- d4.syc.mean+log(1+propdif)
+#d6.syc.mean <- d4.syc.mean+log(1+propdif)
 d8.oak.mean <- d4.oak.mean+log(1+2*propdif)
-d8.syc.mean <- d4.syc.mean+log(1+2*propdif)
+#d8.syc.mean <- d4.syc.mean+log(1+2*propdif)
 d10.oak.mean <- d4.oak.mean+log(1+3*propdif)
-d10.syc.mean <- d4.syc.mean+log(1+3*propdif)
+#d10.syc.mean <- d4.syc.mean+log(1+3*propdif)
 
-#data frame for model coefficients and p-values
 
-modelcoeffs <- data.frame(rep=seq(1,repeats,1)) #adjust here for number of repeats
-
-#loop for simulating the response, running model and storing relevant outputs
-for(i in 1:length(modelcoeffs$rep)){   
-  df$poisresponse <- c(
+#simulating the response, running model and storing relevant outputs  
+df$poisresponse <- c(
     rpois(n.d2.oak,  exp(d2.oak.mean + df.d2.oak$eff.date + df.d2.oak$eff.branch + df.d2.oak$eff.tree + df.d2.oak$eff.treedate + df.d2.oak$eff.branchdate)), 
-    rpois(n.d2.syc,  exp(d2.syc.mean + df.d2.syc$eff.date + df.d2.syc$eff.branch + df.d2.syc$eff.tree + df.d2.syc$eff.treedate + df.d2.syc$eff.branchdate)), 
+    #rpois(n.d2.syc,  exp(d2.syc.mean + df.d2.syc$eff.date + df.d2.syc$eff.branch + df.d2.syc$eff.tree + df.d2.syc$eff.treedate + df.d2.syc$eff.branchdate)), 
     rpois(n.d4.oak,  exp(d4.oak.mean + df.d4.oak$eff.date + df.d4.oak$eff.branch + df.d4.oak$eff.tree + df.d4.oak$eff.treedate + df.d4.oak$eff.branchdate)),
-    rpois(n.d4.syc,  exp(d4.syc.mean + df.d4.syc$eff.date + df.d4.syc$eff.branch + df.d4.syc$eff.tree + df.d4.syc$eff.treedate + df.d4.syc$eff.branchdate)),
+    #rpois(n.d4.syc,  exp(d4.syc.mean + df.d4.syc$eff.date + df.d4.syc$eff.branch + df.d4.syc$eff.tree + df.d4.syc$eff.treedate + df.d4.syc$eff.branchdate)),
     rpois(n.d6.oak,  exp(d6.oak.mean + df.d6.oak$eff.date + df.d6.oak$eff.branch + df.d6.oak$eff.tree + df.d6.oak$eff.treedate + df.d6.oak$eff.branchdate)), 
-    rpois(n.d6.syc,  exp(d6.syc.mean + df.d6.syc$eff.date + df.d6.syc$eff.branch + df.d6.syc$eff.tree + df.d6.syc$eff.treedate + df.d6.syc$eff.branchdate)),
+    #rpois(n.d6.syc,  exp(d6.syc.mean + df.d6.syc$eff.date + df.d6.syc$eff.branch + df.d6.syc$eff.tree + df.d6.syc$eff.treedate + df.d6.syc$eff.branchdate)),
     rpois(n.d8.oak,  exp(d8.oak.mean + df.d8.oak$eff.date + df.d8.oak$eff.branch + df.d8.oak$eff.tree + df.d8.oak$eff.treedate + df.d8.oak$eff.branchdate)),
-    rpois(n.d8.syc,  exp(d8.syc.mean + df.d8.syc$eff.date + df.d8.syc$eff.branch + df.d8.syc$eff.tree + df.d8.syc$eff.treedate + df.d8.syc$eff.branchdate)),
-    rpois(n.d10.oak, exp(d10.oak.mean + df.d10.oak$eff.date + df.d10.oak$eff.branch + df.d10.oak$eff.tree + df.d10.oak$eff.treedate + df.d10.oak$eff.branchdate)),
-    rpois(n.d10.syc, exp(d10.syc.mean + df.d10.syc$eff.date + df.d10.syc$eff.branch + df.d10.syc$eff.tree + df.d10.syc$eff.treedate + df.d10.syc$eff.branchdate)))
+    #rpois(n.d8.syc,  exp(d8.syc.mean + df.d8.syc$eff.date + df.d8.syc$eff.branch + df.d8.syc$eff.tree + df.d8.syc$eff.treedate + df.d8.syc$eff.branchdate)),
+    rpois(n.d10.oak, exp(d10.oak.mean + df.d10.oak$eff.date + df.d10.oak$eff.branch + df.d10.oak$eff.tree + df.d10.oak$eff.treedate + df.d10.oak$eff.branchdate)))#,
+    #rpois(n.d10.syc, exp(d10.syc.mean + df.d10.syc$eff.date + df.d10.syc$eff.branch + df.d10.syc$eff.tree + df.d10.syc$eff.treedate + df.d10.syc$eff.branchdate)))
   
   k<-10000
   prior<-list(R=list(V=1,nu=0.02),
@@ -218,7 +221,7 @@ for(i in 1:length(modelcoeffs$rep)){
                      G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k),
                      G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k)))
   
-  poismodel <- MCMCglmm(poisresponse~treatment+treesp, random=~date+branch+tree+treedate, family = "poisson", data = df, nitt=500000, burnin=50000, prior=prior)
+  poismodel <- MCMCglmm(poisresponse~treatment, random=~date+branch+tree+treedate, family = "poisson", data = df, nitt=500000, burnin=50000, prior=prior)
   
   modelcoeffs$d4.mean[i] <- summary(poismodel)$solutions[1,1]
   modelcoeffs$d4.pval[i] <- summary(poismodel)$solutions[1,5]
@@ -230,13 +233,13 @@ for(i in 1:length(modelcoeffs$rep)){
   modelcoeffs$d8.pval[i] <- summary(poismodel)$solutions[4,5]
   modelcoeffs$d10.mean[i] <- summary(poismodel)$solutions[5,1]
   modelcoeffs$d10.pval[i] <- summary(poismodel)$solutions[5,5]
-  modelcoeffs$syc.mean[i] <- summary(poismodel)$solutions[6,1]
-  modelcoeffs$syc.pval[i] <- summary(poismodel)$solutions[6,5]
+  #modelcoeffs$syc.mean[i] <- summary(poismodel)$solutions[6,1]
+  #modelcoeffs$syc.pval[i] <- summary(poismodel)$solutions[6,5]
 }
 
 #what the coefficients should be
 true.d4.oak.mean <- intercept+0.45 #oak random effect in TTHA
-true.syc.dif <- d4.syc.mean-d4.oak.mean #syc random effect in TTHA
+#true.syc.dif <- d4.syc.mean-d4.oak.mean #syc random effect in TTHA
 true.d2.dif <- log(1-propdif)   
 true.d6.dif <- log(1+propdif)
 true.d8.dif <- log(1+2*propdif)
@@ -251,7 +254,9 @@ hist(modelcoeffs$d4.mean, breaks=100)
 abline(v=mean(modelcoeffs$d4.mean), col=2)
 abline(v=true.d4.oak.mean, col=3)
 legend("topleft", legend=(length(which(modelcoeffs$d4.pval<0.05))/repeats)*100, bty = "n")
-mtext(paste("Oak trees=",reps.oak*5,"   Sycamore trees=",reps.syc*5,"   Prop difference (2days)=",propdif,"   Nsim=",repeats),side = 3, line = -1, outer = TRUE)
+#mtext(paste("Oak trees=",reps.oak*5,"   Sycamore trees=",reps.syc*5,"   Prop difference (2days)=",propdif,"   Nsim=",repeats),side = 3, line = -1, outer = TRUE)
+mtext(paste("Oak trees=",reps.oak*5,"   Prop difference (2days)=",propdif,"   Nsim=",repeats),side = 3, line = -1, outer = TRUE)
+
 
 hist(modelcoeffs$d2.mean, breaks=100)
 abline(v=mean(modelcoeffs$d2.mean), col=2)
@@ -276,9 +281,9 @@ abline(v=true.d10.dif, col=3)
 
 legend("topleft", legend=(length(which(modelcoeffs$d10.pval<0.05))/repeats)*100, bty = "n")
 
-hist(modelcoeffs$syc.mean, breaks=100)
-abline(v=mean(modelcoeffs$syc.mean), col=2)
-abline(v=true.syc.dif, col=3)
-legend("topleft", legend=(length(which(modelcoeffs$syc.pval<0.05))/repeats)*100, bty = "n")
+#hist(modelcoeffs$syc.mean, breaks=100)
+#abline(v=mean(modelcoeffs$syc.mean), col=2)
+#abline(v=true.syc.dif, col=3)
+#legend("topleft", legend=(length(which(modelcoeffs$syc.pval<0.05))/repeats)*100, bty = "n")
 
 #save as 6"x8"
