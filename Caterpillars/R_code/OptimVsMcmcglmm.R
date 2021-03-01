@@ -105,6 +105,7 @@ for(i in 1:length(symetrics$siteyear)){
   symetrics$PSna[i] <- (length(which(is.na(PS)==TRUE)))/length(PS) #proportion NA
 }
 
+write.csv(symetrics, "~/Documents/Models/symetrics.csv", row.names = FALSE) 
 
 #### Optim ####
 
