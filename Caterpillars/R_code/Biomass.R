@@ -505,7 +505,7 @@ PW.5difplot <- ggplot(BMcurves, aes(fct_rev(TT), PW.5dif, colour=TT))+
   ylab("Relative Width (days)")+
   coord_flip()+
   geom_hline(yintercept=0, linetype="dashed", color = "black")+
-  theme(text = element_text(size=15))+#,axis.text.x = element_text(angle = 45, hjust=1))+
+  theme(text = element_text(size=15),axis.text.x = element_text(angle = 45, hjust=1))+
   guides(color = "none")+
   scale_colour_manual(values=AllTaxaCols)
 
@@ -542,9 +542,9 @@ PWdifplot <- ggplot(BMcurves, aes(fct_rev(TT), PWdif))+#, colour=TT))+
   geom_errorbar(aes(ymax=PWdifUCI, ymin=PWdifLCI, width=0.5))+
   theme_bw()+
   xlab("Tree Taxon")+
-  ylab("Relative Duration (days)")+
+  ylab("Duration (days)")+
   coord_flip()+
-  geom_hline(yintercept=0, linetype="dashed", color = "red")#+
+  geom_hline(yintercept=0, linetype="dashed", color = "black")+
 theme(text = element_text(size=15),axis.text.x = element_text(angle = 45, hjust=1))# saved as 6"x4"
 
 #### Supp. mat. Oak Difference PDHW ####
@@ -575,7 +575,7 @@ PDODplot <- ggplot(BMODcurves, aes(fct_rev(TT), PD))+#, colour=TT))+
   xlab("Tree Taxon")+
   ylab("Timing (days)")+
   coord_flip()+
-  geom_hline(yintercept=0, linetype="dashed", color = "red")+
+  geom_hline(yintercept=0, linetype="dashed", color = "black")+
   theme(text = element_text(size=15))#+
  # guides(color = "none")+
  # scale_colour_manual(values=NoOakCols)
@@ -587,7 +587,7 @@ PHpropODplot <- ggplot(BMODcurves, aes(fct_rev(TT), PHprop))+#, colour=TT))+
   xlab("")+
   ylab("Height (proportional)")+
   coord_flip()+
-  geom_hline(yintercept=1, linetype="dashed", color = "red")+
+  geom_hline(yintercept=1, linetype="dashed", color = "black")+
   theme(text = element_text(size=15))#+
  # guides(color = "none")+
  # scale_colour_manual(values=NoOakCols)
@@ -599,7 +599,7 @@ PWODplot <- ggplot(BMODcurves, aes(fct_rev(TT), PW))+#, colour=TT))+
   xlab("")+
   ylab("Relative Duration (days) ")+
   coord_flip()+
-  geom_hline(yintercept=0, linetype="dashed", color = "red")+
+  geom_hline(yintercept=0, linetype="dashed", color = "black")+
   theme(text = element_text(size=15))#+
 #  guides(color = "none")+
 #  scale_colour_manual(values=NoOakCols)
@@ -611,7 +611,7 @@ PWOD.5plot <- ggplot(BMODcurves, aes(fct_rev(TT), PW.5))+#, colour=TT))+
   xlab("")+
   ylab("Relative Width (days)")+
   coord_flip()+
-  geom_hline(yintercept=0, linetype="dashed", color = "red")+
+  geom_hline(yintercept=0, linetype="dashed", color = "black")+
   theme(text = element_text(size=15))#+
 #  guides(color = "none")+
  # scale_colour_manual(values=NoOakCols)

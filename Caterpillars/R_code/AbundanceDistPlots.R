@@ -615,10 +615,10 @@ PWdifplot <- ggplot(AbundCurves, aes(fct_rev(TT), PWdif))+#, colour=TT))+
   geom_point(size=2, alpha=0.9)+
   geom_errorbar(aes(ymax=PWdifUCI, ymin=PWdifLCI, width=0.5))+
   theme_bw()+
-  xlab("Tree Taxa")+
-  ylab("Relative Duration")+
+  xlab("Tree Taxon")+
+  ylab("Duration (days)")+
   coord_flip()+
-  geom_hline(yintercept=0, linetype="dashed", color = "red")+#+
+  geom_hline(yintercept=0, linetype="dashed", color = "black")+#+
   theme(text = element_text(size=15),axis.text.x = element_text(angle = 45, hjust=1))+# saved as 6"x4"
   guides(color = "none")#+
   #scale_colour_manual(values=AllTaxaCols)
@@ -659,7 +659,7 @@ PDODplot <- ggplot(AbundODcurves, aes(fct_rev(TT), PD))+#, colour=TT))+
   xlab("Tree Taxon")+
   ylab("Timing (days)")+
   coord_flip()+
-  geom_hline(yintercept=0, linetype="dashed", color = "red")+
+  geom_hline(yintercept=0, linetype="dashed", color = "black")+
   theme(text = element_text(size=15))#+
   #guides(color = "none")+
   #scale_colour_manual(values=NoOakCols)
@@ -671,7 +671,7 @@ PHODplot <- ggplot(AbundODcurves, aes(fct_rev(TT), PH))+#, colour=TT))+
   xlab("")+
   ylab("Height (abundance)")+
   coord_flip()+
-  geom_hline(yintercept=0, linetype="dashed", color = "red")+
+  geom_hline(yintercept=0, linetype="dashed", color = "black")+
   theme(text = element_text(size=15))#+
   #guides(color = "none")+
   #scale_colour_manual(values=NoOakCols)
@@ -683,7 +683,7 @@ PHpropODplot <- ggplot(AbundODcurves, aes(fct_rev(TT), PHprop))+#, colour=TT))+
   xlab("")+
   ylab("Height (proportional)")+
   coord_flip()+
-  geom_hline(yintercept=1, linetype="dashed", color = "red")+
+  geom_hline(yintercept=1, linetype="dashed", color = "black")+
   theme(text = element_text(size=15))#+
 
 PWODplot <- ggplot(AbundODcurves, aes(fct_rev(TT), PW))+#, colour=TT))+
@@ -693,7 +693,7 @@ PWODplot <- ggplot(AbundODcurves, aes(fct_rev(TT), PW))+#, colour=TT))+
   xlab("")+
   ylab("Duration (days) ")+
   coord_flip()+
-  geom_hline(yintercept=0, linetype="dashed", color = "red")+
+  geom_hline(yintercept=0, linetype="dashed", color = "black")+
   theme(text = element_text(size=15))#+
  # guides(color = "none")+
  # scale_colour_manual(values=NoOakCols)
@@ -705,7 +705,7 @@ PWOD.5plot <- ggplot(AbundODcurves, aes(fct_rev(TT), PW.5))+#, colour=TT))+
   xlab("")+
   ylab("Width (days)")+
   coord_flip()+
-  geom_hline(yintercept=0, linetype="dashed", color = "red")+
+  geom_hline(yintercept=0, linetype="dashed", color = "black")+
   theme(text = element_text(size=15))#+
  # guides(color = "none")+
  # scale_colour_manual(values=NoOakCols)

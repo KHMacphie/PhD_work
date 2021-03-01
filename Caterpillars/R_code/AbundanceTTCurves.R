@@ -1050,7 +1050,7 @@ AbundCurvesODFig <- grid.arrange(col6, col7, col8, col9, ncol = 4, widths = c(1,
 
 
 ############################
-#### Model output table ####   !!!!! NEEDS NEW MODEL NAME FOR EFFECTIVE SAMPLE SIZE
+#### Model output table ####  
 ############################
 
 #for random terms use posterior mode and fixed terms mean
