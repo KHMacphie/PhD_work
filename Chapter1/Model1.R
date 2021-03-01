@@ -1,4 +1,4 @@
-#load Dataframe.R script
+#load Dataframe.R script rm(list=ls()) setwd('/Users/s1205615/')
 
 #############################################
 #### Model: Variance decomposition model ####
@@ -16,31 +16,32 @@ prior<-list(R=list(V=1,nu=0.002),
                    G1=list(V=1,nu=1,aplha.mu=0,alpha.V=k)))
 
 
-#AbundVariance<- MCMCglmm(caterpillars~datescaled+I(datescaled^2), 
-#                     random=~recorder+year+siteyear+siteday+site+treeID+tree.species+yearday, 
-#                     family="poisson", data=cater_habitat, prior=prior, nitt=2000000, burnin=50000)
-#save(AbundVariance, file = "~/Documents/Models/AbundVariance.RData")
-load("~/Documents/Models/AbundVariance.RData") 
+#AbundVar20<- MCMCglmm(caterpillars~datescaled+I(datescaled^2), 
+#                      random=~recorder+year+siteyear+siteday+site+treeID+tree.species+yearday, 
+#                      family="poisson", data=cater_habitat, prior=prior, nitt=2500000, burnin=50000, thin=500)
+#save(AbundVar20, file = "~/Dropbox/Kirsty's/Chapter1/Models/Inc2020/AbundVar20.RData") #sample size 4900
+load("~/Dropbox/Kirsty's/Chapter1/Models/Inc2020/AbundVar20.RData")  
+summary(AbundVar20)
 
 #### Checking model fits the data and converged ####
-plot(AbundVariance) #look at fixed effect and random term trace plots 
-AbundVariance.Sim<-simulate(AbundVariance,nsim=1000) #simulate 1000 times
+plot(AbundVar20) #look at fixed effect and random term trace plots 
+AbundVar20.Sim<-simulate(AbundVar20,nsim=1000) #simulate 1000 times
 par(mfcol=c(1,1))
-hist(apply(AbundVariance.Sim,2,sum), breaks=1000) #histogram of simulation predictions for total abundance
+hist(apply(AbundVar20.Sim,2,sum), breaks=100) #histogram of simulation predictions for total abundance
 #normally not too many rogue values but reduce x axis a bit to see main distribution relative to observed value 
-hist(apply(AbundVariance.Sim,2,sum), breaks=10000, xlim=c(0,100000))
+hist(apply(AbundVar20.Sim,2,sum), breaks=10000, xlim=c(0,100000))
 abline(v=sum(cater_habitat$caterpillars),col=2) # red line for observed value in data
 
 propzero <- function(x){return(length(which(x==0))/length(x))}  # function for proportion of zeros
-hist(apply(AbundVariance.Sim,2,propzero), breaks=50) # histogram of proportion of zeros in simulated data
+hist(apply(AbundVar20.Sim,2,propzero), breaks=50) # histogram of proportion of zeros in simulated data
 abline(v=propzero(cater_habitat$caterpillars), col="red") # red line for observed proportion in data
 
 #### Variance from fixed effects ####
 #from Jarrod: have pos as a vector indicating the position of the relevant terms (for example 2:3 if the 2nd and 3rd terms are x and x^2) and then do this:
-V<-cov(as.matrix(AbundVariance$X[,2:3]))
-R2<-apply(AbundVariance$Sol[,2:3], 1, function(x){x%*%V%*%x}) # not actual R2- variance explained by fixed effects (marginal)
+V<-cov(as.matrix(AbundVar20$X[,2:3]))
+R2<-apply(AbundVar20$Sol[,2:3], 1, function(x){x%*%V%*%x}) # not actual R2- variance explained by fixed effects (marginal)
 
-Variances <- data.frame(AbundVariance$VCV)
+Variances <- data.frame(AbundVar20$VCV)
 Variances$Fixed <- R2
 # Variance explained by random terms
 VarProp.df <- data.frame(Term=c(colnames(Variances))) #dataframe with column for random term 
@@ -135,7 +136,19 @@ class(rp) <- c(class(rp), "riverplot")
 par(cex=0.95)
 plot(rp, plot_area = 0.95, yscale=0.08, nodewidth = 4.6) #saved as 10"x5"
 
+## Table of results ##
+Spatial <- mcmc((Variances[,5]+Variances[,6]+Variances[,7])/rowSums(Variances))
+Spatiotemp <- mcmc((Variances[,3]+Variances[,4])/rowSums(Variances))
+Temp <- mcmc((Variances[,2]+Variances[,8]+Variances[,10])/rowSums(Variances))
+Other <- mcmc((Variances[,1]+Variances[,9])/rowSums(Variances))
 
+VarProp.df[11,] <- c("Spatial", mean(Spatial), HPDinterval(Spatial)[1], HPDinterval(Spatial)[2], mean(Spatial)*100, "Summary")
+VarProp.df[12,] <- c("Spatiotemp", mean(Spatiotemp), HPDinterval(Spatiotemp)[1], HPDinterval(Spatiotemp)[2], mean(Spatiotemp)*100, "Summary")
+VarProp.df[13,] <- c("Temp", mean(Temp), HPDinterval(Temp)[1], HPDinterval(Temp)[2], mean(Temp)*100, "Summary")
+VarProp.df[14,] <- c("Other", mean(Other), HPDinterval(Other)[1], HPDinterval(Other)[2], mean(Other)*100, "Summary")
+VarProp.df$Percentage <- round(as.numeric(VarProp.df$Percentage), digits=2)
+
+#write.csv(VarProp.df,'~/Documents/Models/Tables/Inc2020/AbundVarMetrics.csv')
 
 ############################
 #### Model output table ####
@@ -146,76 +159,76 @@ library(MCMCglmm)
 
 ####fixed effects
 fixed<-rbind(
-  c("Intercept",paste(round(mean(AbundVariance$Sol[,1]),3)," (",
-                      round(HPDinterval(AbundVariance$Sol[,1])[1],3)," - ",
-                      round(HPDinterval(AbundVariance$Sol[,1])[2],3),")",sep=""),round(effectiveSize(AbundVariance$Sol[,1]))),
+  c("Intercept",paste(round(mean(AbundVar20$Sol[,1]),3)," (",
+                      round(HPDinterval(AbundVar20$Sol[,1])[1],3)," - ",
+                      round(HPDinterval(AbundVar20$Sol[,1])[2],3),")",sep=""),round(effectiveSize(AbundVar20$Sol[,1]))),
   
-  c("Date (scaled)",paste(round(mean(AbundVariance$Sol[,2]),3)," (",
-                          round(HPDinterval(AbundVariance$Sol[,2])[1],3)," - ",
-                          round(HPDinterval(AbundVariance$Sol[,2])[2],3),")",sep=""),round(effectiveSize(AbundVariance$Sol[,2]))),
+  c("Date (scaled)",paste(round(mean(AbundVar20$Sol[,2]),3)," (",
+                          round(HPDinterval(AbundVar20$Sol[,2])[1],3)," - ",
+                          round(HPDinterval(AbundVar20$Sol[,2])[2],3),")",sep=""),round(effectiveSize(AbundVar20$Sol[,2]))),
   
-  c("Date² (scaled)",paste(round(mean(AbundVariance$Sol[,3]),3)," (",
-                           round(HPDinterval(AbundVariance$Sol[,3])[1],3)," - ",
-                           round(HPDinterval(AbundVariance$Sol[,3])[2],3),")",sep=""),round(effectiveSize(AbundVariance$Sol[,3]))))
+  c("Date² (scaled)",paste(round(mean(AbundVar20$Sol[,3]),3)," (",
+                           round(HPDinterval(AbundVar20$Sol[,3])[1],3)," - ",
+                           round(HPDinterval(AbundVar20$Sol[,3])[2],3),")",sep=""),round(effectiveSize(AbundVar20$Sol[,3]))))
 
 ####random terms
 column<-1
-recorder<-c("Recorder",paste(round(posterior.mode(AbundVariance$VCV[, column]),3)," (",
-                             round(HPDinterval(AbundVariance$VCV[, column])[1],3)," - ",
-                             round(HPDinterval(AbundVariance$VCV[, column])[2],3),")",sep=""),
-            round(effectiveSize(AbundVariance$VCV[, column])))
+recorder<-c("Recorder",paste(round(posterior.mode(AbundVar20$VCV[, column]),3)," (",
+                             round(HPDinterval(AbundVar20$VCV[, column])[1],3)," - ",
+                             round(HPDinterval(AbundVar20$VCV[, column])[2],3),")",sep=""),
+            round(effectiveSize(AbundVar20$VCV[, column])))
 
 column<-2
-year<-c("Year",paste(round(posterior.mode(AbundVariance$VCV[, column]),3)," (",
-                     round(HPDinterval(AbundVariance$VCV[, column])[1],3)," - ",
-                     round(HPDinterval(AbundVariance$VCV[, column])[2],3),")",sep=""),
-        round(effectiveSize(AbundVariance$VCV[, column])))
+year<-c("Year",paste(round(posterior.mode(AbundVar20$VCV[, column]),3)," (",
+                     round(HPDinterval(AbundVar20$VCV[, column])[1],3)," - ",
+                     round(HPDinterval(AbundVar20$VCV[, column])[2],3),")",sep=""),
+        round(effectiveSize(AbundVar20$VCV[, column])))
 
 column<-3
-siteyear<-c("Site Year",paste(round(posterior.mode(AbundVariance$VCV[, column]),3)," (",
-                              round(HPDinterval(AbundVariance$VCV[, column])[1],3)," - ",
-                              round(HPDinterval(AbundVariance$VCV[, column])[2],3),")",sep=""),
-            round(effectiveSize(AbundVariance$VCV[, column])))
+siteyear<-c("Site Year",paste(round(posterior.mode(AbundVar20$VCV[, column]),3)," (",
+                              round(HPDinterval(AbundVar20$VCV[, column])[1],3)," - ",
+                              round(HPDinterval(AbundVar20$VCV[, column])[2],3),")",sep=""),
+            round(effectiveSize(AbundVar20$VCV[, column])))
 
 column<-4
-siteday<-c("Site Day",paste(round(posterior.mode(AbundVariance$VCV[, column]),3)," (",
-                            round(HPDinterval(AbundVariance$VCV[, column])[1],3)," - ",
-                            round(HPDinterval(AbundVariance$VCV[, column])[2],3),")",sep=""),
-           round(effectiveSize(AbundVariance$VCV[, column])))
+siteday<-c("Site Day",paste(round(posterior.mode(AbundVar20$VCV[, column]),3)," (",
+                            round(HPDinterval(AbundVar20$VCV[, column])[1],3)," - ",
+                            round(HPDinterval(AbundVar20$VCV[, column])[2],3),")",sep=""),
+           round(effectiveSize(AbundVar20$VCV[, column])))
 
 column<-5
-site<-c("Site",paste(round(posterior.mode(AbundVariance$VCV[, column]),3)," (",
-                     round(HPDinterval(AbundVariance$VCV[, column])[1],3)," - ",
-                     round(HPDinterval(AbundVariance$VCV[, column])[2],3),")",sep=""),
-        round(effectiveSize(AbundVariance$VCV[, column])))
+site<-c("Site",paste(round(posterior.mode(AbundVar20$VCV[, column]),3)," (",
+                     round(HPDinterval(AbundVar20$VCV[, column])[1],3)," - ",
+                     round(HPDinterval(AbundVar20$VCV[, column])[2],3),")",sep=""),
+        round(effectiveSize(AbundVar20$VCV[, column])))
 
 column<-6
-treeID<-c("Tree ID",paste(round(posterior.mode(AbundVariance$VCV[, column]),3)," (",
-                          round(HPDinterval(AbundVariance$VCV[, column])[1],3)," - ",
-                          round(HPDinterval(AbundVariance$VCV[, column])[2],3),")",sep=""),
-          round(effectiveSize(AbundVariance$VCV[, column])))
+treeID<-c("Tree ID",paste(round(posterior.mode(AbundVar20$VCV[, column]),3)," (",
+                          round(HPDinterval(AbundVar20$VCV[, column])[1],3)," - ",
+                          round(HPDinterval(AbundVar20$VCV[, column])[2],3),")",sep=""),
+          round(effectiveSize(AbundVar20$VCV[, column])))
 
 column<-7
-treetaxa<-c("Tree Taxa",paste(round(posterior.mode(AbundVariance$VCV[, column]),3)," (",
-                              round(HPDinterval(AbundVariance$VCV[, column])[1],3)," - ",
-                              round(HPDinterval(AbundVariance$VCV[, column])[2],3),")",sep=""),
-            round(effectiveSize(AbundVariance$VCV[, column])))
+treetaxa<-c("Tree Taxa",paste(round(posterior.mode(AbundVar20$VCV[, column]),3)," (",
+                              round(HPDinterval(AbundVar20$VCV[, column])[1],3)," - ",
+                              round(HPDinterval(AbundVar20$VCV[, column])[2],3),")",sep=""),
+            round(effectiveSize(AbundVar20$VCV[, column])))
 
 column<-8
-day<-c("Day",paste(round(posterior.mode(AbundVariance$VCV[, column]),3)," (",
-                   round(HPDinterval(AbundVariance$VCV[, column])[1],3)," - ",
-                   round(HPDinterval(AbundVariance$VCV[, column])[2],3),")",sep=""),
-       round(effectiveSize(AbundVariance$VCV[, column])))
+day<-c("Day",paste(round(posterior.mode(AbundVar20$VCV[, column]),3)," (",
+                   round(HPDinterval(AbundVar20$VCV[, column])[1],3)," - ",
+                   round(HPDinterval(AbundVar20$VCV[, column])[2],3),")",sep=""),
+       round(effectiveSize(AbundVar20$VCV[, column])))
 
 column<-9
-residual<-c("Residual",paste(round(posterior.mode(AbundVariance$VCV[, column]),3)," (",
-                             round(HPDinterval(AbundVariance$VCV[, column])[1],3)," - ",
-                             round(HPDinterval(AbundVariance$VCV[, column])[2],3),")",sep=""),
-            round(effectiveSize(AbundVariance$VCV[, column])))
+residual<-c("Residual",paste(round(posterior.mode(AbundVar20$VCV[, column]),3)," (",
+                             round(HPDinterval(AbundVar20$VCV[, column])[1],3)," - ",
+                             round(HPDinterval(AbundVar20$VCV[, column])[2],3),")",sep=""),
+            round(effectiveSize(AbundVar20$VCV[, column])))
 
 
 random<-rbind(site,treeID,treetaxa,siteday,day,siteyear,year,recorder,residual)
 
-#write.table(rbind(c("Fixed Terms","",""),fixed,c("Random Terms","",""),random),"~/Documents/Models/Tables/TableAbundVariance.txt",sep="\t",col.names=c("","Coefficient/Variance (Mean/mode and CI)","Effective sample size"),row.names=F)
+#write.table(rbind(c("Fixed Terms","",""),fixed,c("Random Terms","",""),random),"~/Documents/Models/Tables/Inc2020/TableAbundVar20.txt",sep="\t",col.names=c("","Coefficient/Variance (Mean/mode and CI)","Effective sample size"),row.names=F)
 
 

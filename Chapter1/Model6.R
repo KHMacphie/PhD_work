@@ -1,65 +1,62 @@
+rm(list=ls())
+setwd('/Users/s1205615/')
 #########################################################
 #### Combining abundance and mass to predict biomass ####
 #########################################################
 
 #### Getting both models to the same posterior distribution length ####
 
-#load("~/Documents/Models/Mass_yearint_fix.RData") #sample size= 15429
-#sampleMass <- data.frame(Mass_yearint_fix$Sol[,1:29]) #full posterior distribution
+load("~/Dropbox/Kirsty's/Chapter1/Models/Inc2020/Mass20.RData")
+sampleMass <- data.frame(Mass20$Sol[,1:23]) #full posterior distribution
 #write.csv(sampleMass,'~/Documents/Models/sampleMass.csv')
-
-#load("~/Documents/Models/ATTCyearint.RData") # sample size= 31667
-#ATTCdf <- data.frame(ATTCyearint$Sol[809:31667,1:33]) #removed first 808 
-#sampleATTC <- data.frame(c())
-#for(i in 1:15429){
-#  sampleATTC[i,1:33] <-ATTCdf[i*2,1:33] #then took every second iteration
-#}
+rm(list=ls())
+load("~/Dropbox/Kirsty's/Chapter1/Models/Inc2020/ATTC20.RData")
+sampleATTC <- data.frame(ATTC20$Sol[,1:33]) 
 #write.csv(sampleATTC,'~/Documents/Models/sampleATTC.csv')
-
+rm(list=ls())
 sampleMass <- read.csv("~/Documents/Models/sampleMass.csv")
 sampleATTC <- read.csv("~/Documents/Models/sampleATTC.csv")
 
 #unscale date
-dayscal <- seq(-2.071,2.014,0.001)
-days <- unscale(dayscal, center= 146.4095, scale=14.19835)
-days <- days$V1
+dayscal <- seq(-2.1199,2.0102,0.001)
+days <- unscale(dayscal, center= 146.7727, scale=14.04083)$V1
 
 #### Combining PD for each model to get biomass date^2, date and intercept coefficients for each tree taxon
-AlderC <- (sampleMass[,2] + sampleMass[,11] + sampleATTC[,2] + sampleATTC[,5])
-AshC <- (sampleMass[,2] + sampleMass[,12] + sampleATTC[,2] + sampleATTC[,6])
-BeechC <- (sampleMass[,2] + sampleMass[,13] + sampleATTC[,2] + sampleATTC[,7])
-BirchC <- (sampleMass[,2] + sampleMass[,14] + sampleATTC[,2] + sampleATTC[,8])
-ElmC <- (sampleMass[,2] + sampleMass[,15] + sampleATTC[,2] + sampleATTC[,9])
-HazelC <- (sampleMass[,2] + sampleMass[,16] + sampleATTC[,2] + sampleATTC[,10])
-OakC <- (sampleMass[,2] + sampleMass[,17] + sampleATTC[,2] + sampleATTC[,11])
-RowanC <- (sampleMass[,2] + sampleMass[,18] + sampleATTC[,2] + sampleATTC[,12])
-SycamoreC <- (sampleMass[,2] + sampleMass[,19] + sampleATTC[,2] + sampleATTC[,13])
-WillowC <- (sampleMass[,2] + sampleMass[,20] + sampleATTC[,2] + sampleATTC[,14])
+AlderC <- (sampleMass[,2] + sampleMass[,5] + sampleATTC[,2] + sampleATTC[,5])
+AshC <- (sampleMass[,2] + sampleMass[,6] + sampleATTC[,2] + sampleATTC[,6])
+BeechC <- (sampleMass[,2] + sampleMass[,7] + sampleATTC[,2] + sampleATTC[,7])
+BirchC <- (sampleMass[,2] + sampleMass[,8] + sampleATTC[,2] + sampleATTC[,8])
+ElmC <- (sampleMass[,2] + sampleMass[,9] + sampleATTC[,2] + sampleATTC[,9])
+HazelC <- (sampleMass[,2] + sampleMass[,10] + sampleATTC[,2] + sampleATTC[,10])
+OakC <- (sampleMass[,2] + sampleMass[,11] + sampleATTC[,2] + sampleATTC[,11])
+RowanC <- (sampleMass[,2] + sampleMass[,12] + sampleATTC[,2] + sampleATTC[,12])
+SycamoreC <- (sampleMass[,2] + sampleMass[,13] + sampleATTC[,2] + sampleATTC[,13])
+WillowC <- (sampleMass[,2] + sampleMass[,14] + sampleATTC[,2] + sampleATTC[,14])
 
-AlderB <- (sampleMass[,3] + sampleMass[,21] + sampleATTC[,3] + sampleATTC[,15])
-AshB <- (sampleMass[,3] + sampleMass[,22] + sampleATTC[,3] + sampleATTC[,16])
-BeechB <- (sampleMass[,3] + sampleMass[,23] + sampleATTC[,3] + sampleATTC[,17])
-BirchB <- (sampleMass[,3] + sampleMass[,24] + sampleATTC[,3] + sampleATTC[,18])
-ElmB <- (sampleMass[,3] + sampleMass[,25] + sampleATTC[,3] + sampleATTC[,19])
-HazelB <- (sampleMass[,3] + sampleMass[,26] + sampleATTC[,3] + sampleATTC[,20])
-OakB <- (sampleMass[,3] + sampleMass[,27] + sampleATTC[,3] + sampleATTC[,21])
-RowanB <- (sampleMass[,3] + sampleMass[,28] + sampleATTC[,3] + sampleATTC[,22])
-SycamoreB <- (sampleMass[,3] + sampleMass[,29] + sampleATTC[,3] + sampleATTC[,23])
-WillowB <- (sampleMass[,3] + sampleMass[,30] + sampleATTC[,3] + sampleATTC[,24])
+AlderB <- (sampleMass[,3] + sampleMass[,15] + sampleATTC[,3] + sampleATTC[,15])
+AshB <- (sampleMass[,3] + sampleMass[,16] + sampleATTC[,3] + sampleATTC[,16])
+BeechB <- (sampleMass[,3] + sampleMass[,17] + sampleATTC[,3] + sampleATTC[,17])
+BirchB <- (sampleMass[,3] + sampleMass[,18] + sampleATTC[,3] + sampleATTC[,18])
+ElmB <- (sampleMass[,3] + sampleMass[,19] + sampleATTC[,3] + sampleATTC[,19])
+HazelB <- (sampleMass[,3] + sampleMass[,20] + sampleATTC[,3] + sampleATTC[,20])
+OakB <- (sampleMass[,3] + sampleMass[,21] + sampleATTC[,3] + sampleATTC[,21])
+RowanB <- (sampleMass[,3] + sampleMass[,22] + sampleATTC[,3] + sampleATTC[,22])
+SycamoreB <- (sampleMass[,3] + sampleMass[,23] + sampleATTC[,3] + sampleATTC[,23])
+WillowB <- (sampleMass[,3] + sampleMass[,24] + sampleATTC[,3] + sampleATTC[,24])
 
-AlderA <- (sampleATTC[,4] + sampleATTC[,25] + sampleMass[,6])
-AshA <- (sampleATTC[,4] + sampleATTC[,26] + sampleMass[,6])
-BeechA <- (sampleATTC[,4] + sampleATTC[,27] + sampleMass[,6])
-BirchA <- (sampleATTC[,4] + sampleATTC[,28] + sampleMass[,6])
-ElmA <- (sampleATTC[,4] + sampleATTC[,29] + sampleMass[,6])
-HazelA <- (sampleATTC[,4] + sampleATTC[,30] + sampleMass[,6])
-OakA <- (sampleATTC[,4] + sampleATTC[,31] + sampleMass[,6])
-RowanA <- (sampleATTC[,4] + sampleATTC[,32] + sampleMass[,6])
-SycamoreA <- (sampleATTC[,4] + sampleATTC[,33] + sampleMass[,6])
-WillowA <- (sampleATTC[,4] + sampleATTC[,34] + sampleMass[,6])
+AlderA <- (sampleATTC[,4] + sampleATTC[,25] + sampleMass[,4])
+AshA <- (sampleATTC[,4] + sampleATTC[,26] + sampleMass[,4])
+BeechA <- (sampleATTC[,4] + sampleATTC[,27] + sampleMass[,4])
+BirchA <- (sampleATTC[,4] + sampleATTC[,28] + sampleMass[,4])
+ElmA <- (sampleATTC[,4] + sampleATTC[,29] + sampleMass[,4])
+HazelA <- (sampleATTC[,4] + sampleATTC[,30] + sampleMass[,4])
+OakA <- (sampleATTC[,4] + sampleATTC[,31] + sampleMass[,4])
+RowanA <- (sampleATTC[,4] + sampleATTC[,32] + sampleMass[,4])
+SycamoreA <- (sampleATTC[,4] + sampleATTC[,33] + sampleMass[,4])
+WillowA <- (sampleATTC[,4] + sampleATTC[,34] + sampleMass[,4])
 
 # Fixed effect coefficients (2019)
-MeanA <- (sampleATTC[,4] + sampleMass[,6])
+MeanA <- (sampleATTC[,4] + sampleMass[,4])
 MeanB <- (sampleATTC[,3] + sampleMass[,3])
 MeanC <- (sampleATTC[,2] + sampleMass[,2])
 
@@ -108,28 +105,18 @@ BiomassCurvesplot <- ggplot(Curveslong, aes(date, Biomass, col=TreeTaxa))+ #save
 
 
 #### Peak date per taxa ####   -b/2a
-MeanPD <- unscale((-MeanB/(2*MeanA)), center= 146.4095, scale=14.19835)
-MeanPD <- MeanPD$V1
-AlderPD <-  unscale((-AlderB/(2*AlderA)), center= 146.4095, scale=14.19835)
-AlderPD <- AlderPD$V1
-AshPD <-  unscale((-AshB/(2*AshA)), center= 146.4095, scale=14.19835)
-AshPD <-  AshPD$V1
-BeechPD <-  unscale((-BeechB/(2*BeechA)), center= 146.4095, scale=14.19835)
-BeechPD <- BeechPD$V1
-BirchPD <-  unscale((-BirchB/(2*BirchA)), center= 146.4095, scale=14.19835)
-BirchPD <- BirchPD$V1
-ElmPD <-  unscale((-ElmB/(2*ElmA)), center= 146.4095, scale=14.19835)
-ElmPD <- ElmPD$V1
-HazelPD <-  unscale((-HazelB/(2*HazelA)), center= 146.4095, scale=14.19835)
-HazelPD <- HazelPD$V1
-OakPD <-  unscale((-OakB/(2*OakA)), center= 146.4095, scale=14.19835)
-OakPD <- OakPD$V1
-RowanPD <-  unscale((-RowanB/(2*RowanA)), center= 146.4095, scale=14.19835)
-RowanPD <- RowanPD$V1
-SycamorePD <-  unscale((-SycamoreB/(2*SycamoreA)), center= 146.4095, scale=14.19835)
-SycamorePD <- SycamorePD$V1
-WillowPD <-  unscale((-WillowB/(2*WillowA)), center= 146.4095, scale=14.19835)
-WillowPD <- WillowPD$V1
+MeanPD <- unscale((-MeanB/(2*MeanA)), center= 146.7727, scale=14.04083)$V1
+AlderPD <-  unscale((-AlderB/(2*AlderA)), center= 146.7727, scale=14.04083)$V1
+AshPD <-  unscale((-AshB/(2*AshA)), center= 146.7727, scale=14.04083)$V1
+BeechPD <-  unscale((-BeechB/(2*BeechA)), center= 146.7727, scale=14.04083)$V1
+BirchPD <-  unscale((-BirchB/(2*BirchA)), center= 146.7727, scale=14.04083)$V1
+ElmPD <-  unscale((-ElmB/(2*ElmA)), center= 146.7727, scale=14.04083)$V1
+HazelPD <-  unscale((-HazelB/(2*HazelA)), center= 146.7727, scale=14.04083)$V1
+OakPD <-  unscale((-OakB/(2*OakA)), center= 146.7727, scale=14.04083)$V1
+RowanPD <-  unscale((-RowanB/(2*RowanA)), center= 146.7727, scale=14.04083)$V1
+SycamorePD <-  unscale((-SycamoreB/(2*SycamoreA)), center= 146.7727, scale=14.04083)$V1
+WillowPD <-  unscale((-WillowB/(2*WillowA)), center= 146.7727, scale=14.04083)$V1
+
 
 ## Peak date diff to mean
 AlderPDdif <- AlderPD-MeanPD
@@ -220,58 +207,58 @@ WillowPHpropOD <- WillowPH/OakPH
 
 MeanPW1 <- (-MeanB + sqrt(MeanB^2 - (4*MeanA*(MeanC-log(0.00045)))))/(2*MeanA)
 MeanPW2 <- (-MeanB - sqrt(MeanB^2 - (4*MeanA*(MeanC-log(0.00045)))))/(2*MeanA)
-MeanPW <- unscale((MeanPW2), center= 146.4095, scale=14.19835)-unscale((MeanPW1), center= 146.4095, scale=14.19835)
+MeanPW <- unscale((MeanPW2), center= 146.7727, scale=14.04083)-unscale((MeanPW1), center= 146.7727, scale=14.04083)
 MeanPW <- MeanPW$V1 #NaNs 389
 
 AlderPW1 <- (-AlderB + sqrt(AlderB^2 - (4*AlderA*(AlderC-log(0.00045)))))/(2*AlderA)
 AlderPW2 <- (-AlderB - sqrt(AlderB^2 - (4*AlderA*(AlderC-log(0.00045)))))/(2*AlderA)
-AlderPW <- unscale((AlderPW2), center= 146.4095, scale=14.19835)-unscale((AlderPW1), center= 146.4095, scale=14.19835)
+AlderPW <- unscale((AlderPW2), center= 146.7727, scale=14.04083)-unscale((AlderPW1), center= 146.7727, scale=14.04083)
 AlderPW <- AlderPW$V1 #NaNs 2337
 #length(which(is.na(AlderPW)==TRUE))
 
 AshPW1 <- (-AshB + sqrt(AshB^2 - (4*AshA*(AshC-log(0.00045)))))/(2*AshA)
 AshPW2 <- (-AshB - sqrt(AshB^2 - (4*AshA*(AshC-log(0.00045)))))/(2*AshA)
-AshPW <- unscale((AshPW2), center= 146.4095, scale=14.19835)-unscale((AshPW1), center= 146.4095, scale=14.19835)
+AshPW <- unscale((AshPW2), center= 146.7727, scale=14.04083)-unscale((AshPW1), center= 146.7727, scale=14.04083)
 AshPW <- AshPW$V1 #NaNs
 
 BeechPW1 <- (-BeechB + sqrt(BeechB^2 - (4*BeechA*(BeechC-log(0.00045)))))/(2*BeechA)
 BeechPW2 <- (-BeechB - sqrt(BeechB^2 - (4*BeechA*(BeechC-log(0.00045)))))/(2*BeechA)
-BeechPW <- unscale((BeechPW2), center= 146.4095, scale=14.19835)-unscale((BeechPW1), center= 146.4095, scale=14.19835)
+BeechPW <- unscale((BeechPW2), center= 146.7727, scale=14.04083)-unscale((BeechPW1), center= 146.7727, scale=14.04083)
 BeechPW <- BeechPW$V1 #NaNs
 
 BirchPW1 <- (-BirchB + sqrt(BirchB^2 - (4*BirchA*(BirchC-log(0.00045)))))/(2*BirchA)
 BirchPW2 <- (-BirchB - sqrt(BirchB^2 - (4*BirchA*(BirchC-log(0.00045)))))/(2*BirchA)
-BirchPW <- unscale((BirchPW2), center= 146.4095, scale=14.19835)-unscale((BirchPW1), center= 146.4095, scale=14.19835)
+BirchPW <- unscale((BirchPW2), center= 146.7727, scale=14.04083)-unscale((BirchPW1), center= 146.7727, scale=14.04083)
 BirchPW <- BirchPW$V1 #NaNs
 
 ElmPW1 <- (-ElmB + sqrt(ElmB^2 - (4*ElmA*(ElmC-log(0.00045)))))/(2*ElmA)
 ElmPW2 <- (-ElmB - sqrt(ElmB^2 - (4*ElmA*(ElmC-log(0.00045)))))/(2*ElmA)
-ElmPW <- unscale((ElmPW2), center= 146.4095, scale=14.19835)-unscale((ElmPW1), center= 146.4095, scale=14.19835)
+ElmPW <- unscale((ElmPW2), center= 146.7727, scale=14.04083)-unscale((ElmPW1), center= 146.7727, scale=14.04083)
 ElmPW <- ElmPW$V1 #NaNs
 
 HazelPW1 <- (-HazelB + sqrt(HazelB^2 - (4*HazelA*(HazelC-log(0.00045)))))/(2*HazelA)
 HazelPW2 <- (-HazelB - sqrt(HazelB^2 - (4*HazelA*(HazelC-log(0.00045)))))/(2*HazelA)
-HazelPW <- unscale((HazelPW2), center= 146.4095, scale=14.19835)-unscale((HazelPW1), center= 146.4095, scale=14.19835)
+HazelPW <- unscale((HazelPW2), center= 146.7727, scale=14.04083)-unscale((HazelPW1), center= 146.7727, scale=14.04083)
 HazelPW <- HazelPW$V1 #NaNs
 
 OakPW1 <- (-OakB + sqrt(OakB^2 - (4*OakA*(OakC-log(0.00045)))))/(2*OakA)
 OakPW2 <- (-OakB - sqrt(OakB^2 - (4*OakA*(OakC-log(0.00045)))))/(2*OakA)
-OakPW <- unscale((OakPW2), center= 146.4095, scale=14.19835)-unscale((OakPW1), center= 146.4095, scale=14.19835)
+OakPW <- unscale((OakPW2), center= 146.7727, scale=14.04083)-unscale((OakPW1), center= 146.7727, scale=14.04083)
 OakPW <- OakPW$V1 #NaNs
 
 RowanPW1 <- (-RowanB + sqrt(RowanB^2 - (4*RowanA*(RowanC-log(0.00045)))))/(2*RowanA)
 RowanPW2 <- (-RowanB - sqrt(RowanB^2 - (4*RowanA*(RowanC-log(0.00045)))))/(2*RowanA)
-RowanPW <- unscale((RowanPW2), center= 146.4095, scale=14.19835)-unscale((RowanPW1), center= 146.4095, scale=14.19835)
+RowanPW <- unscale((RowanPW2), center= 146.7727, scale=14.04083)-unscale((RowanPW1), center= 146.7727, scale=14.04083)
 RowanPW <- RowanPW$V1 #NaNs
 
 SycamorePW1 <- (-SycamoreB + sqrt(SycamoreB^2 - (4*SycamoreA*(SycamoreC-log(0.00045)))))/(2*SycamoreA)
 SycamorePW2 <- (-SycamoreB - sqrt(SycamoreB^2 - (4*SycamoreA*(SycamoreC-log(0.00045)))))/(2*SycamoreA)
-SycamorePW <- unscale((SycamorePW2), center= 146.4095, scale=14.19835)-unscale((SycamorePW1), center= 146.4095, scale=14.19835)
+SycamorePW <- unscale((SycamorePW2), center= 146.7727, scale=14.04083)-unscale((SycamorePW1), center= 146.7727, scale=14.04083)
 SycamorePW <- SycamorePW$V1 #NaNs
 
 WillowPW1 <- (-WillowB + sqrt(WillowB^2 - (4*WillowA*(WillowC-log(0.00045)))))/(2*WillowA)
 WillowPW2 <- (-WillowB - sqrt(WillowB^2 - (4*WillowA*(WillowC-log(0.00045)))))/(2*WillowA)
-WillowPW <- unscale((WillowPW2), center= 146.4095, scale=14.19835)-unscale((WillowPW1), center= 146.4095, scale=14.19835)
+WillowPW <- unscale((WillowPW2), center= 146.7727, scale=14.04083)-unscale((WillowPW1), center= 146.7727, scale=14.04083)
 WillowPW <- WillowPW$V1 #NaNs
 
 ## Peak width diff to mean
@@ -303,57 +290,57 @@ WillowPWOD <- WillowPW-OakPW
 
 MeanPW1.5 <- (-MeanB + sqrt(MeanB^2 - (4*MeanA*(MeanC-log(MeanPH/2)))))/(2*MeanA)
 MeanPW2.5 <- (-MeanB - sqrt(MeanB^2 - (4*MeanA*(MeanC-log(MeanPH/2)))))/(2*MeanA)
-MeanPW.5 <- unscale((MeanPW2.5), center= 146.4095, scale=14.19835)-unscale((MeanPW1.5), center= 146.4095, scale=14.19835)
+MeanPW.5 <- unscale((MeanPW2.5), center= 146.7727, scale=14.04083)-unscale((MeanPW1.5), center= 146.7727, scale=14.04083)
 MeanPW.5 <- MeanPW.5$V1 
 
 AlderPW1.5 <- (-AlderB + sqrt(AlderB^2 - (4*AlderA*(AlderC-log(AlderPH/2)))))/(2*AlderA)
 AlderPW2.5 <- (-AlderB - sqrt(AlderB^2 - (4*AlderA*(AlderC-log(AlderPH/2)))))/(2*AlderA)
-AlderPW.5 <- unscale((AlderPW2.5), center= 146.4095, scale=14.19835)-unscale((AlderPW1.5), center= 146.4095, scale=14.19835)
+AlderPW.5 <- unscale((AlderPW2.5), center= 146.7727, scale=14.04083)-unscale((AlderPW1.5), center= 146.7727, scale=14.04083)
 AlderPW.5 <- AlderPW.5$V1 
 
 AshPW1.5 <- (-AshB + sqrt(AshB^2 - (4*AshA*(AshC-log(AshPH/2)))))/(2*AshA)
 AshPW2.5 <- (-AshB - sqrt(AshB^2 - (4*AshA*(AshC-log(AshPH/2)))))/(2*AshA)
-AshPW.5 <- unscale((AshPW2.5), center= 146.4095, scale=14.19835)-unscale((AshPW1.5), center= 146.4095, scale=14.19835)
+AshPW.5 <- unscale((AshPW2.5), center= 146.7727, scale=14.04083)-unscale((AshPW1.5), center= 146.7727, scale=14.04083)
 AshPW.5 <- AshPW.5$V1 
 
 BeechPW1.5 <- (-BeechB + sqrt(BeechB^2 - (4*BeechA*(BeechC-log(BeechPH/2)))))/(2*BeechA)
 BeechPW2.5 <- (-BeechB - sqrt(BeechB^2 - (4*BeechA*(BeechC-log(BeechPH/2)))))/(2*BeechA)
-BeechPW.5 <- unscale((BeechPW2.5), center= 146.4095, scale=14.19835)-unscale((BeechPW1.5), center= 146.4095, scale=14.19835)
+BeechPW.5 <- unscale((BeechPW2.5), center= 146.7727, scale=14.04083)-unscale((BeechPW1.5), center= 146.7727, scale=14.04083)
 BeechPW.5 <- BeechPW.5$V1 
 
 BirchPW1.5 <- (-BirchB + sqrt(BirchB^2 - (4*BirchA*(BirchC-log(BirchPH/2)))))/(2*BirchA)
 BirchPW2.5 <- (-BirchB - sqrt(BirchB^2 - (4*BirchA*(BirchC-log(BirchPH/2)))))/(2*BirchA)
-BirchPW.5 <- unscale((BirchPW2.5), center= 146.4095, scale=14.19835)-unscale((BirchPW1.5), center= 146.4095, scale=14.19835)
+BirchPW.5 <- unscale((BirchPW2.5), center= 146.7727, scale=14.04083)-unscale((BirchPW1.5), center= 146.7727, scale=14.04083)
 BirchPW.5 <- BirchPW.5$V1 
 
 ElmPW1.5 <- (-ElmB + sqrt(ElmB^2 - (4*ElmA*(ElmC-log(ElmPH/2)))))/(2*ElmA)
 ElmPW2.5 <- (-ElmB - sqrt(ElmB^2 - (4*ElmA*(ElmC-log(ElmPH/2)))))/(2*ElmA)
-ElmPW.5 <- unscale((ElmPW2.5), center= 146.4095, scale=14.19835)-unscale((ElmPW1.5), center= 146.4095, scale=14.19835)
+ElmPW.5 <- unscale((ElmPW2.5), center= 146.7727, scale=14.04083)-unscale((ElmPW1.5), center= 146.7727, scale=14.04083)
 ElmPW.5 <- ElmPW.5$V1 
 
 HazelPW1.5 <- (-HazelB + sqrt(HazelB^2 - (4*HazelA*(HazelC-log(HazelPH/2)))))/(2*HazelA)
 HazelPW2.5 <- (-HazelB - sqrt(HazelB^2 - (4*HazelA*(HazelC-log(HazelPH/2)))))/(2*HazelA)
-HazelPW.5 <- unscale((HazelPW2.5), center= 146.4095, scale=14.19835)-unscale((HazelPW1.5), center= 146.4095, scale=14.19835)
+HazelPW.5 <- unscale((HazelPW2.5), center= 146.7727, scale=14.04083)-unscale((HazelPW1.5), center= 146.7727, scale=14.04083)
 HazelPW.5 <- HazelPW.5$V1 #NaNs
 
 OakPW1.5 <- (-OakB + sqrt(OakB^2 - (4*OakA*(OakC-log(OakPH/2)))))/(2*OakA)
 OakPW2.5 <- (-OakB - sqrt(OakB^2 - (4*OakA*(OakC-log(OakPH/2)))))/(2*OakA)
-OakPW.5 <- unscale((OakPW2.5), center= 146.4095, scale=14.19835)-unscale((OakPW1.5), center= 146.4095, scale=14.19835)
+OakPW.5 <- unscale((OakPW2.5), center= 146.7727, scale=14.04083)-unscale((OakPW1.5), center= 146.7727, scale=14.04083)
 OakPW.5 <- OakPW.5$V1 
 
 RowanPW1.5 <- (-RowanB + sqrt(RowanB^2 - (4*RowanA*(RowanC-log(RowanPH/2)))))/(2*RowanA)
 RowanPW2.5 <- (-RowanB - sqrt(RowanB^2 - (4*RowanA*(RowanC-log(RowanPH/2)))))/(2*RowanA)
-RowanPW.5 <- unscale((RowanPW2.5), center= 146.4095, scale=14.19835)-unscale((RowanPW1.5), center= 146.4095, scale=14.19835)
+RowanPW.5 <- unscale((RowanPW2.5), center= 146.7727, scale=14.04083)-unscale((RowanPW1.5), center= 146.7727, scale=14.04083)
 RowanPW.5 <- RowanPW.5$V1 
 
 SycamorePW1.5 <- (-SycamoreB + sqrt(SycamoreB^2 - (4*SycamoreA*(SycamoreC-log(SycamorePH/2)))))/(2*SycamoreA)
 SycamorePW2.5 <- (-SycamoreB - sqrt(SycamoreB^2 - (4*SycamoreA*(SycamoreC-log(SycamorePH/2)))))/(2*SycamoreA)
-SycamorePW.5 <- unscale((SycamorePW2.5), center= 146.4095, scale=14.19835)-unscale((SycamorePW1.5), center= 146.4095, scale=14.19835)
+SycamorePW.5 <- unscale((SycamorePW2.5), center= 146.7727, scale=14.04083)-unscale((SycamorePW1.5), center= 146.7727, scale=14.04083)
 SycamorePW.5 <- SycamorePW.5$V1 
 
 WillowPW1.5 <- (-WillowB + sqrt(WillowB^2 - (4*WillowA*(WillowC-log(WillowPH/2)))))/(2*WillowA)
 WillowPW2.5 <- (-WillowB - sqrt(WillowB^2 - (4*WillowA*(WillowC-log(WillowPH/2)))))/(2*WillowA)
-WillowPW.5 <- unscale((WillowPW2.5), center= 146.4095, scale=14.19835)-unscale((WillowPW1.5), center= 146.4095, scale=14.19835)
+WillowPW.5 <- unscale((WillowPW2.5), center= 146.7727, scale=14.04083)-unscale((WillowPW1.5), center= 146.7727, scale=14.04083)
 WillowPW.5 <- WillowPW.5$V1 
 
 ## Peak width diff to mean
@@ -388,14 +375,11 @@ BMcurves <- data.frame(TT=c("Alder", "Ash", "Beech", "Birch", "Elm", "Hazel", "O
                        PDdifLCI=c(HPDinterval(mcmc(AlderPDdif))[1], HPDinterval(mcmc(AshPDdif))[1], HPDinterval(mcmc(BeechPDdif))[1], HPDinterval(mcmc(BirchPDdif))[1], HPDinterval(mcmc(ElmPDdif))[1], HPDinterval(mcmc(HazelPDdif))[1], HPDinterval(mcmc(OakPDdif))[1], HPDinterval(mcmc(RowanPDdif))[1], HPDinterval(mcmc(SycamorePDdif))[1], HPDinterval(mcmc(WillowPDdif))[1]),
                        PDdifUCI=c(HPDinterval(mcmc(AlderPDdif))[2], HPDinterval(mcmc(AshPDdif))[2], HPDinterval(mcmc(BeechPDdif))[2], HPDinterval(mcmc(BirchPDdif))[2], HPDinterval(mcmc(ElmPDdif))[2], HPDinterval(mcmc(HazelPDdif))[2], HPDinterval(mcmc(OakPDdif))[2], HPDinterval(mcmc(RowanPDdif))[2], HPDinterval(mcmc(SycamorePDdif))[2], HPDinterval(mcmc(WillowPDdif))[2]),
                        PH=c(median(AlderPH),median(AshPH),median(BeechPH),median(BirchPH),median(ElmPH),median(HazelPH),median(OakPH),median(RowanPH),median(SycamorePH),median(WillowPH)),
-                       PHLCI=c(HPDinterval(mcmc(AlderPH))[1], HPDinterval(mcmc(AshPH))[1], HPDinterval(mcmc(BeechPH))[1], HPDinterval(mcmc(BirchPH))[1], HPDinterval(mcmc(ElmPH))[1], HPDinterval(mcmc(HazelPH))[1], HPDinterval(mcmc(OakPH))[1], HPDinterval(mcmc(RowanPH))[1], HPDinterval(mcmc(SycamorePH))[1], HPDinterval(mcmc(WillowPH))[1]),
-                       PHUCI=c(HPDinterval(mcmc(AlderPH))[2], HPDinterval(mcmc(AshPH))[2], HPDinterval(mcmc(BeechPH))[2], HPDinterval(mcmc(BirchPH))[2], HPDinterval(mcmc(ElmPH))[2], HPDinterval(mcmc(HazelPH))[2], HPDinterval(mcmc(OakPH))[2], HPDinterval(mcmc(RowanPH))[2], HPDinterval(mcmc(SycamorePH))[2], HPDinterval(mcmc(WillowPH))[2]),
-                       PHdif=c(median(AlderPHdif),median(AshPHdif),median(BeechPHdif),median(BirchPHdif),median(ElmPHdif),median(HazelPHdif),median(OakPHdif),median(RowanPHdif),median(SycamorePHdif),median(WillowPHdif)),
-                       PHdifLCI=c(HPDinterval(mcmc(AlderPHdif))[1], HPDinterval(mcmc(AshPHdif))[1], HPDinterval(mcmc(BeechPHdif))[1], HPDinterval(mcmc(BirchPHdif))[1], HPDinterval(mcmc(ElmPHdif))[1], HPDinterval(mcmc(HazelPHdif))[1], HPDinterval(mcmc(OakPHdif))[1], HPDinterval(mcmc(RowanPHdif))[1], HPDinterval(mcmc(SycamorePHdif))[1], HPDinterval(mcmc(WillowPHdif))[1]),
-                       PHdifUCI=c(HPDinterval(mcmc(AlderPHdif))[2], HPDinterval(mcmc(AshPHdif))[2], HPDinterval(mcmc(BeechPHdif))[2], HPDinterval(mcmc(BirchPHdif))[2], HPDinterval(mcmc(ElmPHdif))[2], HPDinterval(mcmc(HazelPHdif))[2], HPDinterval(mcmc(OakPHdif))[2], HPDinterval(mcmc(RowanPHdif))[2], HPDinterval(mcmc(SycamorePHdif))[2], HPDinterval(mcmc(WillowPHdif))[2]),
+                       PHLCI=c(exp(HPDinterval(mcmc(log(AlderPH))))[1], exp(HPDinterval(mcmc(log(AshPH))))[1], exp(HPDinterval(mcmc(log(BeechPH))))[1], exp(HPDinterval(mcmc(log(BirchPH))))[1], exp(HPDinterval(mcmc(log(ElmPH))))[1], exp(HPDinterval(mcmc(log(HazelPH))))[1], exp(HPDinterval(mcmc(log(OakPH))))[1], exp(HPDinterval(mcmc(log(RowanPH))))[1], exp(HPDinterval(mcmc(log(SycamorePH))))[1], exp(HPDinterval(mcmc(log(WillowPH))))[1]),
+                       PHUCI=c(exp(HPDinterval(mcmc(log(AlderPH))))[2], exp(HPDinterval(mcmc(log(AshPH))))[2], exp(HPDinterval(mcmc(log(BeechPH))))[2], exp(HPDinterval(mcmc(log(BirchPH))))[2], exp(HPDinterval(mcmc(log(ElmPH))))[2], exp(HPDinterval(mcmc(log(HazelPH))))[2], exp(HPDinterval(mcmc(log(OakPH))))[2], exp(HPDinterval(mcmc(log(RowanPH))))[2], exp(HPDinterval(mcmc(log(SycamorePH))))[2], exp(HPDinterval(mcmc(log(WillowPH))))[2]),
                        PHprop=c(median(AlderPHprop),median(AshPHprop),median(BeechPHprop),median(BirchPHprop),median(ElmPHprop),median(HazelPHprop),median(OakPHprop),median(RowanPHprop),median(SycamorePHprop),median(WillowPHprop)),
-                       PHpropLCI=c(HPDinterval(mcmc(AlderPHprop))[1], HPDinterval(mcmc(AshPHprop))[1], HPDinterval(mcmc(BeechPHprop))[1], HPDinterval(mcmc(BirchPHprop))[1], HPDinterval(mcmc(ElmPHprop))[1], HPDinterval(mcmc(HazelPHprop))[1], HPDinterval(mcmc(OakPHprop))[1], HPDinterval(mcmc(RowanPHprop))[1], HPDinterval(mcmc(SycamorePHprop))[1], HPDinterval(mcmc(WillowPHprop))[1]),
-                       PHpropUCI=c(HPDinterval(mcmc(AlderPHprop))[2], HPDinterval(mcmc(AshPHprop))[2], HPDinterval(mcmc(BeechPHprop))[2], HPDinterval(mcmc(BirchPHprop))[2], HPDinterval(mcmc(ElmPHprop))[2], HPDinterval(mcmc(HazelPHprop))[2], HPDinterval(mcmc(OakPHprop))[2], HPDinterval(mcmc(RowanPHprop))[2], HPDinterval(mcmc(SycamorePHprop))[2], HPDinterval(mcmc(WillowPHprop))[2]),
+                       PHpropLCI=c(exp(HPDinterval(mcmc(log(AlderPHprop))))[1], exp(HPDinterval(mcmc(log(AshPHprop))))[1], exp(HPDinterval(mcmc(log(BeechPHprop))))[1], exp(HPDinterval(mcmc(log(BirchPHprop))))[1], exp(HPDinterval(mcmc(log(ElmPHprop))))[1], exp(HPDinterval(mcmc(log(HazelPHprop))))[1], exp(HPDinterval(mcmc(log(OakPHprop))))[1], exp(HPDinterval(mcmc(log(RowanPHprop))))[1], exp(HPDinterval(mcmc(log(SycamorePHprop))))[1], exp(HPDinterval(mcmc(log(WillowPHprop))))[1]),
+                       PHpropUCI=c(exp(HPDinterval(mcmc(log(AlderPHprop))))[2], exp(HPDinterval(mcmc(log(AshPHprop))))[2], exp(HPDinterval(mcmc(log(BeechPHprop))))[2], exp(HPDinterval(mcmc(log(BirchPHprop))))[2], exp(HPDinterval(mcmc(log(ElmPHprop))))[2], exp(HPDinterval(mcmc(log(HazelPHprop))))[2], exp(HPDinterval(mcmc(log(OakPHprop))))[2], exp(HPDinterval(mcmc(log(RowanPHprop))))[2], exp(HPDinterval(mcmc(log(SycamorePHprop))))[2], exp(HPDinterval(mcmc(log(WillowPHprop))))[2]),
                        PW=c(median(AlderPW, na.rm=TRUE),median(AshPW, na.rm=TRUE),median(BeechPW, na.rm=TRUE),median(BirchPW, na.rm=TRUE),median(ElmPW, na.rm=TRUE),median(HazelPW, na.rm=TRUE),median(OakPW, na.rm=TRUE),median(RowanPW, na.rm=TRUE),median(SycamorePW, na.rm=TRUE),median(WillowPW, na.rm=TRUE)),
                        PWLCI=c(HPDinterval(mcmc(AlderPW))[1], HPDinterval(mcmc(AshPW))[1], HPDinterval(mcmc(BeechPW))[1], HPDinterval(mcmc(BirchPW))[1], HPDinterval(mcmc(ElmPW))[1], HPDinterval(mcmc(HazelPW))[1], HPDinterval(mcmc(OakPW))[1], HPDinterval(mcmc(RowanPW))[1], HPDinterval(mcmc(SycamorePW))[1], HPDinterval(mcmc(WillowPW))[1]),
                        PWUCI=c(HPDinterval(mcmc(AlderPW))[2], HPDinterval(mcmc(AshPW))[2], HPDinterval(mcmc(BeechPW))[2], HPDinterval(mcmc(BirchPW))[2], HPDinterval(mcmc(ElmPW))[2], HPDinterval(mcmc(HazelPW))[2], HPDinterval(mcmc(OakPW))[2], HPDinterval(mcmc(RowanPW))[2], HPDinterval(mcmc(SycamorePW))[2], HPDinterval(mcmc(WillowPW))[2]),
@@ -408,7 +392,7 @@ BMcurves <- data.frame(TT=c("Alder", "Ash", "Beech", "Birch", "Elm", "Hazel", "O
                        PW.5dif=c(median(AlderPW.5dif, na.rm=TRUE),median(AshPW.5dif, na.rm=TRUE),median(BeechPW.5dif, na.rm=TRUE),median(BirchPW.5dif, na.rm=TRUE),median(ElmPW.5dif, na.rm=TRUE),median(HazelPW.5dif, na.rm=TRUE),median(OakPW.5dif, na.rm=TRUE),median(RowanPW.5dif, na.rm=TRUE),median(SycamorePW.5dif, na.rm=TRUE),median(WillowPW.5dif, na.rm=TRUE)),
                        PW.5difLCI=c(HPDinterval(mcmc(AlderPW.5dif))[1], HPDinterval(mcmc(AshPW.5dif))[1], HPDinterval(mcmc(BeechPW.5dif))[1], HPDinterval(mcmc(BirchPW.5dif))[1], HPDinterval(mcmc(ElmPW.5dif))[1], HPDinterval(mcmc(HazelPW.5dif))[1], HPDinterval(mcmc(OakPW.5dif))[1], HPDinterval(mcmc(RowanPW.5dif))[1], HPDinterval(mcmc(SycamorePW.5dif))[1], HPDinterval(mcmc(WillowPW.5dif))[1]),
                        PW.5difUCI=c(HPDinterval(mcmc(AlderPW.5dif))[2], HPDinterval(mcmc(AshPW.5dif))[2], HPDinterval(mcmc(BeechPW.5dif))[2], HPDinterval(mcmc(BirchPW.5dif))[2], HPDinterval(mcmc(ElmPW.5dif))[2], HPDinterval(mcmc(HazelPW.5dif))[2], HPDinterval(mcmc(OakPW.5dif))[2], HPDinterval(mcmc(RowanPW.5dif))[2], HPDinterval(mcmc(SycamorePW.5dif))[2], HPDinterval(mcmc(WillowPW.5dif))[2]))
-
+#write.csv(BMcurves,'~/Documents/Models/Tables/Inc2020/BiomassCurvesMetrics.csv')
 
 # Peak Date difference from mean
 PDdifplot <- ggplot(BMcurves, aes(fct_rev(TT), (PDdif), colour=TT))+
@@ -455,9 +439,9 @@ col5 <- grid.arrange(BiomassCurvesplot, nrow = 1, widths = 1)
 col7 <- grid.arrange(PDdifplot, PHpropdifplot, PW.5difplot, nrow = 3, heights = c(1,1,1))
 BMCurvesFig2 <- grid.arrange(col5, col7,  ncol = 2, widths = c(4,2)) #saved as 8"x10"
 
-row5 <- grid.arrange(BiomassCurvesplot, ncol = 1, heights = 1)
-row7 <- grid.arrange(PDdifplot, PHpropdifplot, PW.5difplot, ncol = 3, widths = c(1,1,1))
-BMCurvesFig3 <- grid.arrange(row5, row7,  nrow = 2, heights = c(2,1)) #saved as 10"x10"
+#row5 <- grid.arrange(BiomassCurvesplot, ncol = 1, heights = 1)
+#row7 <- grid.arrange(PDdifplot, PHpropdifplot, PW.5difplot, ncol = 3, widths = c(1,1,1))
+#BMCurvesFig3 <- grid.arrange(row5, row7,  nrow = 2, heights = c(2,1)) #saved as 10"x10"
 
 #### Supp. mat. ####
 
@@ -477,18 +461,16 @@ BMODcurves <- data.frame(TT=c("Alder", "Ash", "Beech", "Birch", "Elm", "Hazel", 
                          PD=c(median(AlderPDOD),median(AshPDOD),median(BeechPDOD),median(BirchPDOD),median(ElmPDOD),median(HazelPDOD),median(RowanPDOD),median(SycamorePDOD),median(WillowPDOD)),
                          PDLCI=c(HPDinterval(mcmc(AlderPDOD))[1], HPDinterval(mcmc(AshPDOD))[1], HPDinterval(mcmc(BeechPDOD))[1], HPDinterval(mcmc(BirchPDOD))[1], HPDinterval(mcmc(ElmPDOD))[1], HPDinterval(mcmc(HazelPDOD))[1], HPDinterval(mcmc(RowanPDOD))[1], HPDinterval(mcmc(SycamorePDOD))[1], HPDinterval(mcmc(WillowPDOD))[1]),
                          PDUCI=c(HPDinterval(mcmc(AlderPDOD))[2], HPDinterval(mcmc(AshPDOD))[2], HPDinterval(mcmc(BeechPDOD))[2], HPDinterval(mcmc(BirchPDOD))[2], HPDinterval(mcmc(ElmPDOD))[2], HPDinterval(mcmc(HazelPDOD))[2], HPDinterval(mcmc(RowanPDOD))[2], HPDinterval(mcmc(SycamorePDOD))[2], HPDinterval(mcmc(WillowPDOD))[2]),
-                         PH=c(median(AlderPHOD),median(AshPHOD),median(BeechPHOD),median(BirchPHOD),median(ElmPHOD),median(HazelPHOD),median(RowanPHOD),median(SycamorePHOD),median(WillowPHOD)),
-                         PHLCI=c(HPDinterval(mcmc(AlderPHOD))[1], HPDinterval(mcmc(AshPHOD))[1], HPDinterval(mcmc(BeechPHOD))[1], HPDinterval(mcmc(BirchPHOD))[1], HPDinterval(mcmc(ElmPHOD))[1], HPDinterval(mcmc(HazelPHOD))[1], HPDinterval(mcmc(RowanPHOD))[1], HPDinterval(mcmc(SycamorePHOD))[1], HPDinterval(mcmc(WillowPHOD))[1]),
-                         PHUCI=c(HPDinterval(mcmc(AlderPHOD))[2], HPDinterval(mcmc(AshPHOD))[2], HPDinterval(mcmc(BeechPHOD))[2], HPDinterval(mcmc(BirchPHOD))[2], HPDinterval(mcmc(ElmPHOD))[2], HPDinterval(mcmc(HazelPHOD))[2], HPDinterval(mcmc(RowanPHOD))[2], HPDinterval(mcmc(SycamorePHOD))[2], HPDinterval(mcmc(WillowPHOD))[2]),
                          PHprop=c(median(AlderPHpropOD),median(AshPHpropOD),median(BeechPHpropOD),median(BirchPHpropOD),median(ElmPHpropOD),median(HazelPHpropOD),median(RowanPHpropOD),median(SycamorePHpropOD),median(WillowPHpropOD)),
-                         PHpropLCI=c(HPDinterval(mcmc(AlderPHpropOD))[1], HPDinterval(mcmc(AshPHpropOD))[1], HPDinterval(mcmc(BeechPHpropOD))[1], HPDinterval(mcmc(BirchPHpropOD))[1], HPDinterval(mcmc(ElmPHpropOD))[1], HPDinterval(mcmc(HazelPHpropOD))[1], HPDinterval(mcmc(RowanPHpropOD))[1], HPDinterval(mcmc(SycamorePHpropOD))[1], HPDinterval(mcmc(WillowPHpropOD))[1]),
-                         PHpropUCI=c(HPDinterval(mcmc(AlderPHpropOD))[2], HPDinterval(mcmc(AshPHpropOD))[2], HPDinterval(mcmc(BeechPHpropOD))[2], HPDinterval(mcmc(BirchPHpropOD))[2], HPDinterval(mcmc(ElmPHpropOD))[2], HPDinterval(mcmc(HazelPHpropOD))[2], HPDinterval(mcmc(RowanPHpropOD))[2], HPDinterval(mcmc(SycamorePHpropOD))[2], HPDinterval(mcmc(WillowPHpropOD))[2]),
+                         PHpropLCI=c(exp(HPDinterval(mcmc(log(AlderPHpropOD))))[1], exp(HPDinterval(mcmc(log(AshPHpropOD))))[1], exp(HPDinterval(mcmc(log(BeechPHpropOD))))[1], exp(HPDinterval(mcmc(log(BirchPHpropOD))))[1], exp(HPDinterval(mcmc(log(ElmPHpropOD))))[1], exp(HPDinterval(mcmc(log(HazelPHpropOD))))[1], exp(HPDinterval(mcmc(log(RowanPHpropOD))))[1], exp(HPDinterval(mcmc(log(SycamorePHpropOD))))[1], exp(HPDinterval(mcmc(log(WillowPHpropOD))))[1]),
+                         PHpropUCI=c(exp(HPDinterval(mcmc(log(AlderPHpropOD))))[2], exp(HPDinterval(mcmc(log(AshPHpropOD))))[2], exp(HPDinterval(mcmc(log(BeechPHpropOD))))[2], exp(HPDinterval(mcmc(log(BirchPHpropOD))))[2], exp(HPDinterval(mcmc(log(ElmPHpropOD))))[2], exp(HPDinterval(mcmc(log(HazelPHpropOD))))[2], exp(HPDinterval(mcmc(log(RowanPHpropOD))))[2], exp(HPDinterval(mcmc(log(SycamorePHpropOD))))[2], exp(HPDinterval(mcmc(log(WillowPHpropOD))))[2]),
                          PW=c(median(AlderPWOD, na.rm=TRUE),median(AshPWOD, na.rm=TRUE),median(BeechPWOD, na.rm=TRUE),median(BirchPWOD, na.rm=TRUE),median(ElmPWOD, na.rm=TRUE),median(HazelPWOD, na.rm=TRUE),median(RowanPWOD, na.rm=TRUE),median(SycamorePWOD, na.rm=TRUE),median(WillowPWOD, na.rm=TRUE)),
                          PWLCI=c(HPDinterval(mcmc(AlderPWOD))[1], HPDinterval(mcmc(AshPWOD))[1], HPDinterval(mcmc(BeechPWOD))[1], HPDinterval(mcmc(BirchPWOD))[1], HPDinterval(mcmc(ElmPWOD))[1], HPDinterval(mcmc(HazelPWOD))[1], HPDinterval(mcmc(RowanPWOD))[1], HPDinterval(mcmc(SycamorePWOD))[1], HPDinterval(mcmc(WillowPWOD))[1]),
                          PWUCI=c(HPDinterval(mcmc(AlderPWOD))[2], HPDinterval(mcmc(AshPWOD))[2], HPDinterval(mcmc(BeechPWOD))[2], HPDinterval(mcmc(BirchPWOD))[2], HPDinterval(mcmc(ElmPWOD))[2], HPDinterval(mcmc(HazelPWOD))[2], HPDinterval(mcmc(RowanPWOD))[2], HPDinterval(mcmc(SycamorePWOD))[2], HPDinterval(mcmc(WillowPWOD))[2]),
                          PW.5=c(median(AlderPW.5OD, na.rm=TRUE),median(AshPW.5OD, na.rm=TRUE),median(BeechPW.5OD, na.rm=TRUE),median(BirchPW.5OD, na.rm=TRUE),median(ElmPW.5OD, na.rm=TRUE),median(HazelPW.5OD, na.rm=TRUE),median(RowanPW.5OD, na.rm=TRUE),median(SycamorePW.5OD, na.rm=TRUE),median(WillowPW.5OD, na.rm=TRUE)),
                          PW.5LCI=c(HPDinterval(mcmc(AlderPW.5OD))[1], HPDinterval(mcmc(AshPW.5OD))[1], HPDinterval(mcmc(BeechPW.5OD))[1], HPDinterval(mcmc(BirchPW.5OD))[1], HPDinterval(mcmc(ElmPW.5OD))[1], HPDinterval(mcmc(HazelPW.5OD))[1], HPDinterval(mcmc(RowanPW.5OD))[1], HPDinterval(mcmc(SycamorePW.5OD))[1], HPDinterval(mcmc(WillowPW.5OD))[1]),
                          PW.5UCI=c(HPDinterval(mcmc(AlderPW.5OD))[2], HPDinterval(mcmc(AshPW.5OD))[2], HPDinterval(mcmc(BeechPW.5OD))[2], HPDinterval(mcmc(BirchPW.5OD))[2], HPDinterval(mcmc(ElmPW.5OD))[2], HPDinterval(mcmc(HazelPW.5OD))[2], HPDinterval(mcmc(RowanPW.5OD))[2], HPDinterval(mcmc(SycamorePW.5OD))[2], HPDinterval(mcmc(WillowPW.5OD))[2]))
+#write.csv(BMODcurves,'~/Documents/Models/Tables/Inc2020/BiomassCurvesODMetrics.csv')
 
 NoOakCols <- c("darkred", "firebrick3", "chocolate2", "goldenrod", "olivedrab4", "darkgreen", "royalblue4", "slateblue2", "orchid")
 
@@ -547,7 +529,7 @@ BMCurvesSampleSize <- data.frame(TT=c("Alder", "Ash", "Beech", "Birch", "Elm", "
                                  PWdif=c(length(which(is.na(AlderPWdif)==FALSE)),length(which(is.na(AshPWdif)==FALSE)),length(which(is.na(BeechPWdif)==FALSE)),length(which(is.na(BirchPWdif)==FALSE)),length(which(is.na(ElmPWdif)==FALSE)),length(which(is.na(HazelPWdif)==FALSE)),length(which(is.na(OakPWdif)==FALSE)),length(which(is.na(RowanPWdif)==FALSE)),length(which(is.na(SycamorePWdif)==FALSE)),length(which(is.na(WillowPWdif)==FALSE))),
                                  PW.5=c(length(which(is.na(AlderPW.5)==FALSE)),length(which(is.na(AshPW.5)==FALSE)),length(which(is.na(BeechPW.5)==FALSE)),length(which(is.na(BirchPW.5)==FALSE)),length(which(is.na(ElmPW.5)==FALSE)),length(which(is.na(HazelPW.5)==FALSE)),length(which(is.na(OakPW.5)==FALSE)),length(which(is.na(RowanPW.5)==FALSE)),length(which(is.na(SycamorePW.5)==FALSE)),length(which(is.na(WillowPW.5)==FALSE))),
                                  PW.5dif=c(length(which(is.na(AlderPW.5dif)==FALSE)),length(which(is.na(AshPW.5dif)==FALSE)),length(which(is.na(BeechPW.5dif)==FALSE)),length(which(is.na(BirchPW.5dif)==FALSE)),length(which(is.na(ElmPW.5dif)==FALSE)),length(which(is.na(HazelPW.5dif)==FALSE)),length(which(is.na(OakPW.5dif)==FALSE)),length(which(is.na(RowanPW.5dif)==FALSE)),length(which(is.na(SycamorePW.5dif)==FALSE)),length(which(is.na(WillowPW.5dif)==FALSE))))
-#write.csv(BMCurvesSampleSize,'~/Documents/Models/Tables/BMCurvesSampleSize.csv')
+#write.csv(BMCurvesSampleSize,'~/Documents/Models/Tables/Inc2020/BMCurvesSampleSize.csv')
 
 BMODCurvesSampleSize <- data.frame(TT=c("Alder", "Ash", "Beech", "Birch", "Elm", "Hazel", "Rowan", "Sycamore", "Willow"), 
                                    PD=c(length(which(is.na(AlderPDOD)==FALSE)),length(which(is.na(AshPDOD)==FALSE)),length(which(is.na(BeechPDOD)==FALSE)),length(which(is.na(BirchPDOD)==FALSE)),length(which(is.na(ElmPDOD)==FALSE)),length(which(is.na(HazelPDOD)==FALSE)),length(which(is.na(RowanPDOD)==FALSE)),length(which(is.na(SycamorePDOD)==FALSE)),length(which(is.na(WillowPDOD)==FALSE))),
@@ -555,14 +537,14 @@ BMODCurvesSampleSize <- data.frame(TT=c("Alder", "Ash", "Beech", "Birch", "Elm",
                                    PHprop=c(length(which(is.na(AlderPHpropOD)==FALSE)),length(which(is.na(AshPHpropOD)==FALSE)),length(which(is.na(BeechPHpropOD)==FALSE)),length(which(is.na(BirchPHpropOD)==FALSE)),length(which(is.na(ElmPHpropOD)==FALSE)),length(which(is.na(HazelPHpropOD)==FALSE)),length(which(is.na(RowanPHpropOD)==FALSE)),length(which(is.na(SycamorePHpropOD)==FALSE)),length(which(is.na(WillowPHpropOD)==FALSE))),
                                    PW=c(length(which(is.na(AlderPWOD)==FALSE)),length(which(is.na(AshPWOD)==FALSE)),length(which(is.na(BeechPWOD)==FALSE)),length(which(is.na(BirchPWOD)==FALSE)),length(which(is.na(ElmPWOD)==FALSE)),length(which(is.na(HazelPWOD)==FALSE)),length(which(is.na(RowanPWOD)==FALSE)),length(which(is.na(SycamorePWOD)==FALSE)),length(which(is.na(WillowPWOD)==FALSE))),
                                    PW.5=c(length(which(is.na(AlderPW.5OD)==FALSE)),length(which(is.na(AshPW.5OD)==FALSE)),length(which(is.na(BeechPW.5OD)==FALSE)),length(which(is.na(BirchPW.5OD)==FALSE)),length(which(is.na(ElmPW.5OD)==FALSE)),length(which(is.na(HazelPW.5OD)==FALSE)),length(which(is.na(RowanPW.5OD)==FALSE)),length(which(is.na(SycamorePW.5OD)==FALSE)),length(which(is.na(WillowPW.5OD)==FALSE))))
-#write.csv(BMODCurvesSampleSize,'~/Documents/Models/Tables/BMODCurvesSampleSize.csv')
+#write.csv(BMODCurvesSampleSize,'~/Documents/Models/Tables/Inc2020/BMODCurvesSampleSize.csv')
 
 meanmetrics <- data.frame(metric=c("PD", "PH", "PW.5", "PW.01"), 
-                          median=c(median(MeanPD), median(MeanPH),median(MeanPW.5,na.rm=TRUE), median(MeanPW,na.rm=TRUE)), 
-                          lci=c(HPDinterval(mcmc(MeanPD))[1], HPDinterval(mcmc(MeanPH))[1],HPDinterval(mcmc(MeanPW.5))[1], HPDinterval(mcmc(MeanPW))[1]),
-                          uci=c(HPDinterval(mcmc(MeanPD))[2], HPDinterval(mcmc(MeanPH))[2],HPDinterval(mcmc(MeanPW.5))[2], HPDinterval(mcmc(MeanPW))[2]),
+                          median=c(mean(MeanPD, na.rm=T), exp(mean(log(MeanPH), na.rm=T)),mean(MeanPW.5,na.rm=TRUE), median(MeanPW,na.rm=TRUE)), 
+                          lci=c(HPDinterval(mcmc(MeanPD))[1], exp(HPDinterval(mcmc(log(MeanPH))))[1],HPDinterval(mcmc(MeanPW.5))[1], HPDinterval(mcmc(MeanPW))[1]),
+                          uci=c(HPDinterval(mcmc(MeanPD))[2], exp(HPDinterval(mcmc(log(MeanPH))))[2],HPDinterval(mcmc(MeanPW.5))[2], HPDinterval(mcmc(MeanPW))[2]),
                           SS=c(length(which(is.na(MeanPD)==FALSE)),length(which(is.na(MeanPH)==FALSE)),length(which(is.na(MeanPW.5)==FALSE)),length(which(is.na(MeanPW)==FALSE))))
-#write.csv(meanmetrics,'~/Documents/Models/Tables/BiomassFixedEffMetrics.csv')
+#write.csv(meanmetrics,'~/Documents/Models/Tables/Inc2020/BiomassFixedEffMetrics.csv')
 
 
 
@@ -574,15 +556,13 @@ MeanA <- (sampleATTC[,4])
 MeanB <- (sampleATTC[,3])
 MeanC <- (sampleATTC[,2])
 
-APD <- unscale((-MeanB/(2*MeanA)), center= 146.4095, scale=14.19835)
-APD <- APD$V1
+APD <- unscale((-MeanB/(2*MeanA)), center= 146.7727, scale=14.04083)$V1
 
 APH <- exp(MeanC +MeanB*(-MeanB/(2*MeanA)) + MeanA*(-MeanB/(2*MeanA))^2)
 
 APW1 <- (-MeanB + sqrt(MeanB^2 - (4*MeanA*(MeanC-log(APH/2)))))/(2*MeanA)
 APW2 <- (-MeanB - sqrt(MeanB^2 - (4*MeanA*(MeanC-log(APH/2)))))/(2*MeanA)
-APW <- unscale((APW2), center= 146.4095, scale=14.19835)-unscale((APW1), center= 146.4095, scale=14.19835)
-APW <- APW$V1 
+APW <- unscale((APW2), center= 146.7727, scale=14.04083)$V1-unscale((APW1), center= 146.7727, scale=14.04083)$V1 
 
 mean(mcmc(APW), na.rm=TRUE)
 HPDinterval(mcmc(APW), na.rm=TRUE)
