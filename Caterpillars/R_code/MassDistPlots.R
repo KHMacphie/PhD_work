@@ -74,18 +74,18 @@ sycamore <- median(SycamoreC)+median(SycamoreB)*preddayscaled+median(SycamoreA)*
 willow <- median(WillowC)+median(WillowB)*preddayscaled+median(WillowA)*preddayscaled^2
 intsamples <- subset(cater_habitat, mpc1 == 0.001, 
                      select=c(date, mpc1))
-mycolblack <- rgb(0, 0, 0, max = 250, alpha = 25, names = "blacktrans")
+mycolblack <- rgb(100, 100, 100, max = 250, alpha = 30, names = "blacktrans") # 0,0,0=black higher =lighter
 AllTaxaCols <- c("darkred", "firebrick3", "chocolate2", "goldenrod", "olivedrab4", "darkgreen", "deepskyblue3", "royalblue4", "slateblue2", "orchid")
 
 par(mfrow=c(1,2), cex=1.1)
-plot(intsamples$date, intsamples$mpc1, xlab="Ordinal Date", ylab="Mass (g)", pch=20, col=mycolblack, cex=0.4, xlim=c(117,172), ylim=c(0,1))
+plot(intsamples$date, intsamples$mpc1, xlab="Ordinal Date", ylab="Mass (g)", pch=20, col=mycolblack, cex=0.4, xlim=c(117,172), ylim=c(0,1.05))
 points(cater_habitat$date, exp(cater_habitat$logmpc2), col=mycolblack, pch=20, cex=0.4)
-points(predday,exp(meanslope), type="l", lwd=2, col=2)
+points(predday,exp(meanslope), type="l", lwd=2, col=1, lty=5)
 legend("topleft", legend="Fixed effect curve",
-       lty=1, lwd=3, 
-       col=2, 
-       cex=0.8, seg.len=1.2, bty = "n")
-plot(predday,exp(alder), type="l", lwd=1.5, col="darkred", xlab="Ordinal Date", ylab="Mass (g)", ylim=c(0,0.05))
+       lty=5, lwd=2, 
+       col=1, 
+       cex=1.0, seg.len=1.5, bty = "n")
+plot(predday,exp(alder), type="l", lwd=1.5, col="darkred", xlab="Ordinal Date", ylab="Mass (g)", ylim=c(0,0.05),xlim=c(118,170))
 points(predday,exp(ash), type="l", lwd=1.5, col="firebrick3")
 points(predday,exp(beech), type="l", lwd=1.5, col="chocolate2")
 points(predday,exp(birch), type="l", lwd=1.5, col="goldenrod")
@@ -95,18 +95,57 @@ points(predday,exp(oak), type="l", lwd=1.5, col="deepskyblue3")
 points(predday,exp(rowan), type="l", lwd=1.5, col="royalblue4")
 points(predday,exp(sycamore), type="l", lwd=1.5, col="slateblue2")
 points(predday,exp(willow), type="l", lwd=1.5, col="orchid")
-points(predday,exp(meanslope), type="l", lwd=2, col=2, lty="dotted")
-points(rep(168, 101), seq(0,0.05, 0.0005), type="l", col=1, lwd=0.5, lty="dashed")
-legend("topleft", legend="Fixed effect curve",
-       lty=3, lwd=3, 
-       col=2, 
-       cex=0.8, seg.len=1.2, bty = "n") #saved as 7"x8"
+points(predday,exp(meanslope), type="l", lwd=2, col=1, lty=5)
+points(rep(168, 101), seq(0,0.05, 0.0005), type="l", col="gray", lwd=0.5, lty="dashed")
+#legend("topleft", legend="Fixed effect curve",
+#       lty=3, lwd=3, 
+#       col=2, 
+#       cex=0.8, seg.len=1.2, bty = "n") #saved as 7"x8"
 
-legend("topleft", legend=c("Fixed effect","Alder","Ash", "Beech", "Birch", "Elm", "Hazel", "Oak", "Rowan", "Sycamore", "Willow"),
-       lty=c(3,1,1,1,1,1,1,1,1,1,1), lwd=2, 
-       col=c(2,"darkred", "firebrick3", "chocolate2", "goldenrod", "olivedrab4", "darkgreen", "deepskyblue3", "royalblue4", "slateblue2", "orchid"), 
-       cex=0.8, seg.len=0.8, bty = "n") #saved as 7"x8"
+#legend("topleft", legend=c("Alder","Ash", "Beech", "Birch", "Elm", "Hazel", "Oak", "Rowan", "Sycamore", "Willow"),
+#       lty=c(1,1,1,1,1,1,1,1,1,1), lwd=2, 
+#       col=c("darkred", "firebrick3", "chocolate2", "goldenrod", "olivedrab4", "darkgreen", "deepskyblue3", "royalblue4", "slateblue2", "orchid"), 
+#       cex=0.8, seg.len=0.8, bty = "n") #saved as 7"x8"
 
+## In ggplot ##
+fixedslope <- data.frame(date=predday, mass=exp(meanslope))
+fixedslope <- fixedslope[fixedslope$date < 172, ]
+
+dataplot <- ggplot(cater_habitat, aes(date, mpc2))+
+  geom_point(col=mycolblack, size=0.5)+
+  geom_point(data=intsamples, aes(date, mpc1), col=mycolblack, size=0.5)+
+  geom_line(data=fixedslope, aes(date,mass), col=1, lty=5)+
+  xlab("Ordinal Date")+
+  ylab("Mass (g)")+
+  coord_cartesian(xlim=c(117, 172), ylim=c(0,1))+
+  scale_y_continuous(expand = c(0,0.02))+
+  scale_x_continuous(breaks=seq(120,170,10))+
+  theme_bw()+
+  theme(text=element_text(size= 15))+
+  annotate(geom="text", x=132, y=0.95, label="- - -  Fixed effect",
+           color="black")
+
+taxoncurves <- data.frame(date = predday, FixedEffect=exp(meanslope), Alder=exp(alder), Ash=exp(ash), Beech=exp(beech), Birch=exp(birch), Elm=exp(elm), Hazel=exp(hazel), Oak=exp(oak), Rowan=exp(rowan),Sycamore=exp(sycamore),Willow=exp(willow)) 
+taxoncurveslong <- gather(taxoncurves, Taxon, Mass, select=2:12)
+taxoncurveslong$Taxon <- as.factor(taxoncurveslong$Taxon)
+taxoncurveslong$Taxon <- factor(taxoncurveslong$Taxon , c("Alder","Ash","Beech","Birch","Elm","Hazel","Oak","Rowan","Sycamore","Willow" ,"FixedEffect"))
+
+AllCols <- c( "darkred", "firebrick3", "chocolate2", "goldenrod", "olivedrab4", "darkgreen", "deepskyblue3", "royalblue4", "slateblue2", "orchid","black")
+
+taxonplot <- ggplot(taxoncurveslong, aes(date,Mass, col=Taxon))+
+  geom_line(aes(linetype=Taxon))+
+  xlab("Ordinal Date")+
+  ylab("Mass (g)")+
+  scale_colour_manual(values=AllCols)+
+  scale_linetype_manual(values=c(1,1,1,1,1,1,1,1,1,1,5))+
+  xlim(117, 170)+
+  ylim(0,0.042)+
+  geom_vline(xintercept=168, linetype="dotted", colour="gray45", size=0.5)+
+  scale_y_continuous(expand = c(0,0.004))+
+  guides(color = "none", linetype="none")+
+  theme_bw()+
+  theme(text=element_text(size= 15))
+  
 #### Mass on 168 ####
 latedate <- scale(168, center= 146.4095, scale=14.19835)[1,1]
 Mean168 <- exp(MeanC + MeanB*latedate + MeanA*latedate^2)
@@ -144,22 +183,22 @@ Mass168 <- data.frame(TT=c("Alder","Ash","Beech","Birch","Elm","Hazel","Oak", "R
 
 #write.csv(Mass168,'~/Documents/Models/Tables/Mass168Metrics.csv')
 
-Mass168plot <- ggplot(Mass168, aes(fct_rev(TT), median, col=TT))+
-  geom_point(size=2, alpha=0.9)+
-  geom_errorbar(aes(ymax=upci, ymin=lowci, width=0.5))+
-  coord_flip()+
-  xlab("Tree Taxon")+
-  ylab("Mass (g)")+
-  theme_bw()+
-  #labs(tag = "Day168")+
-  theme(text=element_text(size= 20))+
-  scale_colour_manual(values=AllTaxaCols)+
-  guides(color = "none")
+#Mass168plot <- ggplot(Mass168, aes(fct_rev(TT), median, col=TT))+
+#  geom_point(size=2, alpha=0.9)+
+#  geom_errorbar(aes(ymax=upci, ymin=lowci, width=0.5))+
+#  coord_flip()+
+#  xlab("Tree Taxon")+
+#  ylab("Mass (g)")+
+#  theme_bw()+
+#  #labs(tag = "Day168")+
+#  theme(text=element_text(size= 20))+
+#  scale_colour_manual(values=AllTaxaCols)+
+#  guides(color = "none")
 
 Mass168difplot <- ggplot(Mass168, aes(fct_rev(TT), mediandif, col=TT))+
   geom_point(size=2, alpha=0.9)+
   geom_errorbar(aes(ymax=difupci, ymin=diflowci, width=0.5))+
-  geom_hline(yintercept=0, linetype="dashed", colour="red", size=0.3)+  
+  geom_hline(yintercept=0, linetype="longdash", size=0.3)+  
   coord_flip()+
   xlab("Tree Taxon")+
   ylab("Mass difference to fixed eff. (g)")+
@@ -168,15 +207,19 @@ Mass168difplot <- ggplot(Mass168, aes(fct_rev(TT), mediandif, col=TT))+
   theme(text=element_text(size= 15))+
   scale_colour_manual(values=AllTaxaCols)+
   guides(color = "none") # saved as 6"x4.5"
-
-#col1 <- grid.arrange(Mass168plot, nrow = 1, heights = 1)
-#col2 <- grid.arrange(Mass168difplot, nrow = 1, heights = 1)
-#MassDif168 <- grid.arrange(col1, col2, ncol = 2, widths = c(1,1)) #saved as 7"by 9.5"
+space <- ggplot() + theme_void()
+#col1 <- grid.arrange(dataplot, nrow = 1, heights = 1)
+#col2 <- grid.arrange(taxonplot, nrow = 1, heights = 1)
+#col3 <- grid.arrange(Mass168difplot, nrow = 1, heights = 1)
+MassPlots <- grid.arrange(dataplot,space, taxonplot,space, Mass168difplot, ncol = 5, widths = c(1,0.1,1,0.1,1.1)) #saved as 6"x12"
 
 #row1 <- grid.arrange(Mass168plot, ncol = 1)
 #row2 <- grid.arrange(Mass168difplot, ncol = 1)
 #MassDif168 <- grid.arrange(row1, row2, nrow = 2) #saved as 7"x5"
 #### Difference to oak on 168 (0.96) #### 
+
+
+
 
 AlderOD <- Alder168-Oak168
 AshOD <- Ash168-Oak168
@@ -198,7 +241,7 @@ OD168 <- data.frame(TT=c("Alder","Ash","Beech","Birch","Elm","Hazel","Rowan","Sy
 MassODplot <- ggplot(OD168, aes(fct_rev(TT), median))+
   geom_point(size=2, alpha=0.9)+
   geom_errorbar(aes(ymax=upci, ymin=lowci, width=0.5))+
-  geom_hline(yintercept=0, linetype="dashed", colour="red", size=0.3)+  
+  geom_hline(yintercept=0, linetype="dashed", colour="black", size=0.3)+  
   coord_flip()+
   xlab("Tree Taxon")+
   ylab("Mass difference to oak (g)")+
